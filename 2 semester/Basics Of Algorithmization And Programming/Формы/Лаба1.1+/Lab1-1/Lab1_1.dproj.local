@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.969,=D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.707,=D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.401,=D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.446,D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\Developer.pas=D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\DeveloperForm.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.364,D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\Instruction.dfm=D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.075,D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\MainForm.dfm=D:\Delphi files\MainForm.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.446,D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\Developer.dfm=D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\DeveloperForm.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.310,D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\DeveloperForm.dfm=D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.075,D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\MainForm.pas=D:\Delphi files\MainForm.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.535,=D:\Delphi files\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.976,D:\Delphi files\MainForm.dfm=D:\Delphi files\Unit2.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.976,D:\Delphi files\MainForm.pas=D:\Delphi files\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.351,=D:\Delphi files\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.310,D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\DeveloperForm.pas=D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.117,D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\Lab1_1.dproj=D:\Delphi files\Project1.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.364,D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\Instruction.pas=D:\БГУИР\ОАиП\Формы\Лаба1.1\Lab1-1\Unit1.pas</Transaction>
+  </Transactions>
+</BorlandProject>

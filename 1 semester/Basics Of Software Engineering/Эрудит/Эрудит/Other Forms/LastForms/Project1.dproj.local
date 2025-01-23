@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.183,=D:\Уроки\Уник\ОПИ\Лабы\Запаска\Other Forms\LastForms\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.380,D:\Уроки\Уник\ОПИ\Лабы\Запаска\Other Forms\LastForms\Unit1.pas=D:\Уроки\Уник\ОПИ\Лабы\Запаска\Other Forms\LastForms\GamerPoints.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.380,D:\Уроки\Уник\ОПИ\Лабы\Запаска\Other Forms\LastForms\Unit1.dfm=D:\Уроки\Уник\ОПИ\Лабы\Запаска\Other Forms\LastForms\GamerPoints.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.976,=D:\Уроки\Уник\ОПИ\Лабы\Запаска\Other Forms\LastForms\FriendsHelpUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.932,=D:\Уроки\Уник\ОПИ\Лабы\Запаска\Other Forms\LastForms\fiftyForFiftyUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.000,=D:\Уроки\Уник\ОПИ\Лабы\Запаска\Other Forms\LastForms\GameUnit.pas</Transaction>
+  </Transactions>
+</BorlandProject>

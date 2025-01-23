@@ -1,0 +1,277 @@
+@charset "UTF-8";
+/* CSS Document */
+
+/*----------------------------------------------------------------------------------------------*/
+/* reset */
+/*----------------------------------------------------------------------------------------------*/
+html,body,div,ul,ol,li,dl,dt,dd,h1,h2,h3,h4,h5,h6,pre,form,p,blockquote,fieldset,input,abbr,article,aside,command,details,figcaption,figure,footer,header,hgroup,mark,meter,nav,output,progress,section,summary,time {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+  list-style-type: none
+}
+
+h1,h2,h3,h4,h5,h6,h1 a,h2a ,h3 a,h4 a,h5 a,h6 a,pre,code,address,caption,cite,code,em,strong,th,figcaption {
+  font-size: 1em;
+  font-weight: normal;
+  font-style: normal
+}
+
+fieldset, iframe {
+  border: none
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0
+}
+
+/*----------------------------------------------------------------------------------------------*/
+/* tout */
+/*----------------------------------------------------------------------------------------------*/
+* {
+  font-family: 'Roboto';
+}
+
+/*----------------------------------------------------------------------------------------------*/
+/* general */
+/*----------------------------------------------------------------------------------------------*/
+
+html {
+  font-size:15px;
+}
+
+a, a:hover, a:active, a:visited {
+  color: #FFF;
+  text-decoration: none;
+  cursor: pointer
+}
+
+a:hover {
+  color: #FFF;
+}
+
+strong {
+  font-weight: bold;
+}
+
+.spacer {
+  clear: both;
+  padding: 0;
+  margin: 0;
+  height: 0;
+  line-height: 0px;
+}
+
+img {
+  border: 0;
+}
+
+/*----------------------------------------------------------------------------------------------*/
+/* header */
+/*----------------------------------------------------------------------------------------------*/
+
+h1 {
+  display: none;
+}
+
+/*----------------------------------------------------------------------------------------------*/
+/* contenu
+/*----------------------------------------------------------------------------------------------*/
+
+#container {
+  width: 1400px;
+  margin-bottom: 100px;
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 100px;
+}
+
+.col1 {
+  float: left;
+  width: 600px;
+}
+
+.col1 p, .col1 ol, .col1 ul, .col1 address, .col1 em {
+  font-weight: 300;
+}
+
+.col1 em {
+  font-style: italic;
+}
+.col1 ul, .col1 ol {
+  margin-left: 20px;
+}
+
+.col1 ul li {
+  list-style-type: square;
+}
+
+.col1 ol li {
+  list-style-type: decimal;
+}
+.textedit h1 {
+  display: inline-block
+}
+
+.textedit h1, .textedit h1 span, .textedit h1 a, .textedit h1 strong, .textedit h1 em, .textedit h1 u, .textedit h1 s,
+.col1 h2, .col1 h2 span, .col1 h2 a,
+.textedit h2, .textedit h2 span, .textedit h2 a, .textedit h2 strong, .textedit h2 em, .col1 .col1 h3, .col1 h3 span, .col1 h3 a,
+.textedit h1 u, .textedit h1 s,
+.textedit h3, .textedit h3 span, .textedit h3 a, .textedit h3 strong, .textedit h3 em, .textedit h3 u, .textedit h3 s,
+.textedit h4, .textedit h4 span, .textedit h4 a, .textedit h4 strong, .textedit h4 em, .textedit h4 u, .textedit h4 s,
+.textedit h5, .textedit h5 span, .textedit h5 a, .textedit h5 strong, .textedit h5 em, .textedit h5 u, .textedit h5 s,
+.textedit h6, .textedit h6 span, .textedit h6 a, .textedit h6 strong, .textedit h6 em .textedit h6 u, .textedit h6 s {
+  color: #55FF55;
+}
+
+.col1 h2, .col1 h2 span, .col1 h2 a {
+  font-size: 24px;
+  line-height: 26px;
+  font-weight: 500;
+  margin: 0px 0px 4px 0px;
+}
+
+.col1 h3, .col1 h3 span, .col1 h3 a {
+  font-size: 18px;
+  line-height: 19px;
+  margin: 0px 0px 8px 0px;
+}
+
+.textedit h1, .textedit h1 span, .textedit h1 a, .textedit h1 strong, .textedit h1 em {
+  font-size:20px;
+  line-height:24px;
+  margin: 0px 0px 10px 0px;
+  font-weight: 500;
+}
+
+.textedit h5, .textedit h5 span, .textedit h5 a, .textedit h5 strong, .textedit h5 em {
+  font-size:13px;
+  line-height:18px;
+  padding: 0px 0px 5px 0px;
+  font-weight: 300;
+}
+
+.textedit h6, .textedit h6 span, .textedit h6 a, .textedit h6 strong, .textedit h6 em {
+  font-size:11px;
+  line-height:16px;
+  padding: 0px 0px 5px 0px;
+  font-weight: 300;
+}
+
+.col1 address {
+  font-style: normal;
+  font-size:13px;
+  text-align:right;
+}
+
+.col1 pre {
+  font-family: 'courier';
+}
+
+.col1 .article .chapo {
+  margin: 0px;
+}
+
+.sign {
+  font-size:12px;
+}
+
+.news,
+.news-page,
+.flash,
+.more,
+.index,
+.world,
+.worldpage,
+.project-page {
+  -webkit-background-size: cover; /* pour Chrome et Safari */
+  -o-background-size: cover; /* pour Opera */
+  background-size: cover; /* version standardise */
+}
+
+@media screen and (max-width:640px) {
+
+  /*----------------------------------------------------------------------------------------------*/
+  /* general */
+  /*----------------------------------------------------------------------------------------------*/
+
+  #container {
+    background: none;
+    width: 320px;
+    float: none;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 0px;
+    margin-top: 50px;
+    background: url(../img/buttons/transp.png) ;
+  }
+
+  /*----------------------------------------------------------------------------------------------*/
+  /* navigation */
+  /*----------------------------------------------------------------------------------------------*/
+
+  .col1 {
+    width: 300px;
+    padding: 0px;
+  }
+
+  /*----------------------------------------------------------------------------------------------*/
+  /* CORPS DES TYPOS */
+  /*----------------------------------------------------------------------------------------------*/
+
+  html {
+    font-size: 13px;
+  }
+
+  .col1 h2 {
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .col1 h3 {
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .col1 h4 {
+    font-size: 11px;
+    line-height: 17px;
+  }
+
+  .col1 h5 {
+    font-size: 10px;
+    line-height: 15px;
+  }
+
+  .col1 p.sign {
+    font-size:12px;
+    line-height:16px;
+  }
+
+}
+
+#hideAllPanel {
+  position: fixed;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
+  background-color: black;
+  z-index: 9999; /* Higher than anything else in the document */
+}
+
+.panelVisible {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.1s linear;
+}
+
+.panelHidden {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s 0.1s, opacity 0.1s linear;
+}

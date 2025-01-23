@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.658,D:\БГУИР\ОАиП\Лаба 6\Задание 1\Delphi\DeleteLeaf.pas=</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.401,D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\AddLeaf.pas=</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.102,D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\AddConact.dfm=D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\AddContact.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.267,D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\AddLeaf.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.100,D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\DeleteLeaf.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.203,=D:\БГУИР\ОАиП\Формы\Лаба1.4\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.017,D:\Delphi files\MainForm.dfm=D:\БГУИР\ОАиП\Формы\Лаба1.3\MainForm.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.967,=D:\Delphi files\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.082,D:\Delphi files\Unit2.pas=D:\Delphi files\MainForm.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.696,D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\AddContact.dfm=D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\AddLeaf.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.792,D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\AddConact.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.737,D:\БГУИР\ОАиП\Формы\Лаба2.4\Lab1_4.dproj=D:\БГУИР\ОАиП\Формы\Лаба2.4\Lab2_4.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.082,D:\Delphi files\Unit2.dfm=D:\Delphi files\MainForm.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.179,D:\БГУИР\ОАиП\Формы\Лаба1.3\Unit1.dfm=D:\БГУИР\ОАиП\Формы\Лаба1.3\Developer.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.373,D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\Lab5_1.dproj=D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\Lab2_4.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.045,=D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.819,=D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.313,=D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.462,=D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.643,D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\DoubleLinkedLidt.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.061,=D:\БГУИР\ОАиП\Формы\Лаба1.3\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.179,D:\БГУИР\ОАиП\Формы\Лаба1.3\Unit1.pas=D:\БГУИР\ОАиП\Формы\Лаба1.3\Developer.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.683,D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\DoubleLinkedList.pas=D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\TreeUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.201,D:\БГУИР\ОАиП\Формы\Лаба1.3\Unit2.pas=D:\БГУИР\ОАиП\Формы\Лаба1.3\Instruction.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.988,=D:\БГУИР\ОАиП\Формы\Лаба1.3\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.696,D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\AddContact.pas=D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\AddLeaf.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.201,D:\БГУИР\ОАиП\Формы\Лаба1.3\Unit2.dfm=D:\БГУИР\ОАиП\Формы\Лаба1.3\Instruction.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.017,D:\Delphi files\MainForm.pas=D:\БГУИР\ОАиП\Формы\Лаба1.3\MainForm.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.657,D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\Lab5_2.dproj=D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\Lab5_1.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.102,D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\AddConact.pas=D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\AddContact.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.782,D:\БГУИР\ОАиП\Формы\Лаба1.4\Lab1_4.dproj=D:\БГУИР\ОАиП\Формы\Лаба1.4\Lab1_3.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.799,D:\БГУИР\ОАиП\Лаба 6\Задание 1\Delphi\TreeUnit.pas=</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.499,D:\БГУИР\ОАиП\Лаба 6\Задание 1\Delphi\Lab6_1.dproj=D:\БГУИР\ОАиП\Лаба 6\Задание 1\Delphi\Lab5_2.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.792,D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\Unit1.dfm=D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\AddConact.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.637,D:\БГУИР\ОАиП\Лаба 6\Задание 1\Delphi\AddLeaf.pas=</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.610,D:\Delphi files\Project1.dproj=D:\БГУИР\ОАиП\Формы\Лаба1.3\Lab1_3.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.014,D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\DoubleLinkedLidt.pas=D:\БГУИР\ОАиП\Лаба 5\Задание 1\Delphi\DoubleLinkedList.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.100,D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\Unit1.dfm=D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\DeleteLeaf.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.267,D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\Unit1.dfm=D:\БГУИР\ОАиП\Лаба 5\Задание 2\Delphi\AddLeaf.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.351,=D:\Delphi files\Unit1.pas</Transaction>
+  </Transactions>
+	<ProjectSortOrder AutoSort="0" SortType="0">
+    <File Path="MainForm.pas"/>
+    <File Path="MainForm.dfm"/>
+    <File Path="Developer.pas"/>
+    <File Path="Developer.dfm"/>
+    <File Path="Instruction.pas"/>
+    <File Path="Instruction.dfm"/>
+  </ProjectSortOrder>
+</BorlandProject>

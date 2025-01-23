@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.273,D:\Dokuments\Embarcadero\Studio\Projects\Unit1.pas=D:\Dokuments\Desctop\Лабы\Блок 1\Lab1_2\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.879,=D:\Dokuments\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.361,=D:\Dokuments\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.354,D:\Dokuments\Embarcadero\Studio\Projects\Project1.dproj=D:\Dokuments\Desctop\Лабы\Блок 1\Lab1_2\Project1.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.675,=D:\Dokuments\Desctop\Лабы\Блок 1\Lab1_2\Unit3.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.786,D:\Dokuments\Desctop\Лабы\Шаблон\Lab.dproj=D:\Dokuments\Desctop\Лабы\Шаблон\Lab1_2.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.274,D:\Dokuments\Embarcadero\Studio\Projects\Unit1.dfm=D:\Dokuments\Desctop\Лабы\Блок 1\Lab1_2\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.827,D:\Dokuments\Desctop\Лабы\Блок 1\Lab1_2\Project1.dproj=D:\Dokuments\Desctop\Лабы\Блок 1\Lab1_2\Lab1_2.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.036,=D:\Dokuments\Embarcadero\Studio\Projects\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.893,D:\Dokuments\Embarcadero\Studio\Projects\Unit2.pas=D:\Dokuments\Desctop\Лабы\Блок 1\Lab1_2\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.924,D:\Dokuments\Desctop\Лабы\Блок 2\Lab2_2\Lab1_4.dproj=D:\Dokuments\Desctop\Лабы\Блок 2\Lab2_2\Lab2_2.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.893,D:\Dokuments\Embarcadero\Studio\Projects\Unit2.dfm=D:\Dokuments\Desctop\Лабы\Блок 1\Lab1_2\Unit2.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.833,D:\Dokuments\Desctop\Лабы\Блок 1\Lab1_4\Lab.dproj=D:\Dokuments\Desctop\Лабы\Блок 1\Lab1_4\Lab1_4.dproj</Transaction>
+    <Transaction>2024.02.23 22:26:31.410,D:\БГУИР\ОАиП\Формы\Лаба3.2\Lab3_2.dproj=D:\БГУИР\ОАиП\Формы\Лаба3.2\Lab2_2.dproj</Transaction>
+  </Transactions>
+</BorlandProject>

@@ -1,0 +1,3 @@
+﻿  LabaDoc.cpp
+D:\БГУИР\ОАиП\Лаба 2\Задание 3\С++\LabaDoc\LabaDoc\LabaDoc.cpp(99,32): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+  LabaDoc.vcxproj -> D:\БГУИР\ОАиП\Лаба 2\Задание 3\С++\LabaDoc\x64\Debug\LabaDoc.exe

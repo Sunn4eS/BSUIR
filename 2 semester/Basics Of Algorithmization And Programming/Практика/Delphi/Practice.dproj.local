@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.752,=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.714,D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Практика\Delphi\FindStudentUnti.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.191,=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.125,D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Практика\Delphi\ListsActionUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.981,=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.575,=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.478,=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.873,=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.935,=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.026,=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.977,D:\БГУИР\ОАиП\Практика\Delphi\ViewGroupListUnit.pas=D:\БГУИР\ОАиП\Практика\Delphi\GroupListUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.447,D:\БГУИР\ОАиП\Практика\Delphi\MainMenuForm.pas=D:\БГУИР\ОАиП\Практика\Delphi\MainForm.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.404,D:\БГУИР\ОАиП\Практика\Delphi\FindStudentUnti.dfm=D:\БГУИР\ОАиП\Практика\Delphi\FindStudentUnit.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.152,D:\БГУИР\ОАиП\Практика\Delphi\GroppListActionUnit.pas=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.488,D:\БГУИР\ОАиП\Практика\Delphi\GroupsLinkedListUnit.pas=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.091,D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Практика\Delphi\StudentsInGroupActionUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.177,D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Практика\Delphi\ViewStudentsInGroupUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.691,D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Практика\Delphi\InputEditUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.459,D:\БГУИР\ОАиП\Практика\Delphi\MainMenuUnit.dfm=D:\БГУИР\ОАиП\Практика\Delphi\MainMenuForm.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.710,D:\БГУИР\ОАиП\Практика\Delphi\GroupListUnit.pas=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.783,=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.977,D:\БГУИР\ОАиП\Практика\Delphi\ViewGroupListUnit.dfm=D:\БГУИР\ОАиП\Практика\Delphi\GroupListUnit.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.677,D:\Delphi files\Unit2.dfm=D:\БГУИР\ОАиП\Практика\Delphi\MainForm.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.517,D:\БГУИР\ОАиП\Практика\Delphi\GroupListActionUnit.pas=D:\БГУИР\ОАиП\Практика\Delphi\GroppListActionUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.517,D:\БГУИР\ОАиП\Практика\Delphi\GroupListActionUnit.dfm=D:\БГУИР\ОАиП\Практика\Delphi\GroppListActionUnit.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.563,D:\Delphi files\Project1.dproj=D:\Delphi files\Practice.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.710,D:\БГУИР\ОАиП\Практика\Delphi\GroupListUnit.dfm=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.404,D:\БГУИР\ОАиП\Практика\Delphi\FindStudentUnti.pas=D:\БГУИР\ОАиП\Практика\Delphi\FindStudentUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.447,D:\БГУИР\ОАиП\Практика\Delphi\MainMenuForm.dfm=D:\БГУИР\ОАиП\Практика\Delphi\MainForm.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.142,=D:\Delphi files\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.677,D:\Delphi files\Unit2.pas=D:\БГУИР\ОАиП\Практика\Delphi\MainForm.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.091,D:\БГУИР\ОАиП\Практика\Delphi\Unit1.dfm=D:\БГУИР\ОАиП\Практика\Delphi\StudentsInGroupActionUnit.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.125,D:\БГУИР\ОАиП\Практика\Delphi\Unit1.dfm=D:\БГУИР\ОАиП\Практика\Delphi\ListsActionUnit.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.714,D:\БГУИР\ОАиП\Практика\Delphi\Unit1.dfm=D:\БГУИР\ОАиП\Практика\Delphi\FindStudentUnti.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.152,D:\БГУИР\ОАиП\Практика\Delphi\GroppListActionUnit.dfm=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.411,=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.459,D:\БГУИР\ОАиП\Практика\Delphi\MainMenuUnit.pas=D:\БГУИР\ОАиП\Практика\Delphi\MainMenuForm.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.166,D:\БГУИР\ОАиП\Практика\Delphi\FileUnit.pas=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.405,D:\БГУИР\ОАиП\Практика\Delphi\StudentLinkedListUnit.pas=D:\БГУИР\ОАиП\Практика\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.740,D:\Delphi files\Practice.dproj=D:\БГУИР\ОАиП\Практика\Delphi\Practice.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.177,D:\БГУИР\ОАиП\Практика\Delphi\Unit1.dfm=D:\БГУИР\ОАиП\Практика\Delphi\ViewStudentsInGroupUnit.dfm</Transaction>
+  </Transactions>
+	<ProjectSortOrder AutoSort="0" SortType="0">
+    <File Path="GroupListActionUnit.pas"/>
+    <File Path="GroupListActionUnit.dfm"/>
+    <File Path="GroupsLinkedListUnit.pas"/>
+    <File Path="InputEditUnit.pas"/>
+    <File Path="MainMenuUnit.pas"/>
+    <File Path="MainMenuUnit.dfm"/>
+    <File Path="StudentLinkedListUnit.pas"/>
+    <File Path="ViewGroupListUnit.pas"/>
+    <File Path="ViewGroupListUnit.dfm"/>
+    <File Path="ViewStudentsInGroupUnit.pas"/>
+    <File Path="ViewStudentsInGroupUnit.dfm"/>
+    <File Path="StudentsInGroupActionUnit.pas"/>
+    <File Path="StudentsInGroupActionUnit.dfm"/>
+    <File Path="FindStudentUnit.pas"/>
+    <File Path="FindStudentUnit.dfm"/>
+    <File Path="ListsActionUnit.pas"/>
+    <File Path="ListsActionUnit.dfm"/>
+    <File Path="FileUnit.pas"/>
+  </ProjectSortOrder>
+</BorlandProject>

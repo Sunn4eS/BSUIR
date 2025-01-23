@@ -1,0 +1,3 @@
+﻿  two.cpp
+D:\БГУИР\ОАиП\дз\twoBytwo\two\two\two.cpp(31,16): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+  two.vcxproj -> D:\БГУИР\ОАиП\дз\twoBytwo\two\x64\Debug\two.exe

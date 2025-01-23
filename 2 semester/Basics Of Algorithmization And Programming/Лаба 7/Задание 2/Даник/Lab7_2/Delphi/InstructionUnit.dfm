@@ -1,0 +1,89 @@
+object InstructionForm: TInstructionForm
+  Left = 0
+  Top = 0
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
+  Caption = #1048#1085#1089#1090#1088#1091#1082#1094#1080#1103
+  ClientHeight = 225
+  ClientWidth = 483
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -12
+  Font.Name = 'Segoe UI'
+  Font.Style = []
+  Position = poScreenCenter
+  TextHeight = 15
+  object InstructionLabel1: TLabel
+    Left = 8
+    Top = 11
+    Width = 408
+    Height = 40
+    Caption = 
+      '1. '#1055#1086#1088#1103#1076#1086#1082' '#1084#1072#1090#1088#1080#1094#1099' '#1076#1086#1083#1078#1077#1085' '#1073#1099#1090#1100' '#1085#1072#1090#1091#1088#1072#1083#1100#1085#1099#1084' '#1095#1080#1089#1083#1086#1084' '#1074' '#1076#1080#1072#1087#1072#1079#1086#1085#1077' [1' +
+      '; 9]. '
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clInfoText
+    Font.Height = -15
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    ParentFont = False
+    WordWrap = True
+  end
+  object InstructionLabel4: TLabel
+    Left = 8
+    Top = 77
+    Width = 463
+    Height = 100
+    Caption = 
+      '3. '#1060#1072#1081#1083' '#1076#1086#1083#1078#1077#1085' '#1089#1086#1076#1077#1088#1078#1072#1090#1100' '#1089#1083#1077#1076#1091#1102#1097#1091#1102' '#1089#1090#1088#1091#1082#1090#1091#1088#1091': '#1055#1077#1088#1074#1072#1103' '#1089#1090#1088#1086#1082#1072' - '#1087#1086 +
+      #1088#1103#1076#1086#1082' '#1084#1072#1090#1088#1080#1094#1099'. '#1044#1072#1083#1077#1077' '#1089#1083#1077#1076#1091#1077#1090' '#1084#1072#1090#1088#1080#1094#1072', '#1075#1076#1077' '#1082#1072#1078#1076#1072#1103' '#1089#1090#1088#1086#1082#1072' '#1079#1072#1087#1080#1089#1099#1074#1072 +
+      #1077#1090#1089#1103' '#1085#1072' '#1085#1086#1074#1086#1081' '#1089#1090#1088#1086#1082#1077', '#1072' '#1101#1083#1077#1084#1077#1085#1090#1099' '#1089#1090#1088#1086#1082#1080' '#1088#1072#1079#1076#1077#1083#1103#1102#1090#1089#1103' '#1087#1088#1086#1073#1077#1083#1086#1084'. '#1047#1085 +
+      #1072#1095#1077#1085#1080#1103' '#1076#1086#1083#1078#1085#1099' '#1089#1086#1086#1090#1074#1077#1090#1089#1090#1074#1086#1074#1072#1090#1100' '#1074#1099#1096#1077#1091#1082#1072#1079#1072#1085#1085#1099#1084' '#1091#1089#1083#1086#1074#1080#1103#1084'.'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clInfoText
+    Font.Height = -15
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    ParentFont = False
+    WordWrap = True
+  end
+  object InstructionLabel2: TLabel
+    Left = 8
+    Top = 55
+    Width = 425
+    Height = 40
+    Caption = '2. '#1047#1085#1072#1095#1077#1085#1080#1103' '#1084#1072#1090#1088#1080#1094#1099' '#1076#1086#1083#1078#1085#1099' '#1073#1099#1090#1100' '#1083#1080#1073#1086' 1, '#1083#1080#1073#1086' 0.'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clInfoText
+    Font.Height = -15
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    ParentFont = False
+    WordWrap = True
+  end
+  object CloseButton: TButton
+    Left = 280
+    Top = 360
+    Width = 75
+    Height = 25
+    Caption = #1047#1072#1082#1088#1099#1090#1100
+    TabOrder = 0
+    OnClick = CloseButtonClick
+  end
+  object Button1: TButton
+    Left = 192
+    Top = 183
+    Width = 75
+    Height = 25
+    Caption = #1047#1072#1082#1088#1099#1090#1100
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -12
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 1
+    OnClick = CloseButtonClick
+  end
+end

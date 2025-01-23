@@ -1,0 +1,3 @@
+﻿  Pavel.cpp
+D:\БГУИР\ОАиП\Лаба 2\Задание 3\С++\Lab2_3\Pavel\Pavel.cpp(91,32): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+  Pavel.vcxproj -> D:\БГУИР\ОАиП\Лаба 2\Задание 3\С++\Lab2_3\x64\Debug\Pavel.exe

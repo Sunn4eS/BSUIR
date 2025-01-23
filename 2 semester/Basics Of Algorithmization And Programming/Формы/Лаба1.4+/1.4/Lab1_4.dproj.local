@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.061,=D:\БГУИР\ОАиП\Формы\Лаба1.3\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.179,D:\БГУИР\ОАиП\Формы\Лаба1.3\Unit1.pas=D:\БГУИР\ОАиП\Формы\Лаба1.3\Developer.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.179,D:\БГУИР\ОАиП\Формы\Лаба1.3\Unit1.dfm=D:\БГУИР\ОАиП\Формы\Лаба1.3\Developer.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.782,D:\БГУИР\ОАиП\Формы\Лаба1.4\Lab1_4.dproj=D:\БГУИР\ОАиП\Формы\Лаба1.4\Lab1_3.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.203,=D:\БГУИР\ОАиП\Формы\Лаба1.4\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.351,=D:\Delphi files\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.610,D:\Delphi files\Project1.dproj=D:\БГУИР\ОАиП\Формы\Лаба1.3\Lab1_3.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.082,D:\Delphi files\Unit2.dfm=D:\Delphi files\MainForm.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.017,D:\Delphi files\MainForm.pas=D:\БГУИР\ОАиП\Формы\Лаба1.3\MainForm.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.201,D:\БГУИР\ОАиП\Формы\Лаба1.3\Unit2.pas=D:\БГУИР\ОАиП\Формы\Лаба1.3\Instruction.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.988,=D:\БГУИР\ОАиП\Формы\Лаба1.3\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.201,D:\БГУИР\ОАиП\Формы\Лаба1.3\Unit2.dfm=D:\БГУИР\ОАиП\Формы\Лаба1.3\Instruction.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.017,D:\Delphi files\MainForm.dfm=D:\БГУИР\ОАиП\Формы\Лаба1.3\MainForm.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.082,D:\Delphi files\Unit2.pas=D:\Delphi files\MainForm.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.967,=D:\Delphi files\Unit2.pas</Transaction>
+  </Transactions>
+</BorlandProject>

@@ -1,0 +1,15 @@
+<?php
+if (0) {
+    if (3) {
+        while () {
+            echo "fd";
+            echo "fsd";
+            if (4) {
+                echo "adf";
+            }
+        }
+    }
+} else {
+       echo "df";
+}
+?>

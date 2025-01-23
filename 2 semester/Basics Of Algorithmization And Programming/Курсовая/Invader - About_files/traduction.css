@@ -1,0 +1,13 @@
+#flag {
+  position: absolute;
+  top: 0px;
+  right: 5px;
+  width: 60px;
+  height: 20px;
+  cursor: pointer;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
+  background-size: cover;
+  z-index: 100;
+}

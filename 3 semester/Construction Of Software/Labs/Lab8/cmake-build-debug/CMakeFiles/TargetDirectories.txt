@@ -1,0 +1,3 @@
+D:/BSUIR/Construction Of Software/Labs/Lab8/cmake-build-debug/CMakeFiles/Lab8.dir
+D:/BSUIR/Construction Of Software/Labs/Lab8/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/BSUIR/Construction Of Software/Labs/Lab8/cmake-build-debug/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,3 @@
+D:/BSUIR/Compiler Technologies/Lab3/SecTry/cmake-build-debug/CMakeFiles/SecTry.dir
+D:/BSUIR/Compiler Technologies/Lab3/SecTry/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/BSUIR/Compiler Technologies/Lab3/SecTry/cmake-build-debug/CMakeFiles/rebuild_cache.dir

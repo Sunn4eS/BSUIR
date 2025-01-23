@@ -1,0 +1,3 @@
+﻿  ConsoleApplication1.cpp
+D:\БГУИР\ОПИ\ConsoleApplication1\ConsoleApplication1\ConsoleApplication1.cpp(46,2): error C2146: синтаксическая ошибка: отсутствие ";" перед идентификатором "printOutput"
+D:\БГУИР\ОПИ\ConsoleApplication1\ConsoleApplication1\ConsoleApplication1.cpp(46,46): error C2059: синтаксическая ошибка: )

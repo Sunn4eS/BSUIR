@@ -1,0 +1,3 @@
+﻿startMenuWindow.obj : error LNK2001: неразрешенный внешний символ "public: static class sf::RenderStates const sf::RenderStates::Default" (?Default@RenderStates@sf@@2V12@B).
+startMenuWindow.obj : error LNK2001: неразрешенный внешний символ "public: static class sf::Color const sf::Color::Green" (?Green@Color@sf@@2V12@B).
+D:\BSUIR\Construction Of Software\Course Work\SecondTry\SpaceInvaders\x64\Debug\SpaceInvaders.exe : fatal error LNK1120: неразрешенных внешних элементов: 2

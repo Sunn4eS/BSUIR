@@ -1,0 +1,41 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\BSUIR\\Construction Of Software\\Course Work\\SecondTry\\SpaceInvaders\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{E1F07977-96DE-4E78-A95C-457FC32CDAE2}|SpaceInvaders.vcxproj|D:\\BSUIR\\Construction Of Software\\Course Work\\SecondTry\\SpaceInvaders\\startMenuWindow.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{E1F07977-96DE-4E78-A95C-457FC32CDAE2}|SpaceInvaders.vcxproj|solutionrelative:startMenuWindow.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "startMenuWindow.cpp",
+              "DocumentMoniker": "D:\\BSUIR\\Construction Of Software\\Course Work\\SecondTry\\SpaceInvaders\\startMenuWindow.cpp",
+              "RelativeDocumentMoniker": "startMenuWindow.cpp",
+              "ToolTip": "D:\\BSUIR\\Construction Of Software\\Course Work\\SecondTry\\SpaceInvaders\\startMenuWindow.cpp",
+              "RelativeToolTip": "startMenuWindow.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-12-05T22:59:31.379Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

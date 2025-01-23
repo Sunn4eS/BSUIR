@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.633,D:\БГУИР\ОАиП\Курсовая\Delphi\GameOverUnit.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.788,D:\Delphi files\Project1.dproj=D:\БГУИР\ОАиП\Курсовая\Delphi\SpaceInvaders.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.076,D:\Delphi files\Unit1.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\GameFormUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.496,=D:\Delphi files\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.651,D:\БГУИР\ОАиП\Курсовая\Delphi\StartMenuUnit.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.243,=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.309,=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.674,=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.281,=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.736,=D:\Delphi files\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.557,D:\БГУИР\ОАиП\Курсовая\Delphi\ScoreBoardUnit.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.431,D:\БГУИР\ОАиП\Курсовая\Delphi\CanvasUnit.pas=</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.256,D:\БГУИР\ОАиП\Курсовая\Delphi\CanvasUnit.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.444,D:\БГУИР\ОАиП\Курсовая\Delphi\PauseUnit.dfm=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.444,D:\БГУИР\ОАиП\Курсовая\Delphi\PauseUnit.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.506,D:\БГУИР\ОАиП\Курсовая\Delphi\RocketUnit.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\MoveUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.893,D:\БГУИР\ОАиП\Курсовая\Delphi\FileUnit.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.651,D:\БГУИР\ОАиП\Курсовая\Delphi\StartMenuUnit.dfm=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.633,D:\БГУИР\ОАиП\Курсовая\Delphi\GameOverUnit.dfm=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.300,=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.724,D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\MoveUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.347,=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.943,=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.787,D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.dfm=D:\БГУИР\ОАиП\Курсовая\Delphi\AddNewPlayerUnit.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.071,D:\БГУИР\ОАиП\Курсовая\Delphi\PlayersUnit.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\PlayersListUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.076,D:\Delphi files\Unit1.dfm=D:\БГУИР\ОАиП\Курсовая\Delphi\GameFormUnit.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.557,D:\БГУИР\ОАиП\Курсовая\Delphi\ScoreBoardUnit.dfm=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.368,D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.dfm=D:\БГУИР\ОАиП\Курсовая\Delphi\PlayerFormUnit.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.627,=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.931,D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\PlayersUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.368,D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\PlayerFormUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.299,=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.475,=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.213,D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\AlienUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.893,=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.134,=D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.787,D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\AddNewPlayerUnit.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.069,D:\БГУИР\ОАиП\Курсовая\Delphi\Unit1.pas=D:\БГУИР\ОАиП\Курсовая\Delphi\ImageUnit.pas</Transaction>
+  </Transactions>
+	<ProjectSortOrder AutoSort="0" SortType="0">
+    <File Path="AlienUnit.pas"/>
+    <File Path="GameFormUnit.pas"/>
+    <File Path="GameFormUnit.dfm"/>
+    <File Path="GameOverUnit.pas"/>
+    <File Path="GameOverUnit.dfm"/>
+    <File Path="ImageUnit.pas"/>
+    <File Path="PauseUnit.pas"/>
+    <File Path="PauseUnit.dfm"/>
+    <File Path="RocketUnit.pas"/>
+    <File Path="StartMenuUnit.pas"/>
+    <File Path="StartMenuUnit.dfm"/>
+    <File Path="PlayersListUnit.pas"/>
+    <File Path="PlayerFormUnit.pas"/>
+    <File Path="PlayerFormUnit.dfm"/>
+    <File Path="AddNewPlayerUnit.pas"/>
+    <File Path="AddNewPlayerUnit.dfm"/>
+    <File Path="ScoreBoardUnit.pas"/>
+    <File Path="ScoreBoardUnit.dfm"/>
+    <File Path="FileUnit.pas"/>
+  </ProjectSortOrder>
+</BorlandProject>
