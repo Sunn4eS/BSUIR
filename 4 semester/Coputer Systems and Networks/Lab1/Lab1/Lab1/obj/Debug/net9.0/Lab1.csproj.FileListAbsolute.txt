@@ -1,0 +1,15 @@
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\bin\Debug\net9.0\Lab1.exe
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\bin\Debug\net9.0\Lab1.deps.json
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\bin\Debug\net9.0\Lab1.runtimeconfig.json
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\bin\Debug\net9.0\Lab1.dll
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\bin\Debug\net9.0\Lab1.pdb
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\obj\Debug\net9.0\Lab1.GeneratedMSBuildEditorConfig.editorconfig
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\obj\Debug\net9.0\Lab1.AssemblyInfoInputs.cache
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\obj\Debug\net9.0\Lab1.AssemblyInfo.cs
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\obj\Debug\net9.0\Lab1.csproj.CoreCompileInputs.cache
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\obj\Debug\net9.0\Lab1.sourcelink.json
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\obj\Debug\net9.0\Lab1.dll
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\obj\Debug\net9.0\refint\Lab1.dll
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\obj\Debug\net9.0\Lab1.pdb
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\obj\Debug\net9.0\Lab1.genruntimeconfig.cache
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Lab1\obj\Debug\net9.0\ref\Lab1.dll
