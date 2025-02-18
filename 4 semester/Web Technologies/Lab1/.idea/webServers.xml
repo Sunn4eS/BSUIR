@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="d80ed678-a5d5-4d05-af38-af07a528413e" name="Ubuntu Server" url="http://192.168.133.128">
-        <fileTransfer rootFolder="/var/www" host="192.168.133.128" port="21">
+        <fileTransfer rootFolder="/var/www/html" host="192.168.133.128" port="21">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
