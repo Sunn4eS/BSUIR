@@ -7,3 +7,4 @@ D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\obj\Debug\MusicShop.csproj
 D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\obj\Debug\MusicShop.csproj.CoreCompileInputs.cache
 D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\obj\Debug\MusicShop.exe
 D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\obj\Debug\MusicShop.pdb
+D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\obj\Debug\MusicShop.Form1.resources
