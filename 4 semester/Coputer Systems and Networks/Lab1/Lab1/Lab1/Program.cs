@@ -7,6 +7,7 @@ namespace MyTraceroute
 {
     class Program
     {
+        static IPAddress[] ipAddressfromDNS;
         static void Main(string[] args)
         {
             // Если аргументы переданы – обрабатываем их, иначе интерактивный режим
@@ -37,11 +38,15 @@ namespace MyTraceroute
         {
             // Преобразование имени или IP в объект IPAddress
             IPAddress targetIP;
+            IPHostEntry hostEntry = Dns.GetHostEntry(targetInput);
+           
+           Console.WriteLine($"DNS имя для {targetInput}: {hostEntry.HostName}");
             if (!IPAddress.TryParse(targetInput, out targetIP))
             {
                 try
                 {
                     targetIP = Dns.GetHostEntry(targetInput).AddressList[0];
+                    ipAddressfromDNS = Dns.GetHostAddresses(targetInput);
                 }
                 catch (Exception ex)
                 {
