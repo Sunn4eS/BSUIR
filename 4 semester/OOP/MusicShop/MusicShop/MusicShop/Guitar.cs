@@ -1,3 +1,6 @@
+using System.Drawing;
+using System.Windows.Forms;
+
 namespace MusicShop
 {
     
@@ -27,5 +30,33 @@ namespace MusicShop
             StringsModel = stringsModel;
             
         }
+
+        private void UpdatePrice(int newPrice)
+        {
+            Price = newPrice;
+        }
+
+        public void ChangeStrings(Strings newStingsModel)
+        {
+            UpdatePrice(Price - StringsModel.Price + newStingsModel.Price);
+            StringsModel = newStingsModel;
+        }
+
+        public virtual Panel Print()
+        {
+            var panel = new Panel();
+            panel.AutoSize = true;
+            panel.Location = new Point(0, 0);
+            
+            var image = new PictureBox();
+            image.Location = new Point(0, 0);
+            image.SizeMode = PictureBoxSizeMode.StretchImage;
+            
+            var info = new Label();
+            info.AutoSize = true;
+            info.Font = new Font("Segoe UI", 12.2F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            info.Text = "{}";
+            return panel;
+        } 
     }
 }

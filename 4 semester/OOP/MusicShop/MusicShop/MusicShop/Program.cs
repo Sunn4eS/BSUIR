@@ -8,6 +8,7 @@ using System.Windows.Forms;
 namespace MusicShop
 {
     
+    
     static class Program
     {
         /// <summary>
