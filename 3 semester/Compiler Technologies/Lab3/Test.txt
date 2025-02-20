@@ -1,0 +1,11 @@
+<?php
+if (0) {
+    if (8) {
+        while (7) {
+            echo "ls";
+        }
+    }
+} else {
+       echo "df";
+}
+?>
