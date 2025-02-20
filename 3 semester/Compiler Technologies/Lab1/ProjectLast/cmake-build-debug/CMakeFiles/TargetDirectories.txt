@@ -1,3 +1,0 @@
-D:/BSUIR/Compiler Technologies/Lab1/ProjectLast/cmake-build-debug/CMakeFiles/ProjectLast.dir
-D:/BSUIR/Compiler Technologies/Lab1/ProjectLast/cmake-build-debug/CMakeFiles/edit_cache.dir
-D:/BSUIR/Compiler Technologies/Lab1/ProjectLast/cmake-build-debug/CMakeFiles/rebuild_cache.dir

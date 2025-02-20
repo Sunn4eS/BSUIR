@@ -1,1 +1,0 @@
-CMakeLists.txt not found in D:\BSUIR\Construction Of Software\Labs\Lab4 Select CMakeLists.txt

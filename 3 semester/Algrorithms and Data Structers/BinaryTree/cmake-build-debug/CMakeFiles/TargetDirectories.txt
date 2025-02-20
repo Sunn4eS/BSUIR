@@ -1,3 +1,0 @@
-D:/BSUIR/Algrorithms and Data Structers/BinaryTree/cmake-build-debug/CMakeFiles/BinaryTree.dir
-D:/BSUIR/Algrorithms and Data Structers/BinaryTree/cmake-build-debug/CMakeFiles/edit_cache.dir
-D:/BSUIR/Algrorithms and Data Structers/BinaryTree/cmake-build-debug/CMakeFiles/rebuild_cache.dir

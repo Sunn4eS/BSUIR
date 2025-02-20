@@ -1,3 +1,0 @@
-D:/BSUIR/Construction Of Software/Exam/cmake-build-debug/CMakeFiles/Exam.dir
-D:/BSUIR/Construction Of Software/Exam/cmake-build-debug/CMakeFiles/edit_cache.dir
-D:/BSUIR/Construction Of Software/Exam/cmake-build-debug/CMakeFiles/rebuild_cache.dir
