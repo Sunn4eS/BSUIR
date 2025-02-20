@@ -1,0 +1,9 @@
+D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\bin\Debug\MusicShop.exe.config
+D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\bin\Debug\MusicShop.exe
+D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\bin\Debug\MusicShop.pdb
+D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\obj\Debug\MusicShop.csproj.AssemblyReference.cache
+D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\obj\Debug\MusicShop.Properties.Resources.resources
+D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\obj\Debug\MusicShop.csproj.GenerateResource.cache
+D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\obj\Debug\MusicShop.csproj.CoreCompileInputs.cache
+D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\obj\Debug\MusicShop.exe
+D:\BSUIR\4 semester\OOP\MusicShop\MusicShop\MusicShop\obj\Debug\MusicShop.pdb
