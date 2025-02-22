@@ -24,7 +24,7 @@ namespace MusicShop
             Brand = brand;
             Model = model;
             CountOfStrings = countOfStrings;
-            Price = price;
+            Price = price + stringsModel.Price;
             HousingType = housingType;
             Country = country;
             StringsModel = stringsModel;
@@ -55,7 +55,12 @@ namespace MusicShop
             var info = new Label();
             info.AutoSize = true;
             info.Font = new Font("Segoe UI", 12.2F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            info.Text = "{}";
+            info.Text = $"{Brand}\n{Model}\n{Price}";
+            info.Location = new Point(20, 20);
+            
+            panel.Controls.Add(image);
+            panel.Controls.Add(info);
+            
             return panel;
         } 
     }

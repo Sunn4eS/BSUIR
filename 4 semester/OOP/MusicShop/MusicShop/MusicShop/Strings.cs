@@ -11,6 +11,16 @@ namespace MusicShop
         {
             get { return size_arr; }
         }
+
+        public Strings(string model, string brand, int price, int size_min, int size_max, string material)
+        {
+            Model = model;
+            Brand = brand;
+            Price = price;
+            Size[0] = size_min;
+            Size[1] = size_max;
+            Material = material;
+        }
         
     }
 }
