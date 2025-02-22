@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab1", "Lab1\Lab1.csproj", "{302F4D93-D1CC-490F-9049-132EB439010C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tracert", "Tracert\Tracert.csproj", "{302F4D93-D1CC-490F-9049-132EB439010C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

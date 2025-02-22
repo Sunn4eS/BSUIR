@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\BSUIR\\4 semester\\Coputer Systems and Networks\\Lab1\\Lab1\\Lab1\\Lab1.csproj",
-      "projectName": "Lab1",
-      "projectPath": "D:\\BSUIR\\4 semester\\Coputer Systems and Networks\\Lab1\\Lab1\\Lab1\\Lab1.csproj",
+      "projectUniqueName": "D:\\BSUIR\\4 semester\\Coputer Systems and Networks\\Lab1\\Lab1\\Tracert\\Tracert.csproj",
+      "projectName": "Tracert",
+      "projectPath": "D:\\BSUIR\\4 semester\\Coputer Systems and Networks\\Lab1\\Lab1\\Tracert\\Tracert.csproj",
       "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-      "outputPath": "D:\\BSUIR\\4 semester\\Coputer Systems and Networks\\Lab1\\Lab1\\Lab1\\obj\\",
+      "outputPath": "D:\\BSUIR\\4 semester\\Coputer Systems and Networks\\Lab1\\Lab1\\Tracert\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
