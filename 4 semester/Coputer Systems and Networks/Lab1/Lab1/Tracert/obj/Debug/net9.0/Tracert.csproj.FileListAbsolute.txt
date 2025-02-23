@@ -1,0 +1,15 @@
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\obj\Debug\net9.0\Tracert.GeneratedMSBuildEditorConfig.editorconfig
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\obj\Debug\net9.0\Tracert.AssemblyInfoInputs.cache
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\obj\Debug\net9.0\Tracert.AssemblyInfo.cs
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\obj\Debug\net9.0\Tracert.csproj.CoreCompileInputs.cache
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\obj\Debug\net9.0\Tracert.sourcelink.json
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\bin\Debug\net9.0\Tracert.exe
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\bin\Debug\net9.0\Tracert.deps.json
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\bin\Debug\net9.0\Tracert.runtimeconfig.json
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\bin\Debug\net9.0\Tracert.dll
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\bin\Debug\net9.0\Tracert.pdb
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\obj\Debug\net9.0\Tracert.dll
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\obj\Debug\net9.0\refint\Tracert.dll
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\obj\Debug\net9.0\Tracert.pdb
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\obj\Debug\net9.0\Tracert.genruntimeconfig.cache
+D:\BSUIR\4 semester\Coputer Systems and Networks\Lab1\Lab1\Tracert\obj\Debug\net9.0\ref\Tracert.dll
