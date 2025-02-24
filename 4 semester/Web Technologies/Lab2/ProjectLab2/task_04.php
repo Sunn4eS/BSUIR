@@ -10,11 +10,11 @@
             $sum = $sum + $temp;
             $temp = $num;
         }
-        echo "Sum is $sum\n";
+        echo "Сумма равна $sum\n";
     }
     if (is_numeric($num)) {
         calc_sum($num);
     } else {
-        echo "Invalid number format.\n";
+        echo "Неврный формат двнных.\n";
     }
 ?>
