@@ -1,10 +1,11 @@
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 namespace MusicShop
 {
     
-    public abstract class Guitar
+    public abstract class Guitar : ProductInfo
     {
         
         
@@ -30,6 +31,8 @@ namespace MusicShop
             StringsModel = stringsModel;
             
         }
+        
+        
 
         private void UpdatePrice(int newPrice)
         {
@@ -42,35 +45,40 @@ namespace MusicShop
             StringsModel = newStingsModel;
         }
 
-        public virtual Panel GuitarPrint(string imagePath, int x, int y)
-        {
-            var image = new PictureBox();
-            image.Location = new Point(x, y);
-            image.Size = new Size(150, 150);
-            image.SizeMode = PictureBoxSizeMode.StretchImage;
-            image.BorderStyle = BorderStyle.Fixed3D;
-            if (System.IO.File.Exists(imagePath))
-            {
-                image.Image = Image.FromFile(imagePath);
-            }
-            else {
-                MessageBox.Show($"Файл не найден: {imagePath}");
-            }
-            var info = new Label();
-            info.Location = new Point(0, image.Bottom + 10);
-            info.AutoSize = true;
-            info.Font = new Font("Segoe UI", 12.2F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            info.Text = $"{Brand} {Model}\n{Price} BYN";
-            
-            
-            var panel = new Panel();
-            panel.Location = new Point(0, 0);
-            panel.AutoScroll = true;    
-            panel.Size = new Size(image.Width, image.Height + info.Height * 3 + 10);
-            panel.Controls.Add(image);
-            panel.Controls.Add(info);
-            
-            return panel;
-        } 
+        // public virtual Panel Print(string imagePath, int x, int y)
+        // {
+        //     var image = new PictureBox();
+        //     image.Location = new Point(x, y);
+        //     image.Size = new Size(150, 150);
+        //     image.SizeMode = PictureBoxSizeMode.StretchImage;
+        //     image.BorderStyle = BorderStyle.Fixed3D;
+        //     if (System.IO.File.Exists(imagePath))
+        //     {
+        //         using (var fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
+        //         {
+        //             image.Image = Image.FromStream(fileStream);
+        //         }
+        //     }
+        //     else
+        //     {
+        //         MessageBox.Show($"Файл не найден: {imagePath}");
+        //     }
+        //
+        //     var info = new Label();
+        //     info.Location = new Point(0, image.Bottom + 10);
+        //     info.AutoSize = true;
+        //     info.Font = new Font("Segoe UI", 12.2F, FontStyle.Bold, GraphicsUnit.Point, 204);
+        //     info.Text = $"{Brand} {Model}\n{Price} BYN";
+        //
+        //
+        //     var panel = new Panel();
+        //     panel.Location = new Point(0, 0);
+        //     panel.AutoScroll = true;
+        //     panel.Size = new Size(image.Width, image.Height + info.Height * 3 + 10);
+        //     panel.Controls.Add(image);
+        //     panel.Controls.Add(info);
+        //
+        //     return panel;
+        // }
     }
 }
