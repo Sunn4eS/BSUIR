@@ -62,17 +62,18 @@ namespace MyTraceroute
             }
             
             const int maxHops = 30;
-            const int timeout = 3000; // миллисекунд
-            const int probesPerHop = 3; // число запросов на один TTL
+            const int probesPerHop = 3;
             ushort sequence = 1;
             bool reached = false;
 
             using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.Icmp))
             {
-                socket.ReceiveTimeout = timeout;
+                socket.ReceiveTimeout = 3000;
+                EndPoint remoteEndpoint = new IPEndPoint(targetIP, 0);
                 for (int ttl = 1; ttl <= maxHops; ttl++)
                 {
                     socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.IpTimeToLive, ttl);
+                    
                     string[] probeResults = new string[probesPerHop];
                     string hopAddress = "";
                     bool gotResponse = false;
@@ -80,16 +81,14 @@ namespace MyTraceroute
                     for (int probe = 0; probe < probesPerHop; probe++)
                     {
                         byte[] packet = CreateIcmpPacket(sequence);
-                        EndPoint remoteEndpoint = new IPEndPoint(targetIP, 0);
-                        Stopwatch stopwatch = new Stopwatch();
-                        stopwatch.Start();
+                        Stopwatch stopwatch = Stopwatch.StartNew();
 
                         try
                         {
                             socket.SendTo(packet, remoteEndpoint);
                             byte[] buffer = new byte[1024];
                             EndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-                            int bytesReceived = socket.ReceiveFrom(buffer, ref sender);
+                            socket.ReceiveFrom(buffer, ref sender);
                             stopwatch.Stop();
 
                             int ipHeaderLength = (buffer[0] & 0x0F) * 4;
@@ -110,7 +109,6 @@ namespace MyTraceroute
 
                         sequence++;
                     }
-
                     Console.Write("{0,2}   ", ttl);
                     for (int i = 0; i < probesPerHop; i++)
                     {
@@ -119,12 +117,12 @@ namespace MyTraceroute
 
                     if (gotResponse)
                     {
+                        string ipOnly = hopAddress.Split(':')[0];
                         try
                         {
-                            string ipOnly = hopAddress.Split(':')[0];
-                            IPAddress addr = IPAddress.Parse(ipOnly);
-                            string hostName = Dns.GetHostEntry(addr).HostName;
-                            Console.Write(" {0} [{1}]", hostName, addr);
+                            IPAddress address = IPAddress.Parse(ipOnly);
+                            string hostName = Dns.GetHostEntry(address).HostName;
+                            Console.Write(" {0} [{1}]", hostName, address);
                         }
                         catch
                         {

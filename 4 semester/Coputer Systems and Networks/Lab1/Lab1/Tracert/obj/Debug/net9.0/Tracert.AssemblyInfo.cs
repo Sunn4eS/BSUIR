@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Tracert")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5fb7c6d92bd3a378251af2f7b572ca6594be0159")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4a7b6f589782adcc96f32de7e6781442f2ca2242")]
 [assembly: System.Reflection.AssemblyProductAttribute("Tracert")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Tracert")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
