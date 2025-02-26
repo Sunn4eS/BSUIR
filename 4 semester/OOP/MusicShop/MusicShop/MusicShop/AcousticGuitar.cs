@@ -9,7 +9,7 @@ namespace MusicShop
             string country, Strings stringsModel) :
             base(brand, model, countOfStrings, price, housingType, country, stringsModel)
         {
-            
+           GuitarType = guitarType; 
         }
     }
 }

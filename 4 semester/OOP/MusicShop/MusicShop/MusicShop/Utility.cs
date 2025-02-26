@@ -34,6 +34,7 @@ namespace MusicShop
             var panel = new Panel();
             panel.Location = new Point(x, y);
             panel.AutoScroll = true;
+            panel.BorderStyle = BorderStyle.Fixed3D;
             panel.Size = new Size(image.Width, image.Height + info.Height * 3 + 10);
             panel.Controls.Add(image);
             panel.Controls.Add(info);

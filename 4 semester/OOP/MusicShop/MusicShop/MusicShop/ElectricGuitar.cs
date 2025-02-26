@@ -12,7 +12,6 @@ namespace MusicShop
             GuitarType = guitarType;
             PickUpType = pickUpType;
             BridgeType = bridgeType;
-            
         }
     }
 }
