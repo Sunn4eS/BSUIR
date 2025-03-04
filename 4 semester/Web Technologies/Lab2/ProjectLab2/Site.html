@@ -1,10 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>Меню</title>
+    <style>
+        .active {
+            background-color: #f0f0f0;
+        }
+        a {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+        }
+        a:hover {
+            background-color: #ddd;
+        }
+    </style>
 </head>
 <body>
-$END$
+<nav>
+    <a href="?page=about" class="<?php echo ($_GET['page'] == 'about' ? 'active' : ''); ?>">О компании</a>
+    <a href="?page=services" class="<?php echo ($_GET['page'] == 'services' ? 'active' : ''); ?>">Услуги</a>
+    <a href="?page=price" class="<?php echo ($_GET['page'] == 'price' ? 'active' : ''); ?>">Прайс</a>
+    <a href="?page=contacts" class="<?php echo ($_GET['page'] == 'contacts' ? 'active' : ''); ?>">Контакты</a>
+</nav>
 </body>
 </html>
