@@ -2,28 +2,68 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Меню</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Меню с активными ссылками</title>
     <style>
-        .active {
-            background-color: #f0f0f0;
+        body {
+            font-family: Arial, sans-serif;
         }
-        a {
-            display: block;
-            padding: 10px;
+        .menu {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .menu a {
             text-decoration: none;
-            color: black;
+            color: #333;
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
         }
-        a:hover {
-            background-color: #ddd;
+        .menu a.active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
         }
     </style>
 </head>
 <body>
-<nav>
-    <a href="?page=about" class="<?php echo ($_GET['page'] == 'about' ? 'active' : ''); ?>">О компании</a>
-    <a href="?page=services" class="<?php echo ($_GET['page'] == 'services' ? 'active' : ''); ?>">Услуги</a>
-    <a href="?page=price" class="<?php echo ($_GET['page'] == 'price' ? 'active' : ''); ?>">Прайс</a>
-    <a href="?page=contacts" class="<?php echo ($_GET['page'] == 'contacts' ? 'active' : ''); ?>">Контакты</a>
-</nav>
+
+<?php
+// Получаем значение параметра 'page' из URL
+$active_page = isset($_GET['page']) ? $_GET['page'] : 'about';
+?>
+
+<div class="menu">
+    <a href="?page=about" class="<?php echo $active_page == 'about' ? 'active' : ''; ?>">О компании</a>
+    <a href="?page=services" class="<?php echo $active_page == 'services' ? 'active' : ''; ?>">Услуги</a>
+    <a href="?page=pricing" class="<?php echo $active_page == 'pricing' ? 'active' : ''; ?>">Прайс</a>
+    <a href="?page=contacts" class="<?php echo $active_page == 'contacts' ? 'active' : ''; ?>">Контакты</a>
+</div>
+
+<div>
+    <?php
+    // Выводим содержимое в зависимости от активной страницы
+    switch ($active_page) {
+        case 'about':
+            echo "<h2>О компании</h2><p>Информация о компании.</p>";
+    break;
+    case 'services':
+        echo "<h2>Услуги</h2><p>Наши услуги.</p>";
+        break;
+    case 'pricing':
+        echo "<h2>Прайс</h2><p>Наши цены.</p>";
+        break;
+    case 'contacts':
+        echo "<h2>Контакты</h2><p>Наши контактные данные.</p>";
+        break;
+    default:
+        echo "<h2>О компании</h2><p>Информация о компании.</p>";
+        break;
+    }
+    ?>
+</div>
+
 </body>
 </html>
