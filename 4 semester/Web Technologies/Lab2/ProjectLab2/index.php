@@ -39,6 +39,7 @@
     <a href="?page=services" class="<?php echo $active_page == 'services' ? 'active' : ''; ?>">Услуги</a>
     <a href="?page=pricing" class="<?php echo $active_page == 'pricing' ? 'active' : ''; ?>">Прайс</a>
     <a href="?page=contacts" class="<?php echo $active_page == 'contacts' ? 'active' : ''; ?>">Контакты</a>
+    <a href="?page=task" class="<?php echo $active_page == 'task' ? 'active' : ''; ?>">Задание варианта 5</a>
 </div>
 
 
@@ -48,14 +49,20 @@
         'services' => "<h2>Услуги</h2><p>Список доступных услуг.</p>",
         'pricing' => "<h2>Прайс</h2><p>Цены для различных видов услуг</p>",
         'contacts' => "<h2>Контакты</h2><p>Контактные данные</p>",
+        'task' => 'task5.php'
     ];
 
     if (!array_key_exists($active_page, $content)) {
         $active_page = 'about';
     }
-
-    echo $content[$active_page];
-?>
+    if ($active_page == 'task') {
+        $taskFile = $content['task'];
+        include $taskFile;
+    }
+    else {
+        echo $content[$active_page];
+    }
+    ?>
 
 
 </body>
