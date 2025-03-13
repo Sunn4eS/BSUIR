@@ -41,6 +41,7 @@ namespace MusicShop
             UpdatePrice(Price - StringsModel.Price + newStingsModel.Price);
             StringsModel = newStingsModel;
         }
+        public abstract void PlayingMethod();
 
         public override string ToString()
         {
