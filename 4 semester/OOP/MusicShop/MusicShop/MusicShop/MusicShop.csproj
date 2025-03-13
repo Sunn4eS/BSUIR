@@ -58,6 +58,7 @@
         </Compile>
         <Compile Include="Guitar.cs" />
         <Compile Include="GuitarPick.cs" />
+        <Compile Include="MusicalInstrument.cs" />
         <Compile Include="ProductInfo.cs" />
         <Compile Include="Program.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>

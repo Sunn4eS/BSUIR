@@ -5,7 +5,7 @@ using System.Windows.Forms;
 namespace MusicShop
 {
     
-    public abstract class Guitar : IProductInfo
+    public abstract class Guitar : MusicalInstrument, IProductInfo
     {
         
         
@@ -17,6 +17,7 @@ namespace MusicShop
         public int Price { get; set; }
         public string HousingType { get; set; }
         public string Country { get; set; }
+        public string CareInst;
         
         
         
@@ -36,7 +37,7 @@ namespace MusicShop
             Price = newPrice;
         }
 
-        public void ChangeStrings(Strings newStingsModel)
+        public virtual void ChangeStrings(Strings newStingsModel)
         {
             UpdatePrice(Price - StringsModel.Price + newStingsModel.Price);
             StringsModel = newStingsModel;
@@ -46,6 +47,12 @@ namespace MusicShop
         public override string ToString()
         {
             return $"Brand: {Brand}, Model: {Model}, Price: {Price}";
+        }
+
+        public virtual string GetCareInstructions()
+        {
+            CareInst = "Clean the body regularly and store in a dry place.\n";
+            return CareInst;
         }
     }
 }

@@ -7,7 +7,8 @@ namespace MusicShop
         public string BridgeType { get; set; }
         public string PlayingMethodAdvice;
 
-        public ElectricGuitar(string guitarType, string pickUpType, string bridgeType, string brand, string model, int countOfStrings, int price, string housingType, string country, Strings stringsModel) 
+        public ElectricGuitar(string guitarType, string pickUpType, string bridgeType, string brand, string model,
+            int countOfStrings, int price, string housingType, string country, Strings stringsModel)
             : base(brand, model, countOfStrings, price, housingType, country, stringsModel)
         {
             GuitarType = guitarType;
@@ -18,11 +19,17 @@ namespace MusicShop
         public override string ToString()
         {
             return $"{base.ToString()}, Guitar Type: {GuitarType}, Pick Up Type: {PickUpType}, Bridge Type: {BridgeType}";
+            
         }
 
         public override void PlayingMethod()
         {
             PlayingMethodAdvice = "You should play this guitar with pick";
+        }
+
+        public override string GetCareInstructions()
+        {
+            return $"{base.GetCareInstructions()} Check and clean the pickups to avoid dust buildup.\n";
         }
     }
 }
