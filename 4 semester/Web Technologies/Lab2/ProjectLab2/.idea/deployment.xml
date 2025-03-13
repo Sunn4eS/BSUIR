@@ -5,7 +5,7 @@
       <paths name="Ubuntu">
         <serverdata>
           <mappings>
-            <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/" local="$PROJECT_DIR$" web="/LabsWT/Lab2" />
           </mappings>
         </serverdata>
       </paths>
