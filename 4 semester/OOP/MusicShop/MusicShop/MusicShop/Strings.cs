@@ -3,7 +3,7 @@ using System.IO;
 using System.Windows.Forms;
 namespace MusicShop
 {
-    public class Strings : ProductInfo
+    public class Strings : IProductInfo
     {
         private int[] size_arr = new int[2];
         public string Model { get; set; }
@@ -23,6 +23,11 @@ namespace MusicShop
             Size[0] = size_min;
             Size[1] = size_max;
             Material = material;
+        }
+
+        public override string ToString()
+        {
+            return $"Model: {Model}, Brand: {Brand}, Price: {Price}, Size: {Size[0]}-{Size[1]}, Material: {Material}";
         }
     }
 }

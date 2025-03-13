@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace MusicShop
 {
-    public class Belt : ProductInfo
+    public class Belt : IProductInfo
     {
         public string Brand { get; set; }
         public string Model { get; set; }
@@ -17,6 +17,11 @@ namespace MusicShop
             Model = model;
             Material = material;
             Price = price;
+        }
+
+        public override string ToString()
+        {
+            return $"Brand: {Brand}, Model: {Model}, Material: {Material}, Price: {Price}";
         }
     }
 }

@@ -6,7 +6,7 @@ namespace MusicShop
 {
     public static class Utility
     {
-        public static Panel Print(string imagePath, int x, int y, ProductInfo product)
+        public static Panel Print(string imagePath, int x, int y, IProductInfo product)
         {
             var image = new PictureBox();
             image.Location = new Point(0, 0);
@@ -41,7 +41,5 @@ namespace MusicShop
 
             return panel;
         }
-        
-        
     }
 }

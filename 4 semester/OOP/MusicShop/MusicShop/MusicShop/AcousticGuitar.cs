@@ -1,7 +1,6 @@
 namespace MusicShop
 {
     public class AcousticGuitar : Guitar
-
     {
         public string GuitarType;
 
@@ -11,5 +10,10 @@ namespace MusicShop
         {
            GuitarType = guitarType; 
         }
+
+        public override string ToString()
+        {
+            return $"{base.ToString()}, Guitar Type: {GuitarType}";
+        }
     }
-}
+}   

@@ -5,7 +5,7 @@ using System.Windows.Forms;
 namespace MusicShop
 {
     
-    public abstract class Guitar : ProductInfo
+    public abstract class Guitar : IProductInfo
     {
         
         
@@ -40,6 +40,11 @@ namespace MusicShop
         {
             UpdatePrice(Price - StringsModel.Price + newStingsModel.Price);
             StringsModel = newStingsModel;
+        }
+
+        public override string ToString()
+        {
+            return $"Brand: {Brand}, Model: {Model}, Price: {Price}";
         }
     }
 }

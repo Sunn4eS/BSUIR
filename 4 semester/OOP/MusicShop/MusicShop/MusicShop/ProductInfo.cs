@@ -1,9 +1,11 @@
 namespace MusicShop
 {
-    public interface ProductInfo
+    public interface IProductInfo
     {
         string Brand { get; }
         string Model { get; }
         int Price { get; }
+       
     }
+    
 }

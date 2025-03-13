@@ -1,6 +1,6 @@
 namespace MusicShop
 {
-    public class GuitarPick : ProductInfo
+    public class GuitarPick : IProductInfo
     {
         public string Brand { get; set; }
         public string Model { get; set; }
@@ -15,6 +15,11 @@ namespace MusicShop
             Color = color;
             Width = width;
             Price = price;
+        }
+
+        public override string ToString()
+        {
+            return $"Brand: {Brand}, Model: {Model}, Color: {Color}, Width: {Width}";
         }
     }
 }

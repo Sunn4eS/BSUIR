@@ -2,11 +2,17 @@ namespace MusicShop
 {
     public class ClassicalGuitar : Guitar
     {
+        public double NeckWidth { get; set; } 
         public ClassicalGuitar(string brand, string model, int countOfStrings, int price, string housingType,
-            string country, Strings stringsModel)
+            string country, Strings stringsModel, double neckWidth)
             : base(brand, model, countOfStrings, price, housingType, country, stringsModel)
         {
-            
+            NeckWidth = neckWidth;        
+        }
+
+        public override string ToString()
+        {
+            return $"{base.ToString()}, Neck Width: {NeckWidth}";
         }
     }
 }

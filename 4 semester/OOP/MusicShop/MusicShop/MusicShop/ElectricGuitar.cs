@@ -13,5 +13,10 @@ namespace MusicShop
             PickUpType = pickUpType;
             BridgeType = bridgeType;
         }
+
+        public override string ToString()
+        {
+            return $"{base.ToString()}, Guitar Type: {GuitarType}, Pick Up Type: {PickUpType}, Bridge Type: {BridgeType}";
+    }
     }
 }
