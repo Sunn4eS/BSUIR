@@ -38,11 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     function newstring($input_sentence): string
     {
 
-
         $firstChar = mb_substr($input_sentence, 0, 1, 'UTF-8');
         $restOfString = mb_substr($input_sentence, 1, null, 'UTF-8');
         $new_string = mb_strtolower($firstChar, 'UTF-8') . $restOfString;
-        $new_string = rtrim($new_string, '.');
+        $new_string = trim($new_string, '.');
 
         $words = explode(',', $new_string);
         for ($i = 0; $i < count($words); $i++) {
