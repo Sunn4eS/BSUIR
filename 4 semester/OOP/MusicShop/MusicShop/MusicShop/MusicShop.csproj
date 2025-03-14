@@ -47,6 +47,12 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="AcousticGuitar.cs" />
+        <Compile Include="AddForm.cs">
+          <SubType>Form</SubType>
+        </Compile>
+        <Compile Include="AddForm.Designer.cs">
+          <DependentUpon>AddForm.cs</DependentUpon>
+        </Compile>
         <Compile Include="Belt.cs" />
         <Compile Include="ClassicalGuitar.cs" />
         <Compile Include="ElectricGuitar.cs" />

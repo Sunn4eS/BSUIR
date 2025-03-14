@@ -5,8 +5,8 @@ namespace MusicShop
         public double NeckWidth { get; set; }
         public string PlayingMethodAdvice;
         public ClassicalGuitar(string brand, string model, int countOfStrings, int price, string housingType,
-            string country, Strings stringsModel, double neckWidth)
-            : base(brand, model, countOfStrings, price, housingType, country, stringsModel)
+            string country, double neckWidth)
+            : base(brand, model, countOfStrings, price, housingType, country)
         {
             NeckWidth = neckWidth;        
         }

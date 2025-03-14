@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -6,8 +8,9 @@ namespace MusicShop
 {
     public static class Utility
     {
-        public static Panel Print(string imagePath, int x, int y, IProductInfo product)
+        public static Panel Print(int x, int y, IProductInfo product)
         {
+            string imagePath = $"images\\{product.Brand}_{product.Model}.jpg";
             var image = new PictureBox();
             image.Location = new Point(0, 0);
             image.Size = new Size(150, 150);
@@ -41,5 +44,6 @@ namespace MusicShop
 
             return panel;
         }
+        
     }
 }

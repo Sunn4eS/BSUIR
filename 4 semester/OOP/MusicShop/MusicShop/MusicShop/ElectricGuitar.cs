@@ -8,8 +8,8 @@ namespace MusicShop
         public string PlayingMethodAdvice;
 
         public ElectricGuitar(string guitarType, string pickUpType, string bridgeType, string brand, string model,
-            int countOfStrings, int price, string housingType, string country, Strings stringsModel)
-            : base(brand, model, countOfStrings, price, housingType, country, stringsModel)
+            int countOfStrings, int price, string housingType, string country)
+            : base(brand, model, countOfStrings, price, housingType, country)
         {
             GuitarType = guitarType;
             PickUpType = pickUpType;

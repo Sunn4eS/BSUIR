@@ -9,7 +9,7 @@ namespace MusicShop
     {
         
         
-        protected int Id { get; set; }
+        protected string Id { get; set; }
         public string Brand { get; set; }
         public string Model { get; set; }
         public Strings StringsModel { get; set; }
@@ -21,15 +21,14 @@ namespace MusicShop
         
         
         
-        public Guitar(string brand, string model, int countOfStrings, int price, string housingType, string country, Strings stringsModel)
+        public Guitar(string brand, string model, int countOfStrings, int price, string housingType, string country)
         {
             Brand = brand;
             Model = model;
             CountOfStrings = countOfStrings;
-            Price = price + stringsModel.Price;
+            Price = price;
             HousingType = housingType;
             Country = country;
-            StringsModel = stringsModel;
             
         }
         private void UpdatePrice(int newPrice)

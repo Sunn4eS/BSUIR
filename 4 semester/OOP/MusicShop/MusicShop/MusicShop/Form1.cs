@@ -14,12 +14,41 @@ namespace MusicShop
     {
         public Form1()
         {
+            // Инициализация FlowLayoutPanel
+            //itemsflowLayoutPanel.AutoScroll = true;
+            //itemsflowLayoutPanel.FlowDirection = FlowDirection.TopDown;
+            //itemsflowLayoutPanel.WrapContents = false;
             InitializeComponent();
         }
-
+        private void UpdateItemsPanel()
+        {
+            itemsflowLayoutPanel.Controls.Clear();
+            int i = 0;
+            foreach (var item in _manager.GetItems())
+            {
+                if (item is IProductInfo product)
+                {
+                    var panel = Utility.Print(i * 1, 0,product);
+                    itemsflowLayoutPanel.Controls.Add(panel);
+                }
+                i++;
+            }
+        }
+        
         /// <summary>
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
+        private void addButton_Click(object sender, EventArgs e)
+        {
+            contextMenuStrip.Show(addButton, new Point(0, addButton.Height));
+        }
+
+        private AddForm.MusicShopManager _manager = new AddForm.MusicShopManager();
+
+        private void acousticToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+                _manager.ShowInputForm("Acoustic Guitar");    
+        }
     }
 }
