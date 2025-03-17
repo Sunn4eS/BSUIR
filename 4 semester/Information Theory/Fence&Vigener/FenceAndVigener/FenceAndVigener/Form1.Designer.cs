@@ -48,6 +48,7 @@ partial class Form1
         outTextBox = new System.Windows.Forms.TextBox();
         outLabel = new System.Windows.Forms.Label();
         chooselabel = new System.Windows.Forms.Label();
+        saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
         menuStrip1.SuspendLayout();
         SuspendLayout();
         // 
@@ -105,12 +106,14 @@ partial class Form1
         openFileMenuItem.Name = "openFileMenuItem";
         openFileMenuItem.Size = new System.Drawing.Size(200, 34);
         openFileMenuItem.Text = "Открыть";
+        openFileMenuItem.Click += openFileMenuItem_Click;
         // 
         // saveFileMenuItem
         // 
         saveFileMenuItem.Name = "saveFileMenuItem";
         saveFileMenuItem.Size = new System.Drawing.Size(200, 34);
         saveFileMenuItem.Text = "Сохранить";
+        saveFileMenuItem.Click += saveFileMenuItem_Click;
         // 
         // toolStripMenuItem2
         // 
@@ -178,6 +181,7 @@ partial class Form1
         outTextBox.ReadOnly = true;
         outTextBox.Size = new System.Drawing.Size(367, 172);
         outTextBox.TabIndex = 8;
+        outTextBox.TextChanged += outTextBox_TextChanged;
         // 
         // outLabel
         // 
@@ -219,6 +223,8 @@ partial class Form1
         ResumeLayout(false);
         PerformLayout();
     }
+
+    private System.Windows.Forms.SaveFileDialog saveFileDialog1;
 
     private System.Windows.Forms.Label chooselabel;
 

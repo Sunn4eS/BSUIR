@@ -20,6 +20,7 @@ public class Fence
     public static string Encipher(string text, string keytext)
     {
         int key = GetKey(keytext);
+        
         var textFilter1 = new TextFilter(true);
         text = textFilter1.Filter(text);
         if (key == -1)
