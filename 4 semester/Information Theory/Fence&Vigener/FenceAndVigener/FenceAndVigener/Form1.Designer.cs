@@ -53,21 +53,25 @@ partial class Form1
         // 
         // cipherButton
         // 
-        cipherButton.Location = new System.Drawing.Point(397, 97);
+        cipherButton.Enabled = false;
+        cipherButton.Location = new System.Drawing.Point(409, 98);
         cipherButton.Name = "cipherButton";
         cipherButton.Size = new System.Drawing.Size(157, 51);
         cipherButton.TabIndex = 0;
         cipherButton.Text = "Шифрование";
         cipherButton.UseVisualStyleBackColor = true;
+        cipherButton.Click += cipherButton_Click;
         // 
         // decipherButton
         // 
+        decipherButton.Enabled = false;
         decipherButton.Location = new System.Drawing.Point(572, 97);
         decipherButton.Name = "decipherButton";
         decipherButton.Size = new System.Drawing.Size(148, 51);
         decipherButton.TabIndex = 1;
         decipherButton.Text = "Дешифрование";
         decipherButton.UseVisualStyleBackColor = true;
+        decipherButton.Click += decipherButton_Click;
         // 
         // chooseTypeComboBox
         // 
@@ -75,8 +79,9 @@ partial class Form1
         chooseTypeComboBox.Items.AddRange(new object[] { "Железодорожная изгородь", "Шифр Виженера с прогрессивным ключом" });
         chooseTypeComboBox.Location = new System.Drawing.Point(23, 98);
         chooseTypeComboBox.Name = "chooseTypeComboBox";
-        chooseTypeComboBox.Size = new System.Drawing.Size(273, 33);
+        chooseTypeComboBox.Size = new System.Drawing.Size(374, 33);
         chooseTypeComboBox.TabIndex = 2;
+        chooseTypeComboBox.SelectedIndexChanged += chooseTypeComboBox_SelectedIndexChanged;
         // 
         // menuStrip1
         // 
@@ -98,13 +103,13 @@ partial class Form1
         // openFileMenuItem
         // 
         openFileMenuItem.Name = "openFileMenuItem";
-        openFileMenuItem.Size = new System.Drawing.Size(270, 34);
+        openFileMenuItem.Size = new System.Drawing.Size(200, 34);
         openFileMenuItem.Text = "Открыть";
         // 
         // saveFileMenuItem
         // 
         saveFileMenuItem.Name = "saveFileMenuItem";
-        saveFileMenuItem.Size = new System.Drawing.Size(270, 34);
+        saveFileMenuItem.Size = new System.Drawing.Size(200, 34);
         saveFileMenuItem.Text = "Сохранить";
         // 
         // toolStripMenuItem2
@@ -130,10 +135,12 @@ partial class Form1
         // 
         // keyTextbox
         // 
+        keyTextbox.Enabled = false;
         keyTextbox.Location = new System.Drawing.Point(27, 195);
         keyTextbox.Name = "keyTextbox";
         keyTextbox.Size = new System.Drawing.Size(370, 31);
         keyTextbox.TabIndex = 4;
+        keyTextbox.TextChanged += keyTextbox_TextChanged;
         // 
         // keyLabel
         // 
@@ -151,6 +158,7 @@ partial class Form1
         enterTextBox.Name = "enterTextBox";
         enterTextBox.Size = new System.Drawing.Size(370, 169);
         enterTextBox.TabIndex = 6;
+        enterTextBox.TextChanged += enterTextBox_TextChanged;
         // 
         // enterLabel
         // 
@@ -163,9 +171,11 @@ partial class Form1
         // 
         // outTextBox
         // 
+        outTextBox.Enabled = false;
         outTextBox.Location = new System.Drawing.Point(511, 297);
         outTextBox.Multiline = true;
         outTextBox.Name = "outTextBox";
+        outTextBox.ReadOnly = true;
         outTextBox.Size = new System.Drawing.Size(367, 172);
         outTextBox.TabIndex = 8;
         // 

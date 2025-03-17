@@ -4,23 +4,22 @@ namespace FenceAndVigener.Classes;
 
 public static class ProgressiveVigener
 {
-    private const string Alphabet = "ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮЁ";
+    private const string Alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
 
-    static string GetFullKey(string key, string text)
+    static string GetFullKey(string text, string key)
     {
-        char[] letters = key.ToCharArray();
-        var newKey = new StringBuilder();
-        while (newKey.Length < text.Length)
+        char[] chars = key.ToCharArray();
+        var sb = new StringBuilder();
+        while (sb.Length < text.Length)
         {
-            newKey.Append(letters);
-            for (int i = 0; i < letters.Length; i++)
+            sb.Append(chars);
+            for (int i = 0; i < chars.Length; i++)
             {
-                letters[i] = Alphabet[(Alphabet.IndexOf(letters[i]) + 1) % Alphabet.Length];
+                chars[i] = Alphabet[(Alphabet.IndexOf(chars[i]) + 1) % Alphabet.Length];
             }
         }
-        newKey.Length = text.Length;
-
-        return newKey.ToString();
+        sb.Length = text.Length;
+        return sb.ToString();
     }
 
     static string Encryption(string text, string key, bool encrypt = true)
@@ -28,12 +27,30 @@ public static class ProgressiveVigener
         var textFilter1 = new TextFilter(true);
         text = textFilter1.Filter(text);
         var textFilter2 = new TextFilter(true);
-        text = textFilter2.Filter(text);
+        key = textFilter2.Filter(key);
         if (key == "")
         {
             return textFilter1.Unfilter(text);
         }
-        return 
+
+        key = GetFullKey(text, key);
+
+        var chipherText = new char[text.Length];
+        for (int i = 0; i < text.Length; i++)
+        {
+            chipherText[i] = Alphabet[(Alphabet.Length + Alphabet.IndexOf(text[i]) + Alphabet.IndexOf(key[i]) * (encrypt ? 1 : -1)) % Alphabet.Length];
+        }
+
+        return textFilter1.Unfilter(new string(chipherText));
+    }
+    public static string Encrypt(string text, string key)
+    {
+        return Encryption(text, key);
+    }
+
+    public static string Decrypt(string text, string key)
+    {
+        return Encryption(text, key, false);
     }
     
 }
