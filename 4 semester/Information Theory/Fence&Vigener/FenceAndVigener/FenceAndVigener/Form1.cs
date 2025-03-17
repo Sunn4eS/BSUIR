@@ -11,24 +11,20 @@ public partial class Form1 : Form
     }
 
 
-    private void chooseTypeComboBox_SelectedIndexChanged(object sender, EventArgs e)
-    {
-        if ((enterTextBox.Text != "") && chooseTypeComboBox.SelectedIndex == 0)
-        { 
-            keyTextbox.Enabled = false;
-        }
-        else
-        { 
-            keyTextbox.Enabled = true;
-        }
-    }
+  
 
     private void cipherButton_Click(object sender, EventArgs e)
     {
+        outTextBox.Enabled = true;
         if (chooseTypeComboBox.SelectedIndex == 1)
         {
             outTextBox.Text = ProgressiveVigener.Encrypt(enterTextBox.Text, keyTextbox.Text);
         }
+        else
+        {
+            outTextBox.Text = Fence.Encipher(enterTextBox.Text, keyTextbox.Text);
+        }
+
     }
 
     private void enterTextBox_TextChanged(object sender, EventArgs e)
@@ -48,9 +44,14 @@ public partial class Form1 : Form
 
     private void decipherButton_Click(object sender, EventArgs e)
     {
+        outTextBox.Enabled = true;
         if (chooseTypeComboBox.SelectedIndex == 1)
         {
             outTextBox.Text = ProgressiveVigener.Decrypt(enterTextBox.Text, keyTextbox.Text);
+        }
+        else
+        {
+            outTextBox.Text = Fence.Decipher(enterTextBox.Text, keyTextbox.Text);
         }
     }
 
@@ -66,5 +67,10 @@ public partial class Form1 : Form
             cipherButton.Enabled = false;
             decipherButton.Enabled = false;
         }
+    }
+
+    private void chooseTypeComboBox_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        keyTextbox.Enabled = true;
     }
 }

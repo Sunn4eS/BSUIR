@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FenceAndVigener")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0a2c92a7de724b588fbbaf65b53a21f2d492ea22")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9b6f39af399c5401e24a0914e3f567cebf020630")]
 [assembly: System.Reflection.AssemblyProductAttribute("FenceAndVigener")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FenceAndVigener")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
