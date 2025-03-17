@@ -1,0 +1,17 @@
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\bin\Debug\net8.0-windows\FenceAndVigener.exe
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\bin\Debug\net8.0-windows\FenceAndVigener.deps.json
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\bin\Debug\net8.0-windows\FenceAndVigener.runtimeconfig.json
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\bin\Debug\net8.0-windows\FenceAndVigener.dll
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\bin\Debug\net8.0-windows\FenceAndVigener.pdb
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\obj\Debug\net8.0-windows\FenceAndVigener.GeneratedMSBuildEditorConfig.editorconfig
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\obj\Debug\net8.0-windows\FenceAndVigener.AssemblyInfoInputs.cache
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\obj\Debug\net8.0-windows\FenceAndVigener.AssemblyInfo.cs
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\obj\Debug\net8.0-windows\FenceAndVigener.csproj.CoreCompileInputs.cache
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\obj\Debug\net8.0-windows\FenceAndVigener.sourcelink.json
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\obj\Debug\net8.0-windows\FenceAndVigener.dll
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\obj\Debug\net8.0-windows\refint\FenceAndVigener.dll
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\obj\Debug\net8.0-windows\FenceAndVigener.pdb
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\obj\Debug\net8.0-windows\FenceAndVigener.genruntimeconfig.cache
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\obj\Debug\net8.0-windows\ref\FenceAndVigener.dll
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\obj\Debug\net8.0-windows\FenceAndVigener.Form1.resources
+D:\BSUIR\4 semester\Information Theory\Fence&Vigener\FenceAndVigener\FenceAndVigener\obj\Debug\net8.0-windows\FenceAndVigener.csproj.GenerateResource.cache
