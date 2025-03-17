@@ -51,7 +51,6 @@ public partial class Form1 : Form
         {
             outTextBox.Text = ProgressiveVigener.Decrypt(enterTextBox.Text, keyTextbox.Text);
             keyTextbox.Text = ProgressiveVigener.FilterRussianLetters(keyTextbox.Text);
-            
         }
         else
         {
