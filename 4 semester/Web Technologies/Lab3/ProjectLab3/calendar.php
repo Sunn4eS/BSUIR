@@ -1,28 +1,25 @@
 <?php
-// Функция для создания календаря учебного года
-function createAcademicCalendar($year, $course) {
-    // Определяем дату начала учебного года
+function createAcademicCalendar($year) {
+
     $startDate = new DateTime("$year-09-01");
 
-    // Определяем дату окончания учебного года
+
     $endDate = new DateTime("$year-12-31");
     $endDate->modify('+1 year');
 
-    // Определяем периоды каникул и сессии (примерные даты)
+
     $holidays = [
-        ['start' => "$year-10-30", 'end' => "$year-11-07"], // Осенние каникулы
-        ['start' => "$year-12-25", 'end' => ($year + 1) . "-01-10"], // Зимние каникулы
-        ['start' => ($year + 1) . "-03-25", 'end' => ($year + 1) . "-04-02"], // Весенние каникулы
-        ['start' => ($year + 1) . "-06-01", 'end' => ($year + 1) . "-06-30"], // Летние каникулы
+        ['start' => "$year-10-30", 'end' => "$year-11-07"],
+        ['start' => "$year-12-25", 'end' => ($year + 1) . "-01-10"],
+        ['start' => ($year + 1) . "-03-25", 'end' => ($year + 1) . "-04-02"],
+        ['start' => ($year + 1) . "-06-01", 'end' => ($year + 1) . "-06-30"],
     ];
 
-    // Определяем периоды сессии (примерные даты)
     $sessions = [
-        ['start' => ($year + 1) . "-01-15", 'end' => ($year + 1) . "-01-30"], // Зимняя сессия
-        ['start' => ($year + 1) . "-05-15", 'end' => ($year + 1) . "-05-30"], // Летняя сессия
+        ['start' => ($year + 1) . "-01-15", 'end' => ($year + 1) . "-01-30"],
+        ['start' => ($year + 1) . "-05-15", 'end' => ($year + 1) . "-05-30"],
     ];
 
-    // Создаем HTML-документ
     $html = "<!DOCTYPE html>
     <html lang='ru'>
     <head>
@@ -54,7 +51,6 @@ function createAcademicCalendar($year, $course) {
         $note = '';
         $class = '';
 
-        // Проверяем, попадает ли неделя на каникулы
         foreach ($holidays as $holiday) {
             $holidayStart = new DateTime($holiday['start']);
             $holidayEnd = new DateTime($holiday['end']);
@@ -66,7 +62,6 @@ function createAcademicCalendar($year, $course) {
             }
         }
 
-        // Проверяем, попадает ли неделя на сессию
         foreach ($sessions as $session) {
             $sessionStart = new DateTime($session['start']);
             $sessionEnd = new DateTime($session['end']);
@@ -86,19 +81,17 @@ function createAcademicCalendar($year, $course) {
         </tr>";
 
         $currentDate->modify('+1 week');
-        $weekNumber = ($weekNumber % 4) + 1; // Номера недель от 1 до 4
+        $weekNumber = ($weekNumber % 4) + 1;
     }
 
     $html .= "</table></body></html>";
 
-    // Сохраняем результат в файл
     $filename = "academic_calendar_$year.html";
     file_put_contents($filename, $html);
 
     return $filename;
 }
 
-// Обработка данных из веб-формы
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $year = intval($_POST['year']);
     $course = intval($_POST['course']);

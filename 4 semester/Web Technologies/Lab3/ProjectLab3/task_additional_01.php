@@ -5,18 +5,18 @@
 
 <?php
 function removeDuplicates(&$array, &$uniqueValues = []) {
-    // Проходим по каждому элементу массива
+
     foreach ($array as $key => &$value) {
-        // Если элемент является массивом, обрабатываем его рекурсивно
+
         if (is_array($value)) {
             removeDuplicates($value, $uniqueValues);
         } else {
-            // Проверяем, есть ли элемент в уникальных значениях
+
             if (in_array($value, $uniqueValues, true)) {
-                // Если дубликат найден, удаляем его из массива
+
                 unset($array[$key]);
             } else {
-                // Добавляем элемент в уникальные значения
+
                 $uniqueValues[] = $value;
             }
         }
@@ -29,10 +29,6 @@ $inputArray = [
     [200, [100, 500, "100"], 600],
     [700, 800, [900, 100]]
 ];
-
-// Удаляем дубликаты
 removeDuplicates($inputArray);
-
-// Вывод результата
 print_r($inputArray);
 ?>

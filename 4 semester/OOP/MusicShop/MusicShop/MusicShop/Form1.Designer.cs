@@ -105,12 +105,13 @@
             // 
             // addButton
             // 
-            this.addButton.Location = new System.Drawing.Point(34, 444);
+            this.addButton.Location = new System.Drawing.Point(1160, 314);
             this.addButton.Name = "addButton";
-            this.addButton.Size = new System.Drawing.Size(148, 48);
+            this.addButton.Size = new System.Drawing.Size(35, 48);
             this.addButton.TabIndex = 1;
             this.addButton.Text = "add new item";
             this.addButton.UseVisualStyleBackColor = true;
+            this.addButton.Visible = false;
             this.addButton.Click += new System.EventHandler(this.addButton_Click);
             // 
             // itemsflowLayoutPanel

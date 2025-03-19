@@ -38,6 +38,12 @@ namespace MusicShop
             var beltPanel = Utility.Print(SHIFT * 2, 0, guitarBelt);
             var guitarPickPanel = Utility.Print(SHIFT * 3, 0, guitarPick);
             var electricGuitarPanel = Utility.Print(SHIFT * 4, 0, electricGuitar);
+            AddForm.MusicShopManager _musicShopManager = new AddForm.MusicShopManager();
+            _musicShopManager.AddItem(guitarStrings);
+            _musicShopManager.AddItem(guitarBelt);
+            _musicShopManager.AddItem(acousticGuitar);
+            _musicShopManager.AddItem(electricGuitar);
+            
             
             mainForm.Controls.Add(electricGuitarPanel);
             mainForm.Controls.Add(guitarPickPanel);

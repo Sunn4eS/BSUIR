@@ -36,7 +36,7 @@ namespace MusicShop
             Price = newPrice;
         }
 
-        public virtual void ChangeStrings(Strings newStingsModel)
+        public void ChangeStrings(Strings newStingsModel)
         {
             UpdatePrice(Price - StringsModel.Price + newStingsModel.Price);
             StringsModel = newStingsModel;

@@ -3,7 +3,7 @@ if (isset($_GET['text'])) {
     $text = $_GET['text'];
 
     $words = array_filter(explode(' ', $text), function($word) {
-        return !empty($word); // Убираем пустые элементы
+        return !empty($word);
     });
 
     foreach ($words as $key => $word) {

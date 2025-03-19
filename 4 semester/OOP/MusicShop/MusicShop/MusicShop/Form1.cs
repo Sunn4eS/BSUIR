@@ -12,6 +12,8 @@ namespace MusicShop
 {
     public partial class Form1 : Form
     {
+        private const int SHIFT = 150;
+        public AddForm.MusicShopManager _manager = new AddForm.MusicShopManager();
         public Form1()
         {
             // Инициализация FlowLayoutPanel
@@ -34,7 +36,6 @@ namespace MusicShop
                 i++;
             }
         }
-        
         /// <summary>
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
@@ -43,8 +44,6 @@ namespace MusicShop
         {
             contextMenuStrip.Show(addButton, new Point(0, addButton.Height));
         }
-
-        private AddForm.MusicShopManager _manager = new AddForm.MusicShopManager();
 
         private void acousticToolStripMenuItem_Click(object sender, EventArgs e)
         {
