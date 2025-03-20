@@ -3,34 +3,25 @@ namespace maximin;
 public class ClusterDots
     {
         public List<PointF> Points { get; set; } = new();
-        
         public PointF Center { get; set; }
 
         public ClusterDots(PointF center) => Center = center;
 
         public PointF GetBestClusterCenter()
         {
-            if (Points.Count == 0) return Center;
-            
-            var bestCenter = new PointF(
-                Points.Average(p => p.X),
-                Points.Average(p => p.Y));
-
-            float minDistance = float.MaxValue;
-            PointF bestPoint = Center;
-            
-            foreach (var point in Points)
+            var bestCenter = new PointF(Points.Average(x => x.X), Points.Average(y => y.Y));
+            var minDifferent = double.MaxValue;
+            var minDifferentPoint = new PointF();
+            foreach (var centerCandidate in Points)
             {
-                var distance = Distance(bestCenter, point);
-                if (distance < minDistance)
-                {
-                    minDistance = distance;
-                    bestPoint = point;
-                }
+                var different = Distance(bestCenter, centerCandidate);
+                if (!(different < minDifferent)) continue;
+                minDifferent = different;
+                minDifferentPoint = centerCandidate;
             }
-            return bestPoint;
-        }
 
+            return minDifferentPoint;
+        }
         public static float Distance(PointF a, PointF b) => 
             (float)Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
     }

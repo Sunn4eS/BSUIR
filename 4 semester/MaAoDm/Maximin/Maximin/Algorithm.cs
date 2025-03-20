@@ -7,10 +7,8 @@ public abstract class Algorithm
 
     protected void ClearClusters()
     {
-        foreach (var cluster in Clusters)
         {
-            cluster.Points.Clear();
-            cluster.Points.Add(cluster.Center);
+            Clusters.AsParallel().ForAll(x => x.Points = new(){x.Center});
         }
     }
 
@@ -39,5 +37,23 @@ public abstract class Algorithm
                 }
             }
         });
+    }
+    
+    ClusterDots? GetMinDifferentCluster(PointF point)
+    {
+        var minDifferent = double.MaxValue;
+        ClusterDots? minDifferentCluster = null;
+        foreach (var pointCluster in Clusters)
+        {
+            if (point == pointCluster.Center) return null;
+            var different = ClusterDots.Distance(pointCluster.Center, point);
+            if (different < minDifferent)
+            {
+                minDifferent = different;
+                minDifferentCluster = pointCluster;
+            }
+        }
+
+        return minDifferentCluster;
     }
 }
