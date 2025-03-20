@@ -10,12 +10,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("k-middle")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("Maximin")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7eb2b7098c676efb9f25269f0193834a5346b270")]
-[assembly: System.Reflection.AssemblyProductAttribute("k-middle")]
-[assembly: System.Reflection.AssemblyTitleAttribute("k-middle")]
+[assembly: System.Reflection.AssemblyProductAttribute("Maximin")]
+[assembly: System.Reflection.AssemblyTitleAttribute("Maximin")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 [assembly: System.Runtime.Versioning.TargetPlatformAttribute("Windows7.0")]
 [assembly: System.Runtime.Versioning.SupportedOSPlatformAttribute("Windows7.0")]

@@ -1,0 +1,15 @@
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\bin\Debug\net8.0-windows\Maximin.exe
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\bin\Debug\net8.0-windows\Maximin.deps.json
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\bin\Debug\net8.0-windows\Maximin.runtimeconfig.json
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\bin\Debug\net8.0-windows\Maximin.dll
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\bin\Debug\net8.0-windows\Maximin.pdb
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\obj\Debug\net8.0-windows\Maximin.GeneratedMSBuildEditorConfig.editorconfig
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\obj\Debug\net8.0-windows\Maximin.AssemblyInfoInputs.cache
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\obj\Debug\net8.0-windows\Maximin.AssemblyInfo.cs
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\obj\Debug\net8.0-windows\Maximin.csproj.CoreCompileInputs.cache
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\obj\Debug\net8.0-windows\Maximin.sourcelink.json
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\obj\Debug\net8.0-windows\Maximin.dll
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\obj\Debug\net8.0-windows\refint\Maximin.dll
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\obj\Debug\net8.0-windows\Maximin.pdb
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\obj\Debug\net8.0-windows\Maximin.genruntimeconfig.cache
+D:\BSUIR\4 semester\MaAoDm\Maximin\Maximin\Maximin\obj\Debug\net8.0-windows\ref\Maximin.dll
