@@ -1,0 +1,15 @@
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\bin\Debug\net8.0-windows\k-middle.exe
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\bin\Debug\net8.0-windows\k-middle.deps.json
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\bin\Debug\net8.0-windows\k-middle.runtimeconfig.json
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\bin\Debug\net8.0-windows\k-middle.dll
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\bin\Debug\net8.0-windows\k-middle.pdb
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\obj\Debug\net8.0-windows\k-middle.GeneratedMSBuildEditorConfig.editorconfig
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\obj\Debug\net8.0-windows\k-middle.AssemblyInfoInputs.cache
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\obj\Debug\net8.0-windows\k-middle.AssemblyInfo.cs
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\obj\Debug\net8.0-windows\k-middle.csproj.CoreCompileInputs.cache
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\obj\Debug\net8.0-windows\k-middle.sourcelink.json
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\obj\Debug\net8.0-windows\k-middle.dll
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\obj\Debug\net8.0-windows\refint\k-middle.dll
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\obj\Debug\net8.0-windows\k-middle.pdb
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\obj\Debug\net8.0-windows\k-middle.genruntimeconfig.cache
+D:\BSUIR\4 semester\MaAoDm\k-middle\k-middle\obj\Debug\net8.0-windows\ref\k-middle.dll
