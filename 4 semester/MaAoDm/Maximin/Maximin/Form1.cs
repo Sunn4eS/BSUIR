@@ -31,9 +31,7 @@ namespace maximin
 
             trackBar1.Minimum = 1000;
             trackBar1.Maximum = 100000;
-            trackBar2.Minimum = 2;
-            trackBar2.Maximum = 20;
-        }
+           }
 
         private void InitializePalette()
         {
@@ -48,73 +46,88 @@ namespace maximin
 
         private async void Button1_Click(object sender, EventArgs e)
         {
-            try
+            graphics.Clear(Color.White);
+            pictureBox1.Refresh();
+
+            int pointsCount = trackBar1.Value;
+            int width = pictureBox1.Width - WindowsFrameSize;
+            int height = pictureBox1.Height - WindowsFrameSize;
+
+            var points = GenerateRandomPoints(pointsCount, width, height);
+            var maxiMin = new MaxiMin(points);
+
+            (List<ClusterDots> list, PointF? point) result;
+            while (true)
             {
-                button1.Enabled = false;
-                Cursor = Cursors.WaitCursor;
+                result = maxiMin.Learn();
+                if (result.point is null) break;
+                await Draw(result.list);
+            }
 
-                int width = pictureBox1.Width - WindowsFrameSize;
-                int height = pictureBox1.Height - WindowsFrameSize;
+            await Draw(result.list);
+            await Task.Delay(1000);
 
-                var points = GenerateRandomPoints(trackBar1.Value, width, height);
+            var kMeans = new KMeans(maxiMin.GetPoints(), maxiMin.GetClusters());
         
-                // Теперь KMeans будет использовать Maximin инициализацию
-                var kMeans = new KMeans(points, trackBar2.Value);
-
-                do
-                {
-                    var result = kMeans.Learn();
-                    await Draw(result);
-                    await Task.Delay(50);
-                } while (kMeans.NeedRecalculate);
-            }
-            finally
+            do
             {
-                button1.Enabled = true;
-                Cursor = Cursors.Default;
-            }
+                var newResult = kMeans.Learn();
+                await Draw(newResult);
+            } while (kMeans.NeedRecalculate);
+
+
         }
 
-        private List<PointF> GenerateRandomPoints(int pointsCount, int width, int height)
+        List<PointF> GenerateRandomPoints(int pointsCount, int width, int height)
         {
-            var points = new List<PointF>();
+            var points = new List<PointF>(pointsCount);
             for (int i = 0; i < pointsCount; i++)
-            {
-                points.Add(new PointF(
-                    Random.Next(width), 
-                    Random.Next(height)));
-            }
+                points.Add(new PointF(Random.Next(width), Random.Next(height)));
             return points;
         }
 
-        private async Task Draw(List<ClusterDots> clusters)
+        private async Task Draw(List<ClusterDots> result)
         {
-            graphics.Clear(Color.White);
-
-            for (int i = 0; i < clusters.Count; i++)
+            // Создаем новый Bitmap с размерами PictureBox
+            var bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+    
+            using (var g = Graphics.FromImage(bmp))
             {
-                var cluster = clusters[i];
-                var color = Palette[i % Palette.Count];
+                g.Clear(Color.White);
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-                foreach (var point in cluster.Points)
+                for (int i = 0; i < result.Count; i++)
                 {
-                    float size = point == cluster.Center ? 20 : 4;
-                    graphics.FillEllipse(
-                        new SolidBrush(color),
-                        point.X - size / 2,
-                        point.Y - size / 2,
-                        size,
-                        size);
+                    var cluster = result[i];
+                    var color = Palette[i % Palette.Count];
+
+                    // Рисуем все точки кластера
+                    foreach (var point in cluster.Points)
+                    {
+                        var size = point.Equals(cluster.Center) ? 10 : 3;
+                        var rect = new RectangleF(
+                            point.X - size/2, 
+                            point.Y - size/2, 
+                            size, 
+                            size
+                        );
+                
+                        g.FillEllipse(new SolidBrush(color), rect);
+                    }
                 }
             }
 
-            pictureBox1.Invoke((MethodInvoker)(() => pictureBox1.Refresh()));
-            await Task.CompletedTask;
+            // Обновляем PictureBox в UI-потоке
+            pictureBox1.Invoke((MethodInvoker)delegate {
+                pictureBox1.Image?.Dispose();
+                pictureBox1.Image = bmp;
+            });
+
+            await Task.Delay(500);
         }
 
         private void TrackBar_Scroll(object sender, EventArgs e)
         {
-            countOfClustersLabel.Text = trackBar2.Value.ToString();
             countOfDotsLabel.Text = trackBar1.Value.ToString();
         }
 
