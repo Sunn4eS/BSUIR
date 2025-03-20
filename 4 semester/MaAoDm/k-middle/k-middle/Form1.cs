@@ -30,7 +30,7 @@ namespace k_middle
             graphics.Clear(Color.White);
 
             trackBar1.Minimum = 1000;
-            trackBar1.Maximum = 1000000;
+            trackBar1.Maximum = 100000;
             trackBar2.Minimum = 2;
             trackBar2.Maximum = 20;
         }

@@ -4,8 +4,8 @@
 # Rider ignored files
 /modules.xml
 /projectSettingsUpdater.xml
-/.idea.Maximin.iml
 /contentModel.xml
+/.idea.k-middle.iml
 # Editor-based HTTP Client requests
 /httpRequests/
 # Datasource local storage ignored files
