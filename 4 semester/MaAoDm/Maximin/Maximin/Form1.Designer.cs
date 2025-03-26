@@ -88,6 +88,7 @@ partial class Form1
         Controls.Add(button1);
         FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
         Location = new System.Drawing.Point(22, 22);
+        Text = "Maximin Clustering";
         ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
         ((System.ComponentModel.ISupportInitialize)trackBar1).EndInit();
         ResumeLayout(false);
