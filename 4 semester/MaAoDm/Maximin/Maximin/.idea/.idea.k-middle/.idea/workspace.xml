@@ -7,14 +7,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ae1e57b4-27fc-47d0-bc0d-8d523f775aa1" name="Changes" comment="MaAoDm maximin">
-      <change afterPath="$PROJECT_DIR$/MaxiMin.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Algorithm.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Algorithm.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ClusterDots.cs" beforeDir="false" afterPath="$PROJECT_DIR$/ClusterDots.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Form1.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Form1.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KMeans.cs" beforeDir="false" afterPath="$PROJECT_DIR$/KMeans.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MaximinInitializer.cs" beforeDir="false" />
+    <list default="true" id="ae1e57b4-27fc-47d0-bc0d-8d523f775aa1" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/bin/Debug/net8.0-windows/maximin.dll" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net8.0-windows/maximin.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bin/Debug/net8.0-windows/maximin.exe" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net8.0-windows/maximin.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bin/Debug/net8.0-windows/maximin.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net8.0-windows/maximin.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0-windows/apphost.exe" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0-windows/apphost.exe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0-windows/maximin.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0-windows/maximin.AssemblyInfo.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0-windows/maximin.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0-windows/maximin.AssemblyInfoInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0-windows/maximin.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0-windows/maximin.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0-windows/maximin.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0-windows/maximin.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0-windows/maximin.sourcelink.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0-windows/maximin.sourcelink.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0-windows/ref/maximin.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0-windows/ref/maximin.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0-windows/refint/maximin.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0-windows/refint/maximin.dll" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,7 +44,14 @@
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="mock://D:/BSUIR/4 semester/MaAoDm/Maximin/Maximin/Algorithm.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Algorithm.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://D:/BSUIR/4 semester/MaAoDm/Maximin/Maximin/Form1.Designer.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/BSUIR/4 semester/MaAoDm/Maximin/Maximin/Form1.Designer.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/BSUIR/4 semester/MaAoDm/Maximin/Maximin/Form1.Designer.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/BSUIR/4 semester/MaAoDm/Maximin/Maximin/Form1.Designer.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/BSUIR/4 semester/MaAoDm/Maximin/Maximin/Form1.Designer.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/BSUIR/4 semester/MaAoDm/Maximin/Maximin/Form1.Designer.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProjectColorInfo">{
@@ -97,7 +108,7 @@
       <option name="presentableId" value="Default" />
       <updated>1742414195348</updated>
       <workItem from="1742414197004" duration="9263000" />
-      <workItem from="1742470561862" duration="3764000" />
+      <workItem from="1742470561862" duration="5554000" />
     </task>
     <task id="LOCAL-00001" summary="MaAoDm k_middle">
       <option name="closed" value="true" />
@@ -123,7 +134,23 @@
       <option name="project" value="LOCAL" />
       <updated>1742471658665</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="MaAoDm Maximin Final">
+      <option name="closed" value="true" />
+      <created>1742484744655</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1742484744655</updated>
+    </task>
+    <task id="LOCAL-00005" summary="MaAoDm Maximin Final">
+      <option name="closed" value="true" />
+      <created>1742497243166</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1742497243166</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -136,6 +163,7 @@
     <MESSAGE value="MaAoDm k_middle" />
     <MESSAGE value="MaAoDm Maximin" />
     <MESSAGE value="MaAoDm maximin" />
-    <option name="LAST_COMMIT_MESSAGE" value="MaAoDm maximin" />
+    <MESSAGE value="MaAoDm Maximin Final" />
+    <option name="LAST_COMMIT_MESSAGE" value="MaAoDm Maximin Final" />
   </component>
 </project>
