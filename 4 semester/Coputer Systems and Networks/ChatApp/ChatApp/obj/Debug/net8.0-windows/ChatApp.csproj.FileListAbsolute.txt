@@ -1,0 +1,15 @@
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\bin\Debug\net8.0-windows\ChatApp.exe
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\bin\Debug\net8.0-windows\ChatApp.deps.json
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\bin\Debug\net8.0-windows\ChatApp.runtimeconfig.json
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\bin\Debug\net8.0-windows\ChatApp.dll
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\bin\Debug\net8.0-windows\ChatApp.pdb
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\obj\Debug\net8.0-windows\ChatApp.GeneratedMSBuildEditorConfig.editorconfig
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\obj\Debug\net8.0-windows\ChatApp.AssemblyInfoInputs.cache
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\obj\Debug\net8.0-windows\ChatApp.AssemblyInfo.cs
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\obj\Debug\net8.0-windows\ChatApp.csproj.CoreCompileInputs.cache
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\obj\Debug\net8.0-windows\ChatApp.sourcelink.json
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\obj\Debug\net8.0-windows\ChatApp.dll
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\obj\Debug\net8.0-windows\refint\ChatApp.dll
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\obj\Debug\net8.0-windows\ChatApp.pdb
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\obj\Debug\net8.0-windows\ChatApp.genruntimeconfig.cache
+D:\BSUIR\4 semester\Coputer Systems and Networks\ChatApp\ChatApp\obj\Debug\net8.0-windows\ref\ChatApp.dll
