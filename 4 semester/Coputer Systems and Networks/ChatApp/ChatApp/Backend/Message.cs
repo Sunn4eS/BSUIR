@@ -38,13 +38,38 @@ internal class Message
         return dataArr;
     }
 
-    public Message Deserialize(byte[] dataArr)
+    // public static Message Deserialize(byte[] dataArr)
+    // {
+    //     MessageType type = (MessageType)dataArr[0];
+    //     string time = Encoding.UTF8.GetString(dataArr[1..6]);
+    //     ushort length = (ushort)((dataArr[6] << 8) + dataArr[7]);
+    //     var data = new byte[length];
+    //     Array.Copy(dataArr, HeaderSize, data, 0, length);
+    //
+    //     return new Message(type, time, data);
+    // }
+    public static Message Deserialize(byte[] dataArr)
     {
+        // Проверка минимальной длины заголовка
+        if (dataArr == null || dataArr.Length < HeaderSize)
+            throw new ArgumentException("Invalid message data: insufficient length");
+
+        // Чтение типа сообщения
         MessageType type = (MessageType)dataArr[0];
-        string time = Encoding.UTF8.GetString(dataArr[1..6]);
-        ushort length = (ushort)((dataArr[6] << 8) + dataArr[7]);
-        var data = new byte[length];
-        Array.Copy(data, HeaderSize, data, 0, length);
+    
+        // Чтение времени (5 байт)
+        string time = Encoding.UTF8.GetString(dataArr, 1, 5);
+    
+        // Чтение длины данных (2 байта, big-endian)
+        ushort length = (ushort)((dataArr[6] << 8) | dataArr[7]);
+    
+        // Проверка общей длины сообщения
+        if (dataArr.Length < HeaderSize + length)
+            throw new ArgumentException($"Invalid message data: expected {HeaderSize + length} bytes, got {dataArr.Length}");
+
+        // Копирование данных
+        byte[] data = new byte[length];
+        Buffer.BlockCopy(dataArr, HeaderSize, data, 0, length);
 
         return new Message(type, time, data);
     }

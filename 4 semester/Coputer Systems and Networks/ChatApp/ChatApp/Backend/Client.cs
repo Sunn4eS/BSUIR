@@ -57,6 +57,7 @@ internal class Client
     {
       new Thread(ListenUDP).Start();
       new Thread(ListenTcp).Start();
+     
     }
 
     private void SendBroadcast()
@@ -76,7 +77,7 @@ internal class Client
                 EndPoint remoteEp = new IPEndPoint(IPAddress.Any, 0);
                 int received = _udpSender.ReceiveFrom(buffer, ref remoteEp);
                     
-                var message = new Message(MessageType.MessageText, buffer).Deserialize(buffer[..received]);
+                var message = Message.Deserialize(buffer[..received]);
                 var ip = ((IPEndPoint)remoteEp).Address;
 
                 if (message.Type == MessageType.NameTransfer && !_clients.ContainsKey(ip))
@@ -96,7 +97,7 @@ internal class Client
             var ip = ((IPEndPoint)socket.RemoteEndPoint).Address;
             var buffer = new byte[Message.HeaderSize];
             socket.Receive(buffer);
-            var msg = new Message(MessageType.NameTransfer, buffer).Deserialize(buffer);
+            var msg = Message.Deserialize(buffer);
             _clients[ip] = (Encoding.UTF8.GetString(msg.Data), socket);
             NewNodeDetected?.Invoke(_clients[ip].Name, ip);
             new Thread(() => HandleConnection(socket, ip)).Start();
@@ -121,7 +122,7 @@ internal class Client
             { 
                 byte[] buffer = new byte[Message.HeaderSize];
                 socket.Receive(buffer);
-                Message header = new Message(MessageType.MessageText, buffer).Deserialize(buffer);
+                Message header = Message.Deserialize(buffer);
                 byte[] data = new byte[header.Length];
                 socket.Receive(data);
                 Message message = new Message(header.Type, data) {Time = header.Time};
@@ -168,21 +169,58 @@ internal class Client
         }
     }
 
+    // private void Connect(IPAddress ip, string name)
+    // {
+    //     try
+    //     {
+    //         Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+    //         socket.Connect(new IPEndPoint(ip, TcpPort));
+    //         
+    //         Message connectMsg = new Message(MessageType.NameTransfer, Encoding.UTF8.GetBytes(name));
+    //         socket.Send(connectMsg.Serialize());
+    //         _clients[ip] = (name, socket);
+    //         NewNodeDetected?.Invoke(name, ip);
+    //         new Thread(() => HandleConnection(socket, ip)).Start();  
+    //     }
+    //     catch
+    //     {
+    //         
+    //     }
+    // }
     private void Connect(IPAddress ip, string name)
     {
         try
         {
             Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socket.Connect(new IPEndPoint(ip, TcpPort));
-            Message connectMsg = new Message(MessageType.NameTransfer, Encoding.UTF8.GetBytes(name));
-            socket.Send(connectMsg.Serialize());
-            _clients[ip] = (name, socket);
-            NewNodeDetected?.Invoke(name, ip);
-            new Thread(() => HandleConnection(socket, ip)).Start();  
-        }
-        catch
-        {
+        
+            // Сначала получаем заголовок от удаленного узла
+            byte[] headerBuffer = new byte[Message.HeaderSize];
+            int received = socket.Receive(headerBuffer);
+            if (received != Message.HeaderSize)
+                throw new Exception("Invalid header received");
             
+            var header = Message.Deserialize(headerBuffer);
+        
+            // Получаем данные (имя удаленного узла)
+            byte[] dataBuffer = new byte[header.Length];
+            received = socket.Receive(dataBuffer);
+            if (received != header.Length)
+                throw new Exception("Invalid data received");
+            
+            string remoteName = Encoding.UTF8.GetString(dataBuffer);
+        
+            // Теперь отправляем свое имя
+            Message connectMsg = new Message(MessageType.NameTransfer, Encoding.UTF8.GetBytes(_name));
+            socket.Send(connectMsg.Serialize());
+        
+            _clients[ip] = (remoteName, socket);
+            NewNodeDetected?.Invoke(remoteName, ip);
+            new Thread(() => HandleConnection(socket, ip)).Start();
+        }
+        catch (Exception ex)
+        {
+            _writer?.Invoke($"Connection error to {ip}: {ex.Message}");
         }
     }
     
