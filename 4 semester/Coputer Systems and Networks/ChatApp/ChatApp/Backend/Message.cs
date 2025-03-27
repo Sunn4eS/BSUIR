@@ -48,5 +48,22 @@ internal class Message
 
         return new Message(type, time, data);
     }
+
+    public override string ToString()
+    {
+        string text = Encoding.UTF8.GetString(Data);
+        switch (Type)
+        {
+            case MessageType.NameTransfer:
+                return $"{Time}: {text} connected";
+            case MessageType.MessageText:
+                return $"{Time}: {text}";
+            case MessageType.UserConnected:
+                return $"{Time}: {text} connected";
+            case MessageType.UserDisconnected:
+                return $"{Time}: {text} disconnected";
+        }
+        return "";
+    }
     
 }

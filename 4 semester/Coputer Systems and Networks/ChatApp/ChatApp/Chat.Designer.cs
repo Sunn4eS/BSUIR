@@ -34,9 +34,11 @@ partial class Chat
         InputTextBox = new System.Windows.Forms.TextBox();
         InfoPanel = new System.Windows.Forms.Panel();
         flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+        ClientListBox = new System.Windows.Forms.ListBox();
         IpLabel = new System.Windows.Forms.Label();
         NameLabel = new System.Windows.Forms.Label();
         InfoPanel.SuspendLayout();
+        flowLayoutPanel1.SuspendLayout();
         SuspendLayout();
         // 
         // SendButton
@@ -79,16 +81,26 @@ partial class Chat
         // 
         // flowLayoutPanel1
         // 
+        flowLayoutPanel1.Controls.Add(ClientListBox);
         flowLayoutPanel1.Location = new System.Drawing.Point(7, 96);
         flowLayoutPanel1.Name = "flowLayoutPanel1";
         flowLayoutPanel1.Size = new System.Drawing.Size(192, 595);
         flowLayoutPanel1.TabIndex = 2;
         // 
+        // ClientListBox
+        // 
+        ClientListBox.FormattingEnabled = true;
+        ClientListBox.ItemHeight = 25;
+        ClientListBox.Location = new System.Drawing.Point(3, 3);
+        ClientListBox.Name = "ClientListBox";
+        ClientListBox.Size = new System.Drawing.Size(181, 554);
+        ClientListBox.TabIndex = 0;
+        // 
         // IpLabel
         // 
         IpLabel.Location = new System.Drawing.Point(11, 53);
         IpLabel.Name = "IpLabel";
-        IpLabel.Size = new System.Drawing.Size(56, 31);
+        IpLabel.Size = new System.Drawing.Size(180, 31);
         IpLabel.TabIndex = 1;
         IpLabel.Text = "Ip:";
         // 
@@ -96,7 +108,7 @@ partial class Chat
         // 
         NameLabel.Location = new System.Drawing.Point(3, 9);
         NameLabel.Name = "NameLabel";
-        NameLabel.Size = new System.Drawing.Size(65, 34);
+        NameLabel.Size = new System.Drawing.Size(188, 34);
         NameLabel.TabIndex = 0;
         NameLabel.Text = "Name:";
         // 
@@ -111,9 +123,12 @@ partial class Chat
         Controls.Add(SendButton);
         Text = "MyChat";
         InfoPanel.ResumeLayout(false);
+        flowLayoutPanel1.ResumeLayout(false);
         ResumeLayout(false);
         PerformLayout();
     }
+
+    private System.Windows.Forms.ListBox ClientListBox;
 
     private System.Windows.Forms.Label IpLabel;
     private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
