@@ -1,0 +1,30 @@
+C:\Home\BSUIR\TI\StreamingEncryption\bin\Debug\StreamingEncryption.exe.config
+C:\Home\BSUIR\TI\StreamingEncryption\bin\Debug\StreamingEncryption.exe
+C:\Home\BSUIR\TI\StreamingEncryption\bin\Debug\StreamingEncryption.pdb
+C:\Home\BSUIR\TI\StreamingEncryption\obj\Debug\StreamingEncryption.csproj.AssemblyReference.cache
+C:\Home\BSUIR\TI\StreamingEncryption\obj\Debug\StreamingEncryption.MainForm.resources
+C:\Home\BSUIR\TI\StreamingEncryption\obj\Debug\StreamingEncryption.Properties.Resources.resources
+C:\Home\BSUIR\TI\StreamingEncryption\obj\Debug\StreamingEncryption.csproj.GenerateResource.cache
+C:\Home\BSUIR\TI\StreamingEncryption\obj\Debug\StreamingEncryption.csproj.CoreCompileInputs.cache
+C:\Home\BSUIR\TI\StreamingEncryption\obj\Debug\StreamingEncryption.exe
+C:\Home\BSUIR\TI\StreamingEncryption\obj\Debug\StreamingEncryption.pdb
+C:\Home\BSUIR\TI\Lab2\Code\bin\Debug\StreamingEncryption.exe.config
+C:\Home\BSUIR\TI\Lab2\Code\bin\Debug\StreamingEncryption.exe
+C:\Home\BSUIR\TI\Lab2\Code\bin\Debug\StreamingEncryption.pdb
+C:\Home\BSUIR\TI\Lab2\Code\obj\Debug\StreamingEncryption.csproj.AssemblyReference.cache
+C:\Home\BSUIR\TI\Lab2\Code\obj\Debug\StreamingEncryption.MainForm.resources
+C:\Home\BSUIR\TI\Lab2\Code\obj\Debug\StreamingEncryption.Properties.Resources.resources
+C:\Home\BSUIR\TI\Lab2\Code\obj\Debug\StreamingEncryption.csproj.GenerateResource.cache
+C:\Home\BSUIR\TI\Lab2\Code\obj\Debug\StreamingEncryption.csproj.CoreCompileInputs.cache
+C:\Home\BSUIR\TI\Lab2\Code\obj\Debug\StreamingEncryption.exe
+C:\Home\BSUIR\TI\Lab2\Code\obj\Debug\StreamingEncryption.pdb
+D:\BSUIR\4 semester\Information Theory\ThreadCipher\ThreadEncryption\bin\Debug\StreamingEncryption.exe.config
+D:\BSUIR\4 semester\Information Theory\ThreadCipher\ThreadEncryption\bin\Debug\StreamingEncryption.exe
+D:\BSUIR\4 semester\Information Theory\ThreadCipher\ThreadEncryption\bin\Debug\StreamingEncryption.pdb
+D:\BSUIR\4 semester\Information Theory\ThreadCipher\ThreadEncryption\obj\Debug\StreamingEncryption.csproj.AssemblyReference.cache
+D:\BSUIR\4 semester\Information Theory\ThreadCipher\ThreadEncryption\obj\Debug\StreamingEncryption.MainForm.resources
+D:\BSUIR\4 semester\Information Theory\ThreadCipher\ThreadEncryption\obj\Debug\StreamingEncryption.Properties.Resources.resources
+D:\BSUIR\4 semester\Information Theory\ThreadCipher\ThreadEncryption\obj\Debug\StreamingEncryption.csproj.GenerateResource.cache
+D:\BSUIR\4 semester\Information Theory\ThreadCipher\ThreadEncryption\obj\Debug\StreamingEncryption.csproj.CoreCompileInputs.cache
+D:\BSUIR\4 semester\Information Theory\ThreadCipher\ThreadEncryption\obj\Debug\StreamingEncryption.exe
+D:\BSUIR\4 semester\Information Theory\ThreadCipher\ThreadEncryption\obj\Debug\StreamingEncryption.pdb
