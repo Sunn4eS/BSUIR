@@ -15,8 +15,7 @@ public partial class Authorize : Form
         foreach (var ni in nics)
         {
             if ((ni.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 &&
-                ni.OperationalStatus == OperationalStatus.Up) || (ni.NetworkInterfaceType == NetworkInterfaceType.Ethernet && ni.OperationalStatus == OperationalStatus.Up))
-            {
+                ni.OperationalStatus == OperationalStatus.Up)){
                 UnicastIPAddressInformationCollection ipInfo = ni.GetIPProperties().UnicastAddresses;
                 foreach (UnicastIPAddressInformation ip in ipInfo)
                 {

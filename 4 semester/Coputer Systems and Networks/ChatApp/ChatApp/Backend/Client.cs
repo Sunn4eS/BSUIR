@@ -8,21 +8,20 @@ namespace ChatApp.Backend;
 internal class Client
 {
     public delegate void Writer(string name);
-    public Writer _writer;
-    public const int UdpPort = 3001;
-    public const int TcpPort = 3000;
-    public delegate void NodeEventHandler(string name, IPAddress ip);
 
-    public event NodeEventHandler NewNodeDetected;
-    public event NodeEventHandler NodeDisconnected;
-    
+    public Writer _writer;
+    public const int UdpPort = 3000;
+    public const int TcpPort = 3001;
+
     private Socket _udpSender;
     private Socket _tcpListener;
-    
+
     private readonly IPAddress _address;
     private readonly string _name;
-    
-    
+    private CancellationTokenSource _cancellationTokenSource;
+
+    public List<Message> _history;
+
     public ConcurrentDictionary<IPAddress, (string Name, Socket socket)> _clients = new();
     private bool _isRunning;
 
@@ -38,7 +37,6 @@ internal class Client
         _isRunning = true;
         InitializeSockets();
         StartListening();
-        SendBroadcast();
     }
 
     private void InitializeSockets()
@@ -47,7 +45,7 @@ internal class Client
         _udpSender.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
         _udpSender.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
         _udpSender.Bind(new IPEndPoint(_address, UdpPort));
-        
+
         _tcpListener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         _tcpListener.Bind(new IPEndPoint(_address, TcpPort));
         _tcpListener.Listen(10);
@@ -55,39 +53,70 @@ internal class Client
 
     private void StartListening()
     {
-      new Thread(ListenUDP).Start();
-      new Thread(ListenTcp).Start();
-     
+        Task.Run(() => StartUdp());
+
     }
 
-    private void SendBroadcast()
+    private async Task SendBroadcast()
     {
-       Message msg = new Message(MessageType.NameTransfer, Encoding.UTF8.GetBytes(_name));
+        
        IPEndPoint broadCastEndPoint = new IPEndPoint(IPAddress.Broadcast, UdpPort);
-       _udpSender.SendTo(msg.Serialize(), broadCastEndPoint);
+       await _udpSender.SendToAsync(new byte[1], broadCastEndPoint, _cancellationTokenSource.Token);
     }
 
-    private void ListenUDP()
+    private async Task StartUdp()
     {
-        while (_isRunning)
+        for (int i = 0; i < 3; i++)
+        {
+            await SendBroadcast();
+            await Task.Delay(1000);
+        }
+
+        await ListenUDP();
+    }
+
+    private async Task ListenUDP()
+    {
+        while (!_cancellationTokenSource.IsCancellationRequested)
         {
             try
             {
-                var buffer = new byte[1024];
-                EndPoint remoteEp = new IPEndPoint(IPAddress.Any, 0);
-                int received = _udpSender.ReceiveFrom(buffer, ref remoteEp);
-                    
-                var message = Message.Deserialize(buffer[..received]);
-                var ip = ((IPEndPoint)remoteEp).Address;
-
-                if (message.Type == MessageType.NameTransfer && !_clients.ContainsKey(ip))
+                var result = await _udpSender.ReceiveFromAsync(new byte[1], new IPEndPoint(IPAddress.Any, 0),
+                    _cancellationTokenSource.Token);
+                var address = ((IPEndPoint)result.RemoteEndPoint).Address;
+                if (address.Equals(_address) && !_clients.ContainsKey(address))
                 {
-                    Connect(ip, Encoding.UTF8.GetString(message.Data));
+                    
+
                 }
             }
-            catch { /* Handle exceptions */ }
+            catch
+            {
+                _writer("Receiving broadcast error");
+            }
         }
     }
+    // private async Task ListenUDP()
+    // {
+    //     while (_isRunning)
+    //     {
+    //         try
+    //         {
+    //             var buffer = new byte[1024];
+    //             EndPoint remoteEp = new IPEndPoint(IPAddress.Any, 0);
+    //             int received = _udpSender.ReceiveFrom(buffer, ref remoteEp);
+    //                 
+    //             var message = Message.Deserialize(buffer[..received]);
+    //             var ip = ((IPEndPoint)remoteEp).Address;
+    //
+    //             if (message.Type == MessageType.NameTransfer && !_clients.ContainsKey(ip))
+    //             {
+    //                 Connect(ip, Encoding.UTF8.GetString(message.Data));
+    //             }
+    //         }
+    //         catch { /* Handle exceptions */ }
+    //     }
+    // }
 
     private void ListenTcp()
     {
@@ -99,7 +128,7 @@ internal class Client
             socket.Receive(buffer);
             var msg = Message.Deserialize(buffer);
             _clients[ip] = (Encoding.UTF8.GetString(msg.Data), socket);
-            NewNodeDetected?.Invoke(_clients[ip].Name, ip);
+     //       NewNodeDetected?.Invoke(_clients[ip].Name, ip);
             new Thread(() => HandleConnection(socket, ip)).Start();
         }
     }
@@ -113,6 +142,20 @@ internal class Client
         }
         _writer?.Invoke($"[{DateTime.Now:HH:mm}] Вы: {text}");
     }
+    
+    static private byte[] ReceiveExact(Socket socket, int byteCount)
+    {
+        byte[] buffer = new byte[byteCount];
+        int totalRead = 0;
+        while (totalRead < byteCount)
+        {
+            int read = socket.Receive(buffer, totalRead, byteCount - totalRead, SocketFlags.None);
+            if (read == 0)
+                throw new Exception("Соединение закрыто");
+            totalRead += read;
+        }
+        return buffer;
+    }
 
     private void HandleConnection(Socket socket, IPAddress ip)
     {
@@ -121,10 +164,12 @@ internal class Client
             while (_isRunning)
             { 
                 byte[] buffer = new byte[Message.HeaderSize];
-                socket.Receive(buffer);
+                //socket.Receive(buffer);
+                buffer = ReceiveExact(socket, Message.HeaderSize);
                 Message header = Message.Deserialize(buffer);
                 byte[] data = new byte[header.Length];
-                socket.Receive(data);
+                //socket.Receive(data);
+                data = ReceiveExact(socket, Message.HeaderSize);
                 Message message = new Message(header.Type, data) {Time = header.Time};
 
                 switch (message.Type)
@@ -164,7 +209,7 @@ internal class Client
             if (_clients.TryRemove(ip, out var client))
             {
                 client.socket.Close();
-                NodeDisconnected?.Invoke(client.Name, ip);
+    //            NodeDisconnected?.Invoke(client.Name, ip);
             }
         }
     }
@@ -195,27 +240,13 @@ internal class Client
             socket.Connect(new IPEndPoint(ip, TcpPort));
         
             // Сначала получаем заголовок от удаленного узла
-            byte[] headerBuffer = new byte[Message.HeaderSize];
-            int received = socket.Receive(headerBuffer);
-            if (received != Message.HeaderSize)
-                throw new Exception("Invalid header received");
-            
-            var header = Message.Deserialize(headerBuffer);
-        
-            // Получаем данные (имя удаленного узла)
-            byte[] dataBuffer = new byte[header.Length];
-            received = socket.Receive(dataBuffer);
-            if (received != header.Length)
-                throw new Exception("Invalid data received");
-            
-            string remoteName = Encoding.UTF8.GetString(dataBuffer);
         
             // Теперь отправляем свое имя
             Message connectMsg = new Message(MessageType.NameTransfer, Encoding.UTF8.GetBytes(_name));
             socket.Send(connectMsg.Serialize());
-        
-            _clients[ip] = (remoteName, socket);
-            NewNodeDetected?.Invoke(remoteName, ip);
+            
+            _clients[ip] = (name, socket);
+  //          NewNodeDetected?.Invoke(name, ip);
             new Thread(() => HandleConnection(socket, ip)).Start();
         }
         catch (Exception ex)

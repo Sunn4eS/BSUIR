@@ -20,8 +20,6 @@ public partial class Chat : Form
     private void InitializeClient(IPAddress ip, string name)
     {
         _client = new Client(ip, name, UpdateChatHistory);
-        _client.NewNodeDetected += Client_NewNodeDetected;
-        _client.NodeDisconnected += Client_NodeDisconnected;
         _client.Start();
     }
     

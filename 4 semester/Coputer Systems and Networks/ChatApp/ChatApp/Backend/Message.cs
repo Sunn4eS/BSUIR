@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using System.Text;
 
 namespace ChatApp.Backend;
@@ -7,6 +8,8 @@ internal enum MessageType : byte
     MessageText,
     NameTransfer,
     UserConnected,
+    HistoryRequest,
+    HistoryResponse,
     UserDisconnected,
 }
 
@@ -50,24 +53,17 @@ internal class Message
     // }
     public static Message Deserialize(byte[] dataArr)
     {
-        // Проверка минимальной длины заголовка
         if (dataArr == null || dataArr.Length < HeaderSize)
             throw new ArgumentException("Invalid message data: insufficient length");
 
-        // Чтение типа сообщения
         MessageType type = (MessageType)dataArr[0];
     
-        // Чтение времени (5 байт)
         string time = Encoding.UTF8.GetString(dataArr, 1, 5);
     
-        // Чтение длины данных (2 байта, big-endian)
         ushort length = (ushort)((dataArr[6] << 8) | dataArr[7]);
     
-        // Проверка общей длины сообщения
         if (dataArr.Length < HeaderSize + length)
             throw new ArgumentException($"Invalid message data: expected {HeaderSize + length} bytes, got {dataArr.Length}");
-
-        // Копирование данных
         byte[] data = new byte[length];
         Buffer.BlockCopy(dataArr, HeaderSize, data, 0, length);
 
@@ -77,18 +73,17 @@ internal class Message
     public override string ToString()
     {
         string text = Encoding.UTF8.GetString(Data);
-        switch (Type)
+
+        return Type switch
         {
-            case MessageType.NameTransfer:
-                return $"{Time}: {text} connected";
-            case MessageType.MessageText:
-                return $"{Time}: {text}";
-            case MessageType.UserConnected:
-                return $"{Time}: {text} connected";
-            case MessageType.UserDisconnected:
-                return $"{Time}: {text} disconnected";
-        }
-        return "";
+            MessageType.NameTransfer => $"{Time} {text} connected",
+            MessageType.UserConnected => $"{Time} {text} connected",
+            MessageType.HistoryRequest => "",
+            MessageType.HistoryResponse => "",
+            MessageType.MessageText => $"{Time}, {text}",
+            MessageType.UserDisconnected => $"{Time} {text} disconnected",
+            _ => ""
+        };
     }
-    
+
 }
