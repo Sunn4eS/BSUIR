@@ -8,3 +8,13 @@ D:\BSUIR_not_git\4 semester\Information Theory\ThreadEncryption\Code\obj\Debug\T
 D:\BSUIR_not_git\4 semester\Information Theory\ThreadEncryption\Code\obj\Debug\ThreadEncryption.csproj.CoreCompileInputs.cache
 D:\BSUIR_not_git\4 semester\Information Theory\ThreadEncryption\Code\obj\Debug\ThreadEncryption.exe
 D:\BSUIR_not_git\4 semester\Information Theory\ThreadEncryption\Code\obj\Debug\ThreadEncryption.pdb
+D:\BSUIR\4 semester\Information Theory\ThreadEncryption\Code\bin\Debug\ThreadEncryption.exe.config
+D:\BSUIR\4 semester\Information Theory\ThreadEncryption\Code\bin\Debug\ThreadEncryption.exe
+D:\BSUIR\4 semester\Information Theory\ThreadEncryption\Code\bin\Debug\ThreadEncryption.pdb
+D:\BSUIR\4 semester\Information Theory\ThreadEncryption\Code\obj\Debug\ThreadEncryption.csproj.AssemblyReference.cache
+D:\BSUIR\4 semester\Information Theory\ThreadEncryption\Code\obj\Debug\ThreadEncryption.MainForm.resources
+D:\BSUIR\4 semester\Information Theory\ThreadEncryption\Code\obj\Debug\ThreadEncryption.Properties.Resources.resources
+D:\BSUIR\4 semester\Information Theory\ThreadEncryption\Code\obj\Debug\ThreadEncryption.csproj.GenerateResource.cache
+D:\BSUIR\4 semester\Information Theory\ThreadEncryption\Code\obj\Debug\ThreadEncryption.csproj.CoreCompileInputs.cache
+D:\BSUIR\4 semester\Information Theory\ThreadEncryption\Code\obj\Debug\ThreadEncryption.exe
+D:\BSUIR\4 semester\Information Theory\ThreadEncryption\Code\obj\Debug\ThreadEncryption.pdb

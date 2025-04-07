@@ -82,7 +82,7 @@ namespace ThreadEncryption
 
             byte[] generatedKeyBytes = Key.Generate(keyBytes, Encryption.plainText.Length);
             ShowGeneratedKey(generatedKeyBytes);
-
+ 
             Encryption.Encrypt(generatedKeyBytes);
             ShowCipherText(Encryption.cipherText);
         }

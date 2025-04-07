@@ -45,13 +45,7 @@ class MaxiMin : Algorithm
             .SelectMany((cluster, i) => Clusters.Skip(i + 1)
             .Select(otherCluster => ClusterDots.Distance(cluster.Center, otherCluster.Center)))
             .Sum();
-        
-        /*double distanceSum = 0.0;
-
-        for (int i = 0; i < Clusters.Count; i++)
-            for (int j = i + 1; j < Clusters.Count; j++)
-                distanceSum = ClusterDots.Distance(Clusters[i].Center, Clusters[j].Center);*/
-        
+      
         var count = Enumerable.Range(1, Clusters.Count - 1).Sum();
         return count == 0 ? 0 : distanceSum / count;
     }

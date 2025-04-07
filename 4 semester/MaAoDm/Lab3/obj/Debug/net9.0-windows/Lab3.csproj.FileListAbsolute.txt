@@ -15,3 +15,20 @@ D:\User\Documents\MiAPR\Lab3\obj\Debug\net9.0-windows\refint\Lab3.dll
 D:\User\Documents\MiAPR\Lab3\obj\Debug\net9.0-windows\Lab3.pdb
 D:\User\Documents\MiAPR\Lab3\obj\Debug\net9.0-windows\Lab3.genruntimeconfig.cache
 D:\User\Documents\MiAPR\Lab3\obj\Debug\net9.0-windows\ref\Lab3.dll
+D:\BSUIR\4 semester\MaAoDm\Lab3\bin\Debug\net9.0-windows\Lab3.exe
+D:\BSUIR\4 semester\MaAoDm\Lab3\bin\Debug\net9.0-windows\Lab3.deps.json
+D:\BSUIR\4 semester\MaAoDm\Lab3\bin\Debug\net9.0-windows\Lab3.runtimeconfig.json
+D:\BSUIR\4 semester\MaAoDm\Lab3\bin\Debug\net9.0-windows\Lab3.dll
+D:\BSUIR\4 semester\MaAoDm\Lab3\bin\Debug\net9.0-windows\Lab3.pdb
+D:\BSUIR\4 semester\MaAoDm\Lab3\obj\Debug\net9.0-windows\Lab3.Form1.resources
+D:\BSUIR\4 semester\MaAoDm\Lab3\obj\Debug\net9.0-windows\Lab3.csproj.GenerateResource.cache
+D:\BSUIR\4 semester\MaAoDm\Lab3\obj\Debug\net9.0-windows\Lab3.GeneratedMSBuildEditorConfig.editorconfig
+D:\BSUIR\4 semester\MaAoDm\Lab3\obj\Debug\net9.0-windows\Lab3.AssemblyInfoInputs.cache
+D:\BSUIR\4 semester\MaAoDm\Lab3\obj\Debug\net9.0-windows\Lab3.AssemblyInfo.cs
+D:\BSUIR\4 semester\MaAoDm\Lab3\obj\Debug\net9.0-windows\Lab3.csproj.CoreCompileInputs.cache
+D:\BSUIR\4 semester\MaAoDm\Lab3\obj\Debug\net9.0-windows\Lab3.sourcelink.json
+D:\BSUIR\4 semester\MaAoDm\Lab3\obj\Debug\net9.0-windows\Lab3.dll
+D:\BSUIR\4 semester\MaAoDm\Lab3\obj\Debug\net9.0-windows\refint\Lab3.dll
+D:\BSUIR\4 semester\MaAoDm\Lab3\obj\Debug\net9.0-windows\Lab3.pdb
+D:\BSUIR\4 semester\MaAoDm\Lab3\obj\Debug\net9.0-windows\Lab3.genruntimeconfig.cache
+D:\BSUIR\4 semester\MaAoDm\Lab3\obj\Debug\net9.0-windows\ref\Lab3.dll

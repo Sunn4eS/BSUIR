@@ -102,9 +102,9 @@ public partial class Form1 : Form
         {
             g.Clear(Color.White);
 
-            Pen penClass1 = new Pen(Color.Cyan, 2);
+            Pen penClass1 = new Pen(Color.Blue, 2);
             Pen penClass2 = new Pen(Color.Orange, 2);
-            Pen penIntersection = new Pen(Color.Chartreuse, 2);
+            Pen penIntersection = new Pen(Color.Red, 2);
             Pen axisPen = new Pen(Color.Black, 2); // Чёрные оси
 
             double scaleY = (pb_canvas.Height - OffsetY * 2) * ScaleFactor; // Учитываем отступ сверху и снизу
