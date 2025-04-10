@@ -1,0 +1,71 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\BSUIR\\4 semester\\MaAoDm\\k-middle\\k-middle\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A46BBCB7-7177-483B-816D-9242F3278199}|k-middle.csproj|d:\\bsuir\\4 semester\\maaodm\\k-middle\\k-middle\\clusterdots.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A46BBCB7-7177-483B-816D-9242F3278199}|k-middle.csproj|solutionrelative:clusterdots.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A46BBCB7-7177-483B-816D-9242F3278199}|k-middle.csproj|d:\\bsuir\\4 semester\\maaodm\\k-middle\\k-middle\\kmeans.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A46BBCB7-7177-483B-816D-9242F3278199}|k-middle.csproj|solutionrelative:kmeans.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A46BBCB7-7177-483B-816D-9242F3278199}|k-middle.csproj|d:\\bsuir\\4 semester\\maaodm\\k-middle\\k-middle\\k-middle.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{A46BBCB7-7177-483B-816D-9242F3278199}|k-middle.csproj|solutionrelative:k-middle.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "KMeans.cs",
+              "DocumentMoniker": "D:\\BSUIR\\4 semester\\MaAoDm\\k-middle\\k-middle\\KMeans.cs",
+              "RelativeDocumentMoniker": "KMeans.cs",
+              "ToolTip": "D:\\BSUIR\\4 semester\\MaAoDm\\k-middle\\k-middle\\KMeans.cs",
+              "RelativeToolTip": "KMeans.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-04T06:49:33.059Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ClusterDots.cs",
+              "DocumentMoniker": "D:\\BSUIR\\4 semester\\MaAoDm\\k-middle\\k-middle\\ClusterDots.cs",
+              "RelativeDocumentMoniker": "ClusterDots.cs",
+              "ToolTip": "D:\\BSUIR\\4 semester\\MaAoDm\\k-middle\\k-middle\\ClusterDots.cs",
+              "RelativeToolTip": "ClusterDots.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAA9AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-04T06:49:27.941Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "k-middle",
+              "DocumentMoniker": "D:\\BSUIR\\4 semester\\MaAoDm\\k-middle\\k-middle\\k-middle.csproj",
+              "RelativeDocumentMoniker": "k-middle.csproj",
+              "ToolTip": "D:\\BSUIR\\4 semester\\MaAoDm\\k-middle\\k-middle\\k-middle.csproj",
+              "RelativeToolTip": "k-middle.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-04-04T06:49:21.703Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

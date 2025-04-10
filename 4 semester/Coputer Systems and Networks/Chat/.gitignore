@@ -1,0 +1,29 @@
+# Общие файлы и папки
+bin/
+obj/
+*.user
+*.suo
+*.sln.ide
+
+# Пакеты NuGet
+packages/
+*.nupkg
+
+# Логи
+*.log
+
+# Файлы настроек среды
+.vscode/
+.idea/
+
+# Временные файлы и кэш
+*.tmp
+*.temp
+*.cache
+
+# Файлы сертификатов
+*.pfx
+*.p12
+
+# Конфигурации для Visual Studio
+.vs/
