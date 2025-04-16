@@ -1,0 +1,30 @@
+﻿<Window x:Class="Lab6.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        Title="Иерархическое Группирование" Height="600" Width="900">
+
+    <Grid>
+        <!-- Две колонки: LeftBar + Основной контент -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>  <!-- Левая панель (инпуты + таблица) -->
+            <ColumnDefinition Width="*"/>    <!-- Правая часть (график) -->
+        </Grid.ColumnDefinitions>
+
+        <!-- LeftBar -->
+        <StackPanel Grid.Column="0" Margin="10">
+            <Label Content="Введите количество объектов:"/>
+            <TextBox Name="CountInput" Width="100" Margin="5"/>
+
+            <CheckBox Checked="OnCheckBoxMaxMode" Unchecked="OnCheckBoxMaxMode" Name="CheckBoxMaxMode" Content="Режим максимума" Margin="5"/>
+
+            <Button Content="Построить" Click="BuildClusters" Margin="5"/>
+
+            <Label Content="Матрица расстояний:" Margin="5"/>
+            <DataGrid Name="DistanceTable" AutoGenerateColumns="False" Height="300" IsReadOnly="True" />
+        </StackPanel>
+
+        <!-- График с OxyPlot -->
+        <oxy:PlotView Name="ClusterChart" Grid.Column="1" Model="{Binding PlotModel}" />
+    </Grid>
+</Window>
