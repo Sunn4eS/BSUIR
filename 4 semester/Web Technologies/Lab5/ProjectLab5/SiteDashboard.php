@@ -45,7 +45,7 @@ if ($poll) {
 // === ПОДПИСКА ===
 if (isset($_POST['subscribe_email'])) {
     $email = $_POST['subscribe_email'];
-    $stmt = $mysqli->prepare("INSERT INTO subscribers (email) VALUES (?)");
+    $stmt = $mysqli->prepare("INSERT IGNORE INTO subscribers (email) VALUES (?)");
     $stmt->bind_param('s', $email);
     $stmt->execute();
 }
@@ -57,8 +57,8 @@ $banner = $mysqli->query("SELECT image_url FROM banners WHERE is_active = 1 ORDE
 $search_results = [];
 if (isset($_GET['search'])) {
     $term = "%" . $_GET['search'] . "%";
-    $stmt = $mysqli->prepare("SELECT * FROM pages WHERE content LIKE ?");
-    $stmt->bind_param('s', $term);
+    $stmt = $mysqli->prepare('SELECT * FROM pages WHERE content LIKE "' . $term . '"');
+ //   $stmt->bind_param('s', $term);
     $stmt->execute();
     $res = $stmt->get_result();
     while ($r = $res->fetch_assoc()) $search_results[] = $r;

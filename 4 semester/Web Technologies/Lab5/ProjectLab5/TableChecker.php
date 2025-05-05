@@ -2,7 +2,7 @@
 const DB_HOST = 'localhost';
 const DB_USER = 'sasha';
 const DB_PASS = '08062023';
-const DB_NAME = 'MusicShop';
+const DB_NAME = 'MusicStore';
 
 $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 if (!$conn) {
