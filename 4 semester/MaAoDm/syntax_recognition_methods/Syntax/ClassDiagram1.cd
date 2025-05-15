@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Syntax.Element">
+    <Position X="11.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAQFEAAAAAAAAAAAABAAAAAAAACIAAAAAAAQAQ=</HashCode>
+      <FileName>Element.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Syntax.ElementType">
+    <Position X="2.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ElementType.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Syntax.HomeGrammar">
+    <Position X="13.25" Y="0.75" Width="1.5" />
+    <NestedTypes>
+      <Class Name="Syntax.HomeGrammar.ContainRuleAgrumentsResult" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>HomeGrammar.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAABAIAAAAABAAAAAAABAAAIAAAgAAEAAAABAAIQAA=</HashCode>
+      <FileName>HomeGrammar.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Syntax.InsideRule">
+    <Position X="9" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAEAIAAAAAAA=</HashCode>
+      <FileName>InsideRule.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Syntax.LeftRule">
+    <Position X="4.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAEAIAAAAAAA=</HashCode>
+      <FileName>LeftRule.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Syntax.Line">
+    <Position X="13.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAEAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAQAA=</HashCode>
+      <FileName>Line.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Syntax.RecognazingResult">
+    <Position X="15.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQAA=</HashCode>
+      <FileName>RecognazingResult.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Syntax.Rule">
+    <Position X="6.75" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAAAAAAAAIgAAAAAAAAIAAAAAABAAAAAAIQAAAAAA=</HashCode>
+      <FileName>Rule.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Syntax.TerminalElementType" Collapsed="true">
+    <Position X="5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAgAAAAA=</HashCode>
+      <FileName>TerminalElementType.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Syntax.UpRule">
+    <Position X="6.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAAABAAAAAAAAAAAAAAIAAAAEAAAAAAEAoAAAAAAA=</HashCode>
+      <FileName>UpRule.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

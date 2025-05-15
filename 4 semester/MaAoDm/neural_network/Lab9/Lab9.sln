@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfProject", "WpfProject\WpfProject.csproj", "{EB568105-E27F-45B7-B103-70DD0B4BBD8E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetwork", "NeuralNetwork\NeuralNetwork.csproj", "{B46B9A2F-F9B9-4BBD-A770-089BE1F8DC01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageLoad", "ImageLoad\ImageLoad.csproj", "{60E9F633-CEA5-4B62-B94F-229A7190BBC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGenerator", "ImageGenerator\ImageGenerator.csproj", "{F3E513F9-80F7-41C6-B470-C4B1FF5BAFBB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EB568105-E27F-45B7-B103-70DD0B4BBD8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB568105-E27F-45B7-B103-70DD0B4BBD8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB568105-E27F-45B7-B103-70DD0B4BBD8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB568105-E27F-45B7-B103-70DD0B4BBD8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B46B9A2F-F9B9-4BBD-A770-089BE1F8DC01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B46B9A2F-F9B9-4BBD-A770-089BE1F8DC01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B46B9A2F-F9B9-4BBD-A770-089BE1F8DC01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B46B9A2F-F9B9-4BBD-A770-089BE1F8DC01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60E9F633-CEA5-4B62-B94F-229A7190BBC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60E9F633-CEA5-4B62-B94F-229A7190BBC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60E9F633-CEA5-4B62-B94F-229A7190BBC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60E9F633-CEA5-4B62-B94F-229A7190BBC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3E513F9-80F7-41C6-B470-C4B1FF5BAFBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3E513F9-80F7-41C6-B470-C4B1FF5BAFBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3E513F9-80F7-41C6-B470-C4B1FF5BAFBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3E513F9-80F7-41C6-B470-C4B1FF5BAFBB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

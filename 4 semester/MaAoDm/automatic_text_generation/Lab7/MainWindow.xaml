@@ -1,0 +1,146 @@
+﻿<Window x:Class="Lab7.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LR8" Height="600" Width="1200" MinHeight="600" MinWidth="1200"
+        Loaded="Window_Loaded">
+	<Window.Resources>
+		<LinearGradientBrush x:Key="WindowBackground" StartPoint="0,0" EndPoint="1,1">
+			<GradientStop Color="#E6F7FF" Offset="0"/>
+			<GradientStop Color="#B3E0FF" Offset="1"/>
+		</LinearGradientBrush>
+
+		<LinearGradientBrush x:Key="PanelBackground" StartPoint="0,0" EndPoint="1,1">
+			<GradientStop Color="#D9F2FF" Offset="0"/>
+			<GradientStop Color="#99D6FF" Offset="1"/>
+		</LinearGradientBrush>
+
+		<LinearGradientBrush x:Key="ButtonBackground" StartPoint="0,0" EndPoint="0,1">
+			<GradientStop Color="#4DA6FF" Offset="0"/>
+			<GradientStop Color="#1A8CFF" Offset="1"/>
+		</LinearGradientBrush>
+
+		<LinearGradientBrush x:Key="ButtonHoverBackground" StartPoint="0,0" EndPoint="0,1">
+			<GradientStop Color="#66B3FF" Offset="0"/>
+			<GradientStop Color="#3399FF" Offset="1"/>
+		</LinearGradientBrush>
+
+		<LinearGradientBrush x:Key="ButtonPressedBackground" StartPoint="0,0" EndPoint="0,1">
+			<GradientStop Color="#0077E6" Offset="0"/>
+			<GradientStop Color="#0066CC" Offset="1"/>
+		</LinearGradientBrush>
+
+		<Style x:Key="TextBlockStyle">
+			<Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
+			<Setter Property="TextBlock.VerticalAlignment" Value="Center"/>
+			<Setter Property="TextBlock.TextAlignment" Value="Center"/>
+			<Setter Property="TextBlock.FontSize" Value="18"/>
+			<Setter Property="TextBlock.Foreground" Value="#003366"/>
+		</Style>
+
+		<Style x:Key="TextBoxStyle">
+			<Setter Property="TextBox.FontFamily" Value="Consolas"/>
+			<Setter Property="TextBox.FontSize" Value="16"/>
+			<Setter Property="TextBox.TextAlignment" Value="Center"/>
+			<Setter Property="TextBox.VerticalAlignment" Value="Center"/>
+			<Setter Property="TextBox.Margin" Value="5"/>
+			<Setter Property="TextBox.IsReadOnly" Value="True"/>
+			<Setter Property="TextBox.TextWrapping" Value="Wrap"/>
+			<Setter Property="TextBox.Background" Value="#F0F9FF"/>
+			<Setter Property="TextBox.BorderBrush" Value="#99D6FF"/>
+			<Setter Property="TextBox.Foreground" Value="#003366"/>
+		</Style>
+
+		<Style x:Key="ButtonStyle" TargetType="Button">
+			<Setter Property="FontFamily" Value="Segoe UI Semibold"/>
+			<Setter Property="FontSize" Value="18"/>
+			<Setter Property="Margin" Value="5"/>
+			<Setter Property="Padding" Value="10,5"/>
+			<Setter Property="Background" Value="{StaticResource ButtonBackground}"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="BorderBrush" Value="#1A8CFF"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+							<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter Property="Background" Value="{StaticResource ButtonHoverBackground}"/>
+								<Setter Property="BorderBrush" Value="#3399FF"/>
+							</Trigger>
+							<Trigger Property="IsPressed" Value="True">
+								<Setter Property="Background" Value="{StaticResource ButtonPressedBackground}"/>
+								<Setter Property="BorderBrush" Value="#0066CC"/>
+							</Trigger>
+							<Trigger Property="IsEnabled" Value="False">
+								<Setter Property="Background" Value="#CCE6FF"/>
+								<Setter Property="Foreground" Value="#808080"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</Window.Resources>
+
+	<Grid x:Name="wg" Background="{StaticResource WindowBackground}">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="2*"/>
+			<ColumnDefinition Width="3*"/>
+		</Grid.ColumnDefinitions>
+
+		<Border x:Name="WindowGrid" Grid.Column="0" BorderBrush="#99D6FF" BorderThickness="1" Margin="5"
+                Background="{StaticResource PanelBackground}" CornerRadius="3">
+			<Image x:Name="Image" MouseUp="Image_MouseUp" Stretch="Uniform"/>
+		</Border>
+
+		<Border Grid.Column="1" BorderBrush="#99D6FF" BorderThickness="1" Margin="5"
+                Background="{StaticResource PanelBackground}" CornerRadius="3">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="*"/>
+				</Grid.RowDefinitions>
+
+				<Border Grid.Row="0" BorderBrush="#99D6FF" BorderThickness="0 0 0 1"
+                        Background="{StaticResource PanelBackground}">
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="*"/>
+						</Grid.RowDefinitions>
+						<TextBlock Text="Грамматика" Style="{StaticResource TextBlockStyle}" Margin="5"/>
+						<TextBox Grid.Row="1" x:Name="GrammarTextBox" Style="{StaticResource TextBoxStyle}"
+                                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+					</Grid>
+				</Border>
+
+				<Border Grid.Row="1" Background="{StaticResource PanelBackground}">
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*"/>
+							<RowDefinition Height="*"/>
+							<RowDefinition Height="*"/>
+							<RowDefinition Height="*"/>
+						</Grid.RowDefinitions>
+
+						<Button x:Name="SynthesisButton" Grid.Row="0" Content="Синтез"
+                                Style="{StaticResource ButtonStyle}" Click="SynthesisButton_Click" IsEnabled="False"/>
+						<Button x:Name="RecognitionButton" Grid.Row="1" Content="Распознавание"
+                                Style="{StaticResource ButtonStyle}" Click="RecognitionButton_Click" IsEnabled="False"/>
+						<Button x:Name="ClearButton" Grid.Row="2" Content="Очистить"
+                                Style="{StaticResource ButtonStyle}" Click="ClearButton_Click"/>
+						<Button x:Name="GenerateButton" Grid.Row="3" Content="Сгенерировать грамматику"
+                                Style="{StaticResource ButtonStyle}" Click="GenerateButton_Click"/>
+					</Grid>
+				</Border>
+			</Grid>
+		</Border>
+	</Grid>
+</Window>

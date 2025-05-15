@@ -1,0 +1,87 @@
+﻿<Window x:Class="Lab7.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DMMaA LAB 7" Height="600" Width="1200" MinHeight="600" MinWidth="1200"
+        Background="#FFF5E9DC"
+        FontFamily="Segoe UI">
+
+	<Window.Resources>
+		<Style x:Key="ButtonStyle">
+			<Setter Property="Control.FontFamily" Value="Segoe UI Semibold" />
+			<Setter Property="Control.FontSize" Value="18" />
+			<!-- Увеличен размер шрифта -->
+			<Setter Property="Control.Background" Value="#FFFFD8B5" />
+			<Setter Property="Control.Foreground" Value="#FF5A3E1F" />
+			<Setter Property="Control.BorderBrush" Value="#FFE6A45E" />
+			<Setter Property="Control.BorderThickness" Value="1" />
+			<Setter Property="Control.Margin" Value="5" />
+			<!-- Увеличен отступ -->
+			<Setter Property="Control.Padding" Value="15,8" />
+			<!-- Добавлены внутренние отступы -->
+			<Setter Property="Button.Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+							<!-- Увеличено скругление -->
+							<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+						</Border>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</Window.Resources>
+
+	<Grid x:Name="WindowGrid" Background="#FFF5E9DC">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="2*" />
+			<!-- Изображение занимает 2/3 -->
+			<ColumnDefinition Width="*" />
+			<!-- Кнопки занимают 1/3 -->
+		</Grid.ColumnDefinitions>
+
+		<!-- Область изображения (слева) -->
+		<Border x:Name="BorderImage" Grid.Column="0" BorderBrush="#FFE6A45E" BorderThickness="3" Background="#FFF5E9DC">
+			<Image x:Name="Image" MouseUp="Image_MouseUp" />
+		</Border>
+
+		<!-- Панель управления (справа) -->
+		<Border Grid.Column="1" BorderBrush="#FFE6A45E" BorderThickness="3" Background="#FFF5E9DC">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="0.5*" />
+					<!-- Отступ сверху -->
+					<RowDefinition Height="*" />
+					<!-- Первая кнопка -->
+					<RowDefinition Height="*" />
+					<!-- Вторая кнопка -->
+					<RowDefinition Height="*" />
+					<!-- Третья кнопка -->
+					<RowDefinition Height="0.5*" />
+					<!-- Отступ снизу -->
+				</Grid.RowDefinitions>
+
+				<!-- Изменённые кнопки с новыми названиями -->
+				<Button x:Name="GeneratePatternButton" Grid.Row="1"
+                        Content="Generate Pattern"
+                        Style="{StaticResource ButtonStyle}"
+                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                        Click="SynthesisButton_Click" />
+
+				<Button x:Name="AnalyzeImageButton" Grid.Row="2"
+                        Content="Analyze Image"
+                        Style="{StaticResource ButtonStyle}"
+                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                        Click="RecognitionButton_Click" />
+
+				<Button x:Name="ResetViewButton" Grid.Row="3"
+                        Content="Reset View"
+                        Style="{StaticResource ButtonStyle}"
+                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                        Click="ClearButton_Click" />
+			</Grid>
+		</Border>
+	</Grid>
+</Window>
