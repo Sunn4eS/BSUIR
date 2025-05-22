@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Скачивание изображений</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h1>🖼️ Скачивание изображений по URL</h1>
+    <form action="download.php" method="post">
+        <label>Введите URL:</label>
+        <input type="text" name="url" required placeholder="https://example.com">
+
+        <label>Максимум изображений:</label>
+        <input type="number" name="max" min="1" max="50" value="5">
+
+        <button type="submit">Скачать</button>
+    </form>
+</div>
+</body>
+</html>
