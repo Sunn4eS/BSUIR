@@ -1,5 +1,5 @@
 <?php
-// Подключение классов PHPMailer вручную
+
 require 'PHPMailer/PHPMailer.php';
 require 'PHPMailer/SMTP.php';
 require 'PHPMailer/Exception.php';
@@ -37,8 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mail->isSMTP();
             //$mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
-            $mail->Username = 'sashabrazhalovich2005@gmail.com';        // ← твой Gmail
-            $mail->Password = '29945bsil';          // ← пароль приложения
+            $mail->Username = 'sashabrazhalovich2005@gmail.com';
+            $mail->Password = '29945bsil';
             //$mail->SMTPSecure = 'tls';
             //$mail->Port = 587;
             $mail->Host = 'smtp.yandex.ru';

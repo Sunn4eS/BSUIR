@@ -12,13 +12,13 @@ class HttpProxyServer
     private readonly TcpListener listener;
     private bool isRunning;
 
-    public HttpProxyServer(int port)
+    private HttpProxyServer(int port)
     {
         this.port = port;
         listener = new TcpListener(IPAddress.Any, port);
     }
 
-    public void Start()
+    private void Start()
     {
         isRunning = true;
         listener.Start();
@@ -39,7 +39,7 @@ class HttpProxyServer
         }
     }
 
-    public void Stop()
+    private void Stop()
     {
         isRunning = false;
         listener.Stop();
