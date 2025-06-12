@@ -7,6 +7,7 @@ require 'PHPMailer/Exception.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+
 // Данные из формы
 $recipients = $_POST['recipients'] ?? '';
 $subject = $_POST['subject'] ?? '';

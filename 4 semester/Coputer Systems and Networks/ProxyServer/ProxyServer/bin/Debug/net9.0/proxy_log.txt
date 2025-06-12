@@ -1,0 +1,5 @@
+[06.05.2025 13:09:59] URL: http://example.com/, Status: 200
+[06.05.2025 13:10:00] URL: http://example.com/favicon.ico, Status: 404
+[06.05.2025 13:11:42] URL: http://www.msftconnecttest.com/connecttest.txt, Status: 200
+[06.05.2025 13:11:42] URL: http://www.msftconnecttest.com/connecttest.txt, Status: 200
+[06.05.2025 13:11:42] URL: http://www.msftconnecttest.com/connecttest.txt, Status: 200
