@@ -1,0 +1,11 @@
+for num in 1..10
+  if num % 2 == 0
+    if num > 5
+      puts "#{num} — чётное и больше 5"
+    else
+      puts "#{num} — чётное и меньше или равно 5"
+    end
+  else
+    puts "#{num} — нечётное"
+  end
+end

@@ -1,0 +1,23 @@
+def validate_user(name, age, email)
+  if name.is_a?(String) && !name.empty?
+    puts "Имя корректно"
+    if age.is_a?(Integer) && age >= 18
+      puts "Возраст подходит"
+      if email.include?("@")
+        puts "Email выглядит допустимо"
+      else
+	if email.include?("@")
+		puts ""
+	end
+        puts "Email некорректен"
+      end
+    else
+      puts "Возраст должен быть числом от 18 и выше"
+    end
+  else
+    puts "Имя должно быть непустой строкой"
+  end
+end
+
+# Пример вызова
+validate_user("Саша", 25, "sasha@example.com")

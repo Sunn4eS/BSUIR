@@ -1,0 +1,3 @@
+﻿  FileName.cpp
+C:\Users\sasha\BSUIR\5 semester\SP\lab 2\lab2\FileName.cpp(121,13): warning C4244: инициализация: преобразование "LRESULT" в "int", возможна потеря данных
+  lab2.vcxproj -> C:\Users\sasha\BSUIR\5 semester\SP\lab 2\lab2\x64\Debug\lab2.exe

@@ -1,0 +1,119 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{7C72B1ED-9C4A-4EE2-B55B-FEADBFD4AB0C}|MSiSvIT\\MSiSvIT.csproj|c:\\users\\sasha\\bsuir\\5 semester\\metrics\\lab 2\\msisvit\\msisvit\\rubycodeanalyzer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C72B1ED-9C4A-4EE2-B55B-FEADBFD4AB0C}|MSiSvIT\\MSiSvIT.csproj|solutionrelative:msisvit\\rubycodeanalyzer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C72B1ED-9C4A-4EE2-B55B-FEADBFD4AB0C}|MSiSvIT\\MSiSvIT.csproj|C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\msisvit\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C72B1ED-9C4A-4EE2-B55B-FEADBFD4AB0C}|MSiSvIT\\MSiSvIT.csproj|solutionrelative:msisvit\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C72B1ED-9C4A-4EE2-B55B-FEADBFD4AB0C}|MSiSvIT\\MSiSvIT.csproj|C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\msisvit\\mainform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C72B1ED-9C4A-4EE2-B55B-FEADBFD4AB0C}|MSiSvIT\\MSiSvIT.csproj|solutionrelative:msisvit\\mainform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C72B1ED-9C4A-4EE2-B55B-FEADBFD4AB0C}|MSiSvIT\\MSiSvIT.csproj|C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\msisvit\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{7C72B1ED-9C4A-4EE2-B55B-FEADBFD4AB0C}|MSiSvIT\\MSiSvIT.csproj|solutionrelative:msisvit\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C72B1ED-9C4A-4EE2-B55B-FEADBFD4AB0C}|MSiSvIT\\MSiSvIT.csproj|C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\msisvit\\mainform.resx||{81828910-B8B3-4D2B-99A3-067027C180C1}",
+      "RelativeMoniker": "D:0:0:{7C72B1ED-9C4A-4EE2-B55B-FEADBFD4AB0C}|MSiSvIT\\MSiSvIT.csproj|solutionrelative:msisvit\\mainform.resx||{81828910-B8B3-4D2B-99A3-067027C180C1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C72B1ED-9C4A-4EE2-B55B-FEADBFD4AB0C}|MSiSvIT\\MSiSvIT.csproj|C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\msisvit\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C72B1ED-9C4A-4EE2-B55B-FEADBFD4AB0C}|MSiSvIT\\MSiSvIT.csproj|solutionrelative:msisvit\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "MainForm.cs",
+              "DocumentMoniker": "C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\MSiSvIT\\MainForm.cs",
+              "RelativeDocumentMoniker": "MSiSvIT\\MainForm.cs",
+              "ToolTip": "C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\MSiSvIT\\MainForm.cs",
+              "RelativeToolTip": "MSiSvIT\\MainForm.cs",
+              "ViewState": "AgIAAFMAAAAAAAAAAAAgwEgAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-12T06:26:41.187Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "RubyCodeAnalyzer.cs",
+              "DocumentMoniker": "C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\MSiSvIT\\RubyCodeAnalyzer.cs",
+              "RelativeDocumentMoniker": "MSiSvIT\\RubyCodeAnalyzer.cs",
+              "ToolTip": "C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\MSiSvIT\\RubyCodeAnalyzer.cs",
+              "RelativeToolTip": "MSiSvIT\\RubyCodeAnalyzer.cs",
+              "ViewState": "AgIAAKMAAAAAAAAAAAAlwMkAAABJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-12T06:27:47.985Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "MainForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "DocumentMoniker": "C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\MSiSvIT\\MainForm.cs",
+              "RelativeDocumentMoniker": "MSiSvIT\\MainForm.cs",
+              "ToolTip": "C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\MSiSvIT\\MainForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "RelativeToolTip": "MSiSvIT\\MainForm.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-12T06:26:07.351Z",
+              "EditorCaption": " [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\MSiSvIT\\Program.cs",
+              "RelativeDocumentMoniker": "MSiSvIT\\Program.cs",
+              "ToolTip": "C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\MSiSvIT\\Program.cs",
+              "RelativeToolTip": "MSiSvIT\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-12T06:27:05.861Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "MainForm.resx",
+              "DocumentMoniker": "C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\MSiSvIT\\MainForm.resx",
+              "RelativeDocumentMoniker": "MSiSvIT\\MainForm.resx",
+              "ToolTip": "C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\MSiSvIT\\MainForm.resx",
+              "RelativeToolTip": "MSiSvIT\\MainForm.resx",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001005|",
+              "WhenOpened": "2025-09-12T06:35:05.088Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "MainForm.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\MSiSvIT\\MainForm.Designer.cs",
+              "RelativeDocumentMoniker": "MSiSvIT\\MainForm.Designer.cs",
+              "ToolTip": "C:\\Users\\sasha\\BSUIR\\5 semester\\Metrics\\lab 2\\MSiSvIT\\MSiSvIT\\MainForm.Designer.cs",
+              "RelativeToolTip": "MSiSvIT\\MainForm.Designer.cs",
+              "ViewState": "AgIAAD4BAAAAAAAAAAAYwEEBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-12T06:26:44.861Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

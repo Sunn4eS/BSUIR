@@ -1,0 +1,14 @@
+def process_input(input)
+  if input.is_a?(String)
+    case input.downcase
+    when "да"
+      "Вы согласились."
+    when "нет"
+      "Вы отказались."
+    else
+      "Непонятный ответ."
+    end
+  else
+    "Ожидалась строка, но получен другой тип: #{input.class}"
+  end
+end
