@@ -108,7 +108,7 @@ namespace MSiSvIT
         {
             var metrics = new CodeMetrics
             {
-                Length = operators.Values.Sum() + operands.Values.Sum()
+                TotalOperatorsCount = operators.Values.Sum()
             };
 
             string normalizedCode = Regex.Replace(cleanedCode, @"\s+", " ", RegexOptions.Singleline);
@@ -238,9 +238,9 @@ namespace MSiSvIT
 
             // ... (Расчет Относительной Сложности (c) )
             // 3. Расчет Относительной Сложности (c)
-            if (metrics.Length > 0)
+            if (metrics.TotalOperatorsCount > 0)
             {
-                metrics.RelativeComplexity = (double)metrics.AbsoluteComplexity / metrics.Length;
+                metrics.RelativeComplexity = (double)metrics.AbsoluteComplexity / (double)metrics.TotalOperatorsCount;
             }
 
             return metrics;

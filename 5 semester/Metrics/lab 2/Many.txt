@@ -2,7 +2,6 @@ def analyze_value(x)
   for i in 0...1  
     j = 0
       while j < 1  
-      end 
       if x.is_a?(Integer)
         puts "Level 1: Integer detected"
 
@@ -20,11 +19,6 @@ def analyze_value(x)
             when 2
               puts "      Case: remainder 2"
             when 3
-	      if x < 0
-		if x > 0
-			puts ""
-                end
-              end	
               puts "      Case: remainder 3"
             when 4
               puts "      Case: remainder 4"
@@ -34,4 +28,5 @@ def analyze_value(x)
       end
       j += 1
   end
+end
 end
