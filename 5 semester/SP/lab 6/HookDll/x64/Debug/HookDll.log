@@ -1,0 +1,5 @@
+﻿  pch.cpp
+  simple_detours.cpp
+  dllmain.cpp
+  Создание кода...
+  HookDll.vcxproj -> C:\Users\Pavel\home\BSUIR\Labs\СП\Lab6\x64\Debug\HookDll.dll

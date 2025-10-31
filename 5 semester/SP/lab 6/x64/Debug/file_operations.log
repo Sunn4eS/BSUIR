@@ -1,0 +1,30 @@
+[21:51:47.237] DLL | === DLL Injected ===
+[21:51:47.237] DLL | Process: C:\Users\Pavel\home\BSUIR\Labs\ÑÏ\Lab6\x64\Debug\TestApp.exe
+[21:51:47.237] DLL | PID: 9240
+[21:51:47.237] HOOK | Starting hook installation...
+[21:51:47.237] HOOK | CreateFileW hook installed
+[21:51:47.237] HOOK | WriteFile hook installed
+[21:51:47.237] HOOK | ReadFile hook installed
+[21:51:47.237] HOOK | CloseHandle hook installed
+[21:51:47.237] HOOK | All hooks installed successfully!
+[21:51:47.237] CreateFileW | File: test1.txt | Access : 0x40000000 | Disposition : 2
+[21:51:47.237] CreateFileW Result | File : test1.txt | Handle : 0x00000124 | Error : 0
+[21:51:47.237] WriteFile | Handle : 0x00000124 | Bytes : 30
+[21:51:47.237] WriteFile Result | Handle : 0x00000124 | Result : SUCCESS | BytesWritten : 30 | Error : 0
+[21:51:47.237] CloseHandle | Handle : 0x00000124
+[21:51:47.237] CloseHandle Result | Handle : 0x00000124 | Result : SUCCESS
+[21:51:47.237] CreateFileW | File : test2.txt | Access : 0x40000000 | Disposition : 2
+[21:51:47.237] CreateFileW Result | File : test2.txt | Handle : 0x00000128 | Error : 0
+[21:51:47.237] WriteFile | Handle : 0x00000128 | Bytes : 22
+[21:51:47.238] WriteFile Result | Handle : 0x00000128 | Result : SUCCESS | BytesWritten : 22 | Error : 0
+[21:51:47.238] CloseHandle | Handle : 0x00000128
+[21:51:47.238] CloseHandle Result | Handle : 0x00000128 | Result : SUCCESS
+[21:51:47.238] CreateFileW | File : test3.txt | Access : 0x40000000 | Disposition : 2
+[21:51:47.238] CreateFileW Result | File : test3.txt | Handle : 0x0000012C | Error : 0
+[21:51:47.238] WriteFile | Handle : 0x0000012C | Bytes : 19
+[21:51:47.238] WriteFile Result | Handle : 0x0000012C | Result : SUCCESS | BytesWritten : 19 | Error : 0
+[21:51:47.238] CloseHandle | Handle : 0x0000012C
+[21:51:47.238] CloseHandle Result | Handle : 0x0000012C | Result : SUCCESS
+[21:51:47.240] HOOK | Removing hooks...
+[21:51:47.240] HOOK | Hooks removed
+[21:51:47.240] DLL | === DLL Unloaded ===

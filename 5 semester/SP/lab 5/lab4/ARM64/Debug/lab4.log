@@ -1,0 +1,6 @@
+﻿  lab4.cpp
+C:\Users\pavelplayerz0redd\source\repos\lab4\lab4\lab4.cpp(1,9): warning C4005: UNICODE: изменение макроопределения
+      C:\Users\pavelplayerz0redd\source\repos\lab4\lab4\lab4.cpp(1,9):
+      "UNICODE" ранее объявлен в командной строке
+  
+  lab4.vcxproj -> C:\Users\pavelplayerz0redd\source\repos\lab4\ARM64\Debug\lab4.exe
