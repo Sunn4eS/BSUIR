@@ -1,0 +1,22 @@
+﻿  pch.cpp
+  dllmain.cpp
+  phone_db.cpp
+C:\Users\sasha\BSUIR\5 semester\SP\lab 4\PhoneDB\phone_db.cpp(67,6): warning C4273: open: несовместимое связывание dll
+  (компиляция исходного файла "/phone_db.cpp")
+      C:\Users\sasha\BSUIR\5 semester\SP\lab 4\PhoneDB\phone_db.h(35,16):
+      см. предыдущее определение "open"
+  
+C:\Users\sasha\BSUIR\5 semester\SP\lab 4\PhoneDB\phone_db.cpp(85,6): warning C4273: close: несовместимое связывание dll
+  (компиляция исходного файла "/phone_db.cpp")
+      C:\Users\sasha\BSUIR\5 semester\SP\lab 4\PhoneDB\phone_db.h(36,16):
+      см. предыдущее определение "close"
+  
+C:\Users\sasha\BSUIR\5 semester\SP\lab 4\PhoneDB\phone_db.cpp(127,14): warning C4273: search_by_query: несовместимое связывание dll
+  (компиляция исходного файла "/phone_db.cpp")
+      C:\Users\sasha\BSUIR\5 semester\SP\lab 4\PhoneDB\phone_db.h(38,24):
+      см. предыдущее определение "search_by_query"
+  
+  ThreadPool.cpp
+  Создание кода...
+     Создается библиотека C:\Users\sasha\BSUIR\5 semester\SP\lab 4\x64\Debug\PhoneDB.lib и объект C:\Users\sasha\BSUIR\5 semester\SP\lab 4\x64\Debug\PhoneDB.exp
+  PhoneDB.vcxproj -> C:\Users\sasha\BSUIR\5 semester\SP\lab 4\x64\Debug\PhoneDB.dll

@@ -1,6 +1,7 @@
-﻿  lab4.cpp
-C:\Users\pavelplayerz0redd\source\repos\lab4\lab4\lab4.cpp(1,9): warning C4005: UNICODE: изменение макроопределения
-      C:\Users\pavelplayerz0redd\source\repos\lab4\lab4\lab4.cpp(1,9):
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(538,5): warning MSB8028: промежуточный каталог (x64\Debug\) содержит файлы, которые используются совместно с другим проектом (lab4.vcxproj).  Это может привести к ошибкам очистки и перестроения.
+  lab5.cpp
+C:\Users\sasha\BSUIR\5 semester\SP\lab 5\lab4\lab5.cpp(1,9): warning C4005: UNICODE: изменение макроопределения
+      C:\Users\sasha\BSUIR\5 semester\SP\lab 5\lab4\lab5.cpp(1,9):
       "UNICODE" ранее объявлен в командной строке
   
-  lab4.vcxproj -> C:\Users\pavelplayerz0redd\source\repos\lab4\x64\Debug\lab4.exe
+  lab4.vcxproj -> C:\Users\sasha\BSUIR\5 semester\SP\lab 5\x64\Debug\lab5.exe

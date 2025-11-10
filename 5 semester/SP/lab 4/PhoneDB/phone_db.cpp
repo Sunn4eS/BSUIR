@@ -88,42 +88,6 @@ void close()
     if (hMapFile) CloseHandle(hMapFile);
 }
 
-//PhoneRecord* search_by_query(const PhoneRecordAttr field, const char* query, int* outCount)
-//{
-//    if (!pBuffer || !query || !outCount) return nullptr;
-//
-//    SharedData* data = reinterpret_cast<SharedData*>(pBuffer);
-//
-//    static PhoneRecord results[MAX_RECORDS];
-//    int count = 0;
-//
-//    for (int i = 0; i < data->count; i++) {
-//        const PhoneRecord& r = data->records[i];
-//        const char* fieldValue = nullptr;
-//
-//        switch (field) {
-//        case LastName:   fieldValue = r.lastName; break;
-//        case FirstName:  fieldValue = r.firstName; break;
-//        case MiddleName: fieldValue = r.middleName; break;
-//        case Phone:      fieldValue = r.phone; break;
-//        case Street:     fieldValue = r.street; break;
-//        case House:      fieldValue = r.house; break;
-//        case Building:   fieldValue = r.building; break;
-//        case Apartment:  fieldValue = r.apartment; break;
-//        default: fieldValue = nullptr; break;
-//        }
-//
-//        if (fieldValue && strstr(fieldValue, query)) {
-//            if (count < MAX_RECORDS) {
-//                results[count++] = r;
-//            }
-//        }
-//    }
-//
-//    *outCount = count;
-//    return count > 0 ? results : nullptr;
-//}
-
 PhoneRecord* search_by_query(const PhoneRecordAttr field, const char* query, int* outCount) {
     if (!pBuffer || !query || !outCount) return nullptr;
 

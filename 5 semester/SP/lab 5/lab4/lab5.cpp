@@ -4,8 +4,8 @@
 #include <string>
 #include <iostream>
 
-static const wchar_t* kProcessXName = L"notepad++.exe";               // процесс X
-static const wchar_t* kProcessYPath = L"C:\\Users\\pavelplayerz0redd\\source\\repos\\lab4\\7z.exe"; // Y
+static const wchar_t* kProcessXName = L"Paint1.exe";               // процесс X
+static const wchar_t* kProcessYPath = L"C:\\Users\\sasha\\BSUIR\\5 semester\\SP\\lab 5\\Lab3_4.exe"; // Y
 
 
 // Поиск PID процесса по имени
