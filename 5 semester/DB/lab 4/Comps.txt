@@ -1,0 +1,120 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Project computer_repair {
+  database_type: 'MySQL'
+  Note: 'Схема базы данных для учета ремонта компьютерной техники'
+}
+
+// 1. Таблица "Клиенты" (Clients)
+Table Clients {
+  client_id INT [pk, increment, note: 'Уникальный идентификатор клиента']
+  name VARCHAR(255) [not null, note: 'ФИО или Название организации']
+  client_type ENUM('Физическое лицо', 'Юридическое лицо') [not null, note: 'Тип клиента']
+  phone VARCHAR(20) [not null, note: 'Контактный телефон']
+  email VARCHAR(255) [unique, note: 'Email (уникальный)']
+  address VARCHAR(255) [note: 'Адрес']
+}
+
+// 2. Таблица "Сотрудники" (Employees)
+Table Employees {
+  employee_id INT [pk, increment, note: 'Уникальный идентификатор сотрудника']
+  full_name VARCHAR(255) [not null, note: 'ФИО сотрудника']
+  position VARCHAR(100) [not null, note: 'Должность (Инженер, Менеджер)']
+  specialization VARCHAR(100) [note: 'Специализация инженера']
+  phone VARCHAR(20) [not null, note: 'Контактный телефон']
+}
+
+// 3. Таблица "Оборудование" (Devices)
+Table Devices {
+  device_id INT [pk, increment, note: 'Уникальный идентификатор устройства']
+  client_id INT [not null, note: 'Внешний ключ к таблице Clients']
+  device_type VARCHAR(100) [not null, note: 'Тип устройства (Ноутбук, ПК, Монитор)']
+  manufacturer VARCHAR(100)
+  model VARCHAR(100)
+  serial_number VARCHAR(100) [unique, not null, note: 'Серийный номер устройства (уникальный)']
+  receipt_date DATE [not null, note: 'Дата поступления устройства']
+  description_of_problem TEXT [note: 'Описание неисправности со слов клиента']
+}
+
+// 4. Таблица "Заказы" (Orders)
+Table Orders {
+  order_id INT [pk, increment, note: 'Уникальный идентификатор заказа']
+  device_id INT [not null, note: 'Внешний ключ к таблице Devices']
+  employee_id INT [not null, note: 'Внешний ключ к таблице Employees (назначенный инженер)']
+  order_date DATE [not null, note: 'Дата приема заказа']
+  planned_completion_date DATE [note: 'Планируемая дата выдачи']
+  actual_completion_date DATE [note: 'Фактическая дата выдачи']
+  initial_diagnosis TEXT [note: 'Предварительный диагноз инженера']
+  status ENUM('Принят', 'В работе', 'Готов', 'Выдан', 'Отменен') [not null, note: 'Текущий статус заказа']
+  total_amount DECIMAL(10, 2) [default: 0.00, note: 'Общая стоимость заказа']
+}
+
+// 5. Таблица "Услуги" (Services)
+Table Services {
+  service_id INT [pk, increment, note: 'Уникальный идентификатор услуги']
+  name VARCHAR(255) [unique, not null, note: 'Название услуги']
+  description TEXT [note: 'Подробное описание услуги']
+  standard_price DECIMAL(10, 2) [not null, note: 'Стандартная цена услуги']
+  estimated_hours DECIMAL(5, 2) [note: 'Норма-часы на выполнение']
+}
+
+// 6. Таблица "Запчасти" (Parts)
+Table Parts {
+  part_id INT [pk, increment, note: 'Уникальный идентификатор запчасти']
+  name VARCHAR(255) [not null, note: 'Название запчасти']
+  article VARCHAR(50) [unique, not null, note: 'Артикул (уникальный)']
+  purchase_price DECIMAL(10, 2) [not null, note: 'Закупочная цена']
+  selling_price DECIMAL(10, 2) [not null, note: 'Розничная цена']
+  stock_quantity INT [not null, default: 0, note: 'Количество на складе']
+  // CHECK (stock_quantity >= 0) - check constraints are often omitted in pure DBML or added as notes
+}
+
+// 7. Таблица "Детали Заказа - Услуги" (OrderServices)
+Table OrderServices {
+  order_service_id INT [pk, increment, note: 'Уникальный идентификатор записи']
+  order_id INT [not null, note: 'Внешний ключ к таблице Orders']
+  service_id INT [not null, note: 'Внешний ключ к таблице Services']
+  quantity INT [not null, default: 1, note: 'Количество выполненных услуг']
+  actual_service_price DECIMAL(10, 2) [not null, note: 'Фактическая цена, по которой оказана услуга']
+
+  Indexes {
+    (order_id, service_id) [unique, note: 'Уникальность пары (order_id, service_id)']
+  }
+}
+
+// 8. Таблица "Детали Заказа - Запчасти" (OrderParts)
+Table OrderParts {
+  order_part_id INT [pk, increment, note: 'Уникальный идентификатор записи']
+  order_id INT [not null, note: 'Внешний ключ к таблице Orders']
+  part_id INT [not null, note: 'Внешний ключ к таблице Parts']
+  quantity INT [not null, default: 1, note: 'Количество использованных запчастей']
+  actual_selling_price DECIMAL(10, 2) [not null, note: 'Фактическая цена продажи запчасти']
+
+  Indexes {
+    (order_id, part_id) [unique, note: 'Уникальность пары (order_id, part_id)']
+  }
+}
+
+// Определения связей (References)
+
+// Devices -> Clients (fk_device_client)
+Ref fk_device_client: Devices.client_id > Clients.client_id [update: cascade, delete: restrict]
+
+// Orders -> Devices (fk_order_device)
+Ref fk_order_device: Orders.device_id > Devices.device_id [update: cascade, delete: restrict]
+
+// Orders -> Employees (fk_order_employee)
+Ref fk_order_employee: Orders.employee_id > Employees.employee_id [update: cascade, delete: restrict]
+
+// OrderServices -> Orders (fk_os_order)
+Ref fk_os_order: OrderServices.order_id > Orders.order_id [update: cascade, delete: cascade]
+
+// OrderServices -> Services (fk_os_service)
+Ref fk_os_service: OrderServices.service_id > Services.service_id [update: cascade, delete: restrict]
+
+// OrderParts -> Orders (fk_op_order)
+Ref fk_op_order: OrderParts.order_id > Orders.order_id [update: cascade, delete: cascade]
+
+// OrderParts -> Parts (fk_op_part)
+Ref fk_op_part: OrderParts.part_id > Parts.part_id [update: cascade, delete: restrict]
