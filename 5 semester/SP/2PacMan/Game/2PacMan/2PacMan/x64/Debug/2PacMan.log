@@ -1,0 +1,5 @@
+﻿  Game.cpp
+  Main.cpp
+C:\Users\sasha\Documents\Projects\2PacMan\Game\2PacMan\2PacMan\Main.cpp(473,94): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
+  Создание кода...
+  2PacMan.vcxproj -> C:\Users\sasha\Documents\Projects\2PacMan\Game\2PacMan\x64\Debug\2PacMan.exe
