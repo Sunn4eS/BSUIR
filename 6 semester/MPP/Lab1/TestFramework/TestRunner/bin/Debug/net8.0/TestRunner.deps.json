@@ -1,0 +1,73 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "TestRunner/1.0.0": {
+        "dependencies": {
+          "Application.Tests": "1.0.0",
+          "TestFramework": "1.0.0"
+        },
+        "runtime": {
+          "TestRunner.dll": {}
+        }
+      },
+      "Application.Logic/1.0.0": {
+        "dependencies": {
+          "TestFramework": "1.0.0"
+        },
+        "runtime": {
+          "Application.Logic.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Application.Tests/1.0.0": {
+        "dependencies": {
+          "Application.Logic": "1.0.0",
+          "TestFramework": "1.0.0"
+        },
+        "runtime": {
+          "Application.Tests.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "TestFramework/1.0.0": {
+        "runtime": {
+          "TestFramework.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "TestRunner/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Application.Logic/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Application.Tests/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "TestFramework/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
