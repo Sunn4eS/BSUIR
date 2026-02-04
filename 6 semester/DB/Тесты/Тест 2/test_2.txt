@@ -1,0 +1,278 @@
+The basic syntax for SELECT query is…
+SELECT FieldsList FROM TableName.
+
+Is it a good idea to select all fields from a table using “SELECT *” syntax?
+It may be OK for debug, but in real-life situations it’s better to list specific fields only.
+
+With SELECT queries we can select data from…
+Tables
+Views
+
+SELECT DISTINCT analyzes…
+The whole selected row.
+
+With GROUP BY syntax we can group data by…
+Fields names.
+Expressions.
+
+Grouping data by non-unique field…
+May lead to a mistake and incorrect query result.
+
+To skip NULL-values with COUNT function we shall use the following syntax:
+COUNT(FieldName).
+
+To count values without duplications using COUNT function we shall use the following syntax:
+COUNT(DISTINCT FieldName).
+
+Is it true that in most DBMSes COUNT(*) is the fastest way to count all rows in a table?
+No.
+
+To count some rows matching some condition with COUNT function we shall use…
+WHERE clause.
+
+To count values matching some condition and without duplications using COUNT function we shall use the following syntax:
+COUNT(DISTINCT FieldName) and WHERE clause.
+
+Can we use COUNT function to directly count database objects?
+No, we shall previously select the information about database objects and use COUNT in that query.
+
+Can we use functions like SUM, MIN, MAX without GROUP BY?
+Yes.
+
+Does MS SQL Server automatically select proper data type for AVG function?
+No, MS SQL Server uses initial data type, and that may lead to incorrect results.
+
+Can we get an arithmetic overflow error while using SUM or AVG functions?
+Yes.
+
+Do MIN, MAX, AVG, SUM functions produce an exception on empty data set?
+No.
+
+Can we use ORDER BY to order a data set by several fields?
+Yes.
+
+How does a DBMS handle NULL-values while ordering data?
+Some DBMSes treat NULLs as “the greatest” values, some – as “the lowest”.
+
+Does ordering influence query execution speed?
+Yes, it slows the query.
+
+Does BETWEEN clause treat its border values as “inclusive” or “exclusive”?
+In all DBMSes – as “inclusive”.
+
+Is it a good idea to put single conditions in braces while using a compound condition?
+Yes, it’s much easier to read and understand conditions with braces.
+Yes, sometimes braces may help to produce the exact behavior we want.
+
+Can we combine BETWEEN clause with ‘<’, ‘>’, ‘<=’, ‘>=’, ‘!=’?
+Yes.
+
+Do all DBMSes support the same approach to limiting rows selection?
+No, MySQL uses LIMIT clause, MS SQL Server and Oracle use OFFSET … FETCH clause.
+
+Can we use RANK function to limit the quantity of selected rows?
+Yes, we may use RANK function and WHERE clause.
+
+Can we use RANK function inside a Commoт Table Expression?
+Yes.
+
+Why do we cast integers to floats in MS SQL Server before passing the value to AVG function?
+To get correct result (because otherwise MS SQL Server will treat the result as integer and lose decimal part).
+
+Can AVG function handle NULLs?
+Yes, it simply doesn’t take NULLs into account.
+
+Can we use AVG with time periods?
+Yes, as long as those periods are presented as numbers.
+
+Can we group data by several fields or expressions?
+Yes.
+
+Can we use GROUP BY clause without ORDER BY clause?
+Yes.
+
+Can we refence a named expression from GROUP BY clause?
+Yes, but in MySQL only.
+
+Can we simplify ON section of JOIN operator?
+Yes, in MySQL and Oracle we may use USING clause instead of ON.
+
+Do we have to write INNER and OUTER keywords with JOIN operator?
+No.
+
+Can we join more than two tables at once?
+Yes, but each JOIN operator still joins two tables only.
+
+Why do we need GROUP_CONCAT, STRING_AGG and LISTAGG functions?
+We may produce easy-to-read data and avoid row-data duplication.
+
+Can we control data ordering within GROUP_CONCAT, STRING_AGG and LISTAGG functions?
+Yes.
+
+Can we eliminate duplications within data produced by GROUP_CONCAT, STRING_AGG and LISTAGG functions?
+Yes, each DBMS provides its own approach.
+
+Can we rewrite a query with JOIN as a query with IN (and vice versa)?
+Yes, for most cases, still there may be exceptions.
+
+Why is it dangerous to use non-unique field with GROUP BY or DISCTINCT?
+We may lose some information if equal values represent different entities.
+
+How can we deal with the problem that parent query produces empty result when NOT IN subquery returns at least one NULL?
+We may use special functions to convert NULLs to pre-defined values.
+We may rewrite the query using JOIN instead of subquery.
+
+Can we influence JOIN result with additional conditions?
+Yes, with WHERE, HAVING and other approaches.
+
+Can we state that queries with JOINs are always faster than queries with subqueries with IN?
+Queries with JOINs seem to be faster in most cases, but there may be exceptions.
+
+Does SELECT DISTINCT (instead of just SELECT) in subquery with IN or NOT IN speeds up the query execution?
+It tends to speed up some queries that have a huge amount of data yet a few different values in subquery.
+
+Can IN expressions be nested?
+Yes.
+
+Can we transform human-readable names, titles, etc. into ids directly in SQL query?
+Yes, but we have to be sure that such names, titles, etc. are unique.
+
+Do all DBMSes require table names along with field names in JOIN queries?
+No DBMS requires such a thing if all field names are unique.
+MySQL tends to be more flexible (so, it rare requires table names) while MS SQL Server and Oracle require table names in most cases.
+
+Why can’t we use WHERE clause instead of HAVING clause with a condition depending on COUNT function?
+Because WHERE needs immediate result to compare with, and COUNT does not provide that result until main query completion.
+
+Can we rewrite a query with JOIN as a query with correlated subquery?
+Yes, but it’s a bad idea, because the query performance most like drops.
+
+Why do we usually use COUNT(IndexedField) expression instead of COUNT(*) expression in JOIN queries?
+In many cases DBMS may use index to increase the query performance.
+It decreases the risk of incorrect NULLs handling.
+
+Why do we have to repeat expressions in SELECT and WHERE, HAVING, ORDER BY, GROUP BY parts of a query in MS SQL Server?
+Because MS SQL Server does not support accessing an expression by its name.
+
+Why do we always use ON clause in JOINs in MS SQL Server (and never use USING clause)?
+Because MS SQL Server does not support USING syntax with JOINS.
+
+Is it true that queries with MAX function are usually faster than queries with RANK function?
+It tends to be so, but exceptions are possible.
+
+Can we use nested aggregate functions (e.g. AVG(AVG(x)))?
+No in all DBMSes.
+
+Can we use a query as a data source for another query?
+Yes.
+
+Do we have to include all fields from GROUP BY section in SELECT main section?
+No in MySQL, yes in MS SQL and Oracle.
+
+Why do we name subqueries with AS expression?
+To increase the query readability.
+Some DBMSes require all data sources to have names.
+
+Can we use nested subqueries?
+Yes in all DBMSes.
+
+Can we use a subquery result with ‘=’ operator?
+Yes, if that subquery produces scalar result.
+
+Can we JOIN a table with a subquery result?
+Yes in all DBMSes.
+
+What is the main difference between INNER JOIN and OUTER JOIN?
+INNER JOIN looks for existing pairs of values, OUTER JOIN may produce “value-NULL” pairs.
+
+Can we replace LEFT JOIN with RIGHT JOIN?
+Yes, we just have to swap left and right tables.
+
+What field shall we put in WHERE clause with exclusive JOINs?
+The foreign key or the primary key (depending on JOIN type).
+
+How can we simulate FULL OUTER JOIN in MySQL?
+With LEFT and RIGHT JOINs and UNION.
+
+Why doesn’t CROSS JOIN contain ON section?
+It does not use any matching fields to produce the result.
+
+Can we simulate CROSS APPLY for DBMSes that do not support it?
+Yes, with rows numbering, subqueries and rather sophisticated code.
+
+The main CROSS APPLY advantages are that:
+We may easily access left table field from a right query (and vice versa).
+It simplifies the syntax allowing to present a complex logic in a simple form.
+
+Do all DBMSes support all kind of JOINs?
+No, still most classic JOINs work the same way.
+
+How can we tell MySQL to use autoincremented primary key value with INSERT?
+Pass NULL as the primary key value.
+Do not pass the primary key value at all.
+
+How can we tell MS SQL Server to use explicitly passed identity value with INSERT?
+We have to allow inserts on identity field for the table we inserting data into.
+
+How can we tell Oracle to use explicitly passed autoincremented primary key value with INSERT?
+We have to disable temporary the trigger responsible for autoincremented primary key value calculation.
+
+Do we have to convert string date representation to a specific date type with INSERT?
+No for MySQL and MS SQL Server, yes for Oracle.
+
+Is it a good idea to insert several rows at once (instead of executing several INSERT queries)?
+Yes, it increases the query speed.
+
+Can we calculate a new field value based on a current value of the same field during UPDATE?
+Yes.
+
+Can we use a function call to acquire a new field value during UPDATE?
+Yes.
+
+How will a DBMS behave if we execute an UPDATE query without WHERE clause?
+It will update all table rows.
+
+Is there a possibility to use some default value for a field not explicitly provided in INSERT query?
+Yes, but the implementation may vary depending on a DBMS.
+
+Can we insert some data into a table while receiving that data from a SELECT query?
+Yes, but the implementation may vary depending on a DBMS.
+
+Is there a faster way to delete all table rows than to use a DELETE query?
+Yes, we may use the TRUNCATE operator.
+
+Can we use a compound condition in DELETE query WHERE clause?
+Yes.
+
+How will a DBMS behave if we execute a DELETE query without WHERE clause?
+It will delete all table rows.
+
+Do DBMSes automatically compress empty autoincremented primary key (or identity field) values after some records deletion?
+No.
+
+Can we automatically restore some deleted records?
+No, once transaction is committed the deleted data is lost forever.
+
+How can we insert some data without duplication in MySQL?
+Use REPLACE operator.
+
+How can we insert some data without duplication in MS SQL Server?
+Use MERGE operator.
+
+How can we insert some data without duplication in Oracle?
+Use MERGE operator.
+
+Can we simulate MERGE operator in MySQL?
+Yes, with ON DUPLICATE KEY UPDATE.
+
+Can we copy some data from one database to another?
+Yes, but in some DBMSes it will require rather sophisticated approach.
+
+Can we choose which value to insert based on some condition right inside the INSERT query?
+Yes, with CASE clause for all DBMSes.
+
+Can we update some value based on some condition right inside the UPDATE query?
+Yes, with CASE clause for all DBMSes.
+
+Can we automatically restore some old values of updated records?
+No, once transaction is committed the old values are lost forever.

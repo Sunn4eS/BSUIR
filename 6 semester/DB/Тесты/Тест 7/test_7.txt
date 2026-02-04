@@ -1,0 +1,83 @@
+How can we store a hierarchical data structure in a relational DBMS?
+With a recursive foreign key.
+
+Is there any way to automatically retrieve a part of hierarchical data structure in a relational DBMS?
+Yes, with a recursive Common Table Expression.
+Yes, some DBMSes provide special syntax for such tasks.
+
+Do relational databases automatically enforce all specific hierarchical data structure rules and constraints?
+No, we have to maintain such rules and constraints with triggers and other mechanisms.
+
+How can we store a graph data structure in a relational DBMS?
+With two tables (one for nodes, one for connections).
+
+Is there any way to automatically retrieve a part of graph data structure in a relational DBMS?
+No
+
+Do relational databases automatically enforce all specific graph data structure rules and constraints?
+No, we have to maintain such rules and constraints with triggers and other mechanisms.
+
+Can we create a database backup from a command line?
+Yes
+
+Can we restore a database backup from a command line?
+Yes
+
+Do all databases support both binary and text (SQL) backups?]
+No
+
+Can we revoke a privilege previously granted to a user?
+Yes
+
+Can we restart a DBMS from a command line?
+Yes, with stop and start commands in Windows.
+Yes, with stop and start or restart commands in Linux.
+
+Is it possible to grant a user access to several databases?
+Yes
+
+Can we retrieve current DBMS charset settings via SQL queries?
+Yes
+
+Can we change current DBMS charset settings via SQL queries?
+No, except for MySQL.
+
+Is it a good idea to change current DBMS charset settings?
+No, we may accidently break something.
+
+Do all DBMSes have unified syntax for dates manipulation?
+No
+
+Do all DBMSes follow unified approach for weeks, days, etc. numbering?
+No
+
+Which approach is preferrable?
+To use pre-defined DBMS mechanisms for dates manipulation.
+
+Do all DBMSes support persistent Common Table Expressions?
+No
+
+Do all DBMSes allow to enable persistent Common Table Expressions with query hints?
+No, except for Oracle.
+
+What is the danger of non-persistent Common Table Expressions?
+They may slow down the query.
+They may produce unexpected behavior.
+
+Do all DBMSes support pre-defined mechanisms for JSON management?
+Yes
+
+Can we acquire data in JSON format using SELECT queries?
+Yes
+
+Can we directly query data from JSON format?
+No
+
+Can we automatically generate column names for pivot tables?
+Yes, with a dynamic query.
+
+Can we unpivot a pivot table?
+Yes
+
+Can we represent a pivot table data in some other form?
+Yes, as an ordinary table.

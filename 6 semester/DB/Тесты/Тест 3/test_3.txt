@@ -1,0 +1,49 @@
+Why do we need views?
+We may simplify some queries.
+We can achieve security enhancement.
+We may use views for compatibility with old applications.
+
+Using views has the following pros…
+We can simplify managing complex queries.
+We can create rich and simple API.
+
+Using views has the following cons…
+We get additional code to write and maintain.
+There are some DBMS limitations on operations available via views.
+
+What is the difference between a view and a materialized view?
+A materialized view stores data, a view does not.
+
+Do all DBMSes support materialized views?
+Most DBMSes do, but there are some exceptions.
+No, but we may simulate such views with tables and triggers.
+
+How can we achieve the automatic update of materialized view?
+We shall use DBMS specific approach as it differs in different DBMSes.
+
+Can we limit access to some data using views?
+Yes, we have to revoke direct table access and create a corresponding view.
+
+Can we “hide” some columns and/or rows of a table using views?
+We can “hide” both columns and rows.
+
+Can we transform data using views (convert to another type or format)?
+Yes.
+
+Is there a possibility to insert or update data using views?
+Yes, for some views.
+
+Is there a possibility to delete data using views?
+Yes, for some views.
+
+Can we limit access to some table rows modification via views?
+Yes, in some DBMSes using WHERE clause and some additional options.
+
+Can we create a trigger on a view?
+Yes, but in MS SQL Server and Oracle only.
+
+Why do we need triggers on views?
+To modify table data.
+
+Can we use a view with a JOIN query to insert data?
+Yes, but usually we’ll need corresponding trigger.

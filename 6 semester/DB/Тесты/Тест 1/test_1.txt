@@ -1,0 +1,28 @@
+What does “SQL” acronym stand for?
+Structured Query Language.
+
+With SQL you can create…:
+Stored functions.
+DML-expressions.
+
+An SQL query usually contains…:
+Keywords.
+Column names.
+
+What is the purpose of “m2m_books_authors” and “m2m_books_genres” tables?
+These are association entities to connect books with authors and books with genres.
+
+What is the minimal time unit we store for subscription start and end?
+Day
+
+To show all books along with their authors we use a query with…
+JOIN
+
+In most database management tools to execute just a part of some SQL code currently opened in the editor you have to…
+Just select that part and start the execution.
+
+Can we fill a database with data using preliminarily prepared SQL queries?
+Yes
+
+To ensure the data integrity we…
+First create all constraints, then import data (otherwise some constraints may not prevent integrity failures)

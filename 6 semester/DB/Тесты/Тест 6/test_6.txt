@@ -1,0 +1,79 @@
+In relational databases a transaction is…
+A set of operations that forms an inseparable unit.
+
+What is an implicit transaction?
+A transaction that is managed by DBMS and requires no explicit commands for start, commit or roll back.
+
+Do all DBMSes support implicit transactions?
+Yes, except for Oracle.
+
+How can we detect if implicit transactions are enabled?
+Each DBMS has its own non-trivial mechanisms.
+
+Can we still manipulate database data with implicit transactions disabled?
+Yes
+
+Do all DBMSes support explicit transactions?
+Yes
+
+Can we commit an explicit transaction?
+Yes
+
+Can we roll back an explicit transaction?
+Yes
+
+How can we detect if explicit transactions are enabled?
+We don’t need to detect if explicit transactions are enabled.
+
+Can we manipulate database data with explicit transactions?
+Yes
+
+A transaction isolation level is…
+A virtual value showing the degree of visibility of changes between transactions.
+
+The “read committed” transaction isolation level protects us from the following problems:
+Lost update
+Dirty read
+
+The “repeatable read” transaction isolation level protects us from the following problems:
+Lost update
+Dirty read
+Repeatable read
+
+The “read uncommitted” transaction isolation level protects us from the following problem:
+Lost update
+
+The “snapshot” transaction isolation level protects us from the following problems:
+Lost update
+Dirty read
+Non-repeatable read
+
+So called “lost update” problem arises when…
+One transaction loses its update due to other’s transaction later update.
+
+So called “dirty read” problem arises when…
+One transaction reads temporary data produced by another transaction (such data will never be saved in the database)
+
+So called “non-repeatable read” problem arises when…
+A transaction gets different results on the first and the second read attempts.
+
+So called “phantom reads” problem arises when…
+A transaction gets different results of some data aggregation on the first and the second read attempts.
+
+Can a DBMS handle mutual transaction lock situation?
+Yes, one of such transactions will be rolled back.
+
+Can we commit or roll back a transaction from a stored function?
+No, but we may create a situation that forced a DBMS to roll back a transaction.
+
+Can we commit or roll back a transaction from a stored procedure?
+Yes
+
+Can we commit or roll back a transaction from a trigger?
+Not in every DBMS, but we may create a situation that forced a DBMS to roll back a transaction.
+
+Can we change a transaction isolation level in a stored procedure?
+Yes
+
+Can we change a transaction isolation level in a stored function?
+No

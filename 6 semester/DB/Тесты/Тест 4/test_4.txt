@@ -1,0 +1,65 @@
+A trigger may be activated by the following operations:
+INSERT
+UPDATE
+
+There are such trigger types as:
+BEFORE triggers.
+AFTER triggers.
+INSTEAD OF triggers.
+
+With INSTEAD OF triggers we have to…
+Perform necessary data modification from within the trigger.
+
+Row-level triggers…
+Are activated for each modified row, only this row is available within the trigger.
+
+Statement-level triggers…
+Are activated once for the whole modification statement, all modified data is available within the trigger.
+
+With triggers we may perform…
+Complex cascade operations.
+Business logic implementation and control.
+
+Can we modify data of the same table to which an activated trigger belongs?
+Yes.
+
+Can we modify data of some other table (i.e., not the same table to which an activated trigger belongs)?
+Yes
+
+While updating some aggregate field value with triggers…
+In most cases we may avoid full data recalculation, thou it may complicate the trigger code.
+In some cases we have to perform full data recalculation due to DBMS limitations.
+
+OLD and NEW keywords are available…
+In row-level triggers only.
+
+INSERTED and DELETED virtual tables are available…
+In statement-level triggers only.
+
+Can we roll back a transaction from within a trigger?
+Yes in some DBMSes (in other we have to simulate this action with raising an exception or error).
+
+Can we return an error message from a trigger while blocking some operation?
+Yes
+
+Can we use variables inside triggers?
+Yes
+
+Can we use regular expressions and/or other data format control mechanisms inside triggers?
+Yes
+
+Why do we sometimes have to create separate INSERT, UPDATE, and DELETE triggers doing the same (or almost the same) things instead of creating one trigger for all operations?
+Some DBMSes do not support assigning one trigger for several operations.
+It helps to simplify trigger code.
+
+Once we’ve assigned one trigger for INSERT, UPDATE, and DELETE operations in MS SQL Server, can we distinguish which operation was the reason for the trigger activation?
+Yes
+
+Can we change some field value with a trigger before that value is used for INSERT or UPDATE?
+Yes
+
+Can triggers be activated by cascade operations?
+No for MySQL, yes for MS SQL Server and Oracle.
+
+How can we make sure that our trigger works as intended?
+We shall test its behavior performing corresponding queries.

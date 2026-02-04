@@ -1,0 +1,66 @@
+Can we call a stored function from within a query?
+Yes
+
+Can stored functions return tables?
+Yes, in some DBMSes.
+
+Can we use a stored function call in conditional statements?
+Yes
+
+Can stored functions change data in databases?
+No for MS SQL Server, yes for MySQL and Oracle.
+
+Can stored functions change database objects?
+Yes for Oracle (requires PL/SQL block), no for MySQL and MS SQL Server.
+
+Is it possible to roll back a transaction from within a function?
+No
+
+Using stored functions has the following pros…
+We only need to write the code once.
+Function call syntax is more “readable” than the huge code.
+
+Can we create a stored function with a name similar to already existing pre-defined function name?
+No
+
+Can we call a stored procedure from within a query?
+No
+
+What is the difference between a stored procedure and a stored function?
+Stored procedure has its own call and results processing syntax, stored function allows built-in integration in any SQL-query.
+Stored procedure may produce transactions, stored function may not.
+
+What is the difference between a stored procedure and a stored function?
+Stored procedure has rich exceptions handling capabilities, stored function has limited exceptions handling capabilities (none in some DBMSes).
+Stored procedure may call other stored procedures and stored functions, stored function may call other stored functions only.
+
+Can we execute a dynamic query from within a stored procedure?
+Yes, in all DBMSes.
+
+Can we access information about database objects from within a stored procedure?
+Yes, in all DBMSes.
+
+Using stored procedures has the following cons…
+Testing and/or debugging may become more difficult.
+There may be security issues (in case of wrong permissions settings).
+
+Can we schedule a stored procedure execution?
+Yes
+
+Do all DBMSes have a unified syntax for stored procedures call?
+No
+
+Can we call a stored function from within a query?
+Yes
+
+Can stored procedures produce tables?
+Yes, in all DBMSes.
+
+Can we use a stored procedure call in conditional statements?
+No
+
+Can stored procedures change data in databases?
+Yes
+
+Can stored procedures change database objects?
+Yes
