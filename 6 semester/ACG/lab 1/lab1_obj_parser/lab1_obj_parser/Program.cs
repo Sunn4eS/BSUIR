@@ -13,7 +13,6 @@ namespace Lab1_3D
         private LinkerForRender _linker;
         private CameraControl _controller;
 
-        // Элементы интерфейса
         private Button _btnLoad;
         
         public MainForm()
@@ -36,16 +35,13 @@ namespace Lab1_3D
 
             _linker.CameraPosition = new Vec4(0, 0, -50);
 
-            // 4. Инициализация контроллера мыши
             _controller = new CameraControl(_linker, () => this.Invalidate());
 
-            // Подписываемся на события мыши (чтобы вращать модель)
             this.MouseDown += (s, e) => _controller.OnMouseDown(e);
             this.MouseUp += (s, e) => _controller.OnMouseUp(e);
             this.MouseMove += (s, e) => _controller.OnMouseMove(e);
             this.MouseWheel += (s, e) => _controller.OnMouseWheel(e);
 
-            // Ресайз окна
             this.Resize += (s, e) =>
             {
                 _linker.Width = ClientSize.Width;
@@ -54,7 +50,6 @@ namespace Lab1_3D
             };
         }
 
-        // Метод загрузки файла
         private void LoadModel()
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -65,21 +60,16 @@ namespace Lab1_3D
             {
                 try
                 {
-                    // Парсим файл
                     _model = new Model(ofd.FileName);
 
-                    // Сбрасываем трансформации (чтобы новая модель была в центре)
                     _linker.ModelPosition = new Vec4(0, 0, 0);
                     _linker.ModelRotation = new Vec4(0, 0, 0);
                     _linker.ModelScale = new Vec4(1, 1, 1);
 
-                    // Обновляем заголовок окна
                     this.Text = $"3D Viewer | {System.IO.Path.GetFileName(ofd.FileName)}";
 
-                    // Возвращаем фокус форме, чтобы колесико мыши работало сразу
                     this.Focus();
 
-                    // Перерисовка
                     this.Invalidate();
                 }
                 catch (Exception ex)
@@ -93,15 +83,12 @@ namespace Lab1_3D
         {
             base.OnPaint(e);
 
-            // Создаем холст
             Bitmap bmp = new Bitmap(ClientSize.Width, ClientSize.Height);
 
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                // Заливаем фон
                 g.Clear(Color.White);
 
-                // Если модель загружена - рисуем её
                 if (_model != null)
                 {
                     Rasterizer rasterizer = new Rasterizer(bmp);
@@ -109,7 +96,6 @@ namespace Lab1_3D
                 }
                 else
                 {
-                    // Если модели нет, пишем инструкцию
                     string msg = "Нажмите кнопку 'Загрузить .obj', чтобы открыть модель";
                     Font font = new Font("Arial", 14);
                     SizeF size = g.MeasureString(msg, font);
@@ -119,12 +105,7 @@ namespace Lab1_3D
                 }
             }
 
-            // Выводим результат на экран
             e.Graphics.DrawImage(bmp, 0, 0);
-
-            // Отрисовка кнопки поверх битмапа происходит автоматически, 
-            // так как она добавлена в this.Controls
-
             bmp.Dispose();
         }
 

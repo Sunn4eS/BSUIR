@@ -47,7 +47,6 @@ namespace lab1_obj_parser
         // Обработка движения мыши
         public void OnMouseMove(MouseEventArgs e)
         {
-            // Вычисляем смещение курсора
             int deltaX = e.X - _lastMousePosition.X;
             int deltaY = e.Y - _lastMousePosition.Y;
 
@@ -67,8 +66,6 @@ namespace lab1_obj_parser
             // Перемещение (ПКМ)
             if (_isRightMouseDown)
             {
-                // Меняем позицию модели
-                // Инвертируем Y, так как экранные координаты идут вниз
                 var currentPos = _linker.ModelPosition;
                 _linker.ModelPosition = new Vec4(
                     currentPos.X + deltaX * MOVE_SPEED,
@@ -81,11 +78,10 @@ namespace lab1_obj_parser
             if (changed)
             {
                 _lastMousePosition = e.Location;
-                _onUpdate?.Invoke(); // Запрашиваем перерисовку
+                _onUpdate?.Invoke();
             }
             else
             {
-                // Обновляем последнюю позицию, чтобы не было скачков при следующем нажатии
                 _lastMousePosition = e.Location;
             }
         }

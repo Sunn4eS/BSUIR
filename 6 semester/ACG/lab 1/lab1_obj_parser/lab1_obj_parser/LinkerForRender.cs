@@ -53,21 +53,14 @@ namespace lab1_obj_parser
             {
                 for (int i = 0; i < faceIndices.Length; i++)
                 {
-                    // Берем текущую и следующую вершину (замыкаем контур)
                     int index1 = faceIndices[i];
                     int index2 = faceIndices[(i + 1) % faceIndices.Length];
 
                     Vec4 v1 = model.Vertices[index1];
                     Vec4 v2 = model.Vertices[index2];
 
-                    // Трансформация вершин
                     v1 = ProcessVertex(v1, mvpMatrix, viewportMatrix);
                     v2 = ProcessVertex(v2, mvpMatrix, viewportMatrix);
-
-                    // Простая проверка отсечения (если вершина за камерой)
-                    // В полноценном движке нужно делать Clipping (отсечение линий), но для лабы
-                    // достаточно не рисовать то, что "улетело" далеко или имеет w < 0 (до проекции)
-                    // Здесь упрощенно: если координаты внутри экрана, рисуем.
 
                     rasterizer.DrawLine((int)v1.X, (int)v1.Y, (int)v2.X, (int)v2.Y, Color.Black);
                 }

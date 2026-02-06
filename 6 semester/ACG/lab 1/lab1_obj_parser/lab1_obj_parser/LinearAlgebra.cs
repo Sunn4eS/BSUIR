@@ -13,10 +13,10 @@ namespace lab1_obj_parser
             X = x; Y = y; Z = z; W = w;
         }
 
-        // Вспомогательная операция вычитания (для векторов)
-        public static Vec4 operator -(Vec4 a, Vec4 b) => new Vec4(a.X - b.X, a.Y - b.Y, a.Z - b.Z, 0); // w=0 для вектора направления
-
-        // Векторное произведение (Cross Product)
+        public static Vec4 operator -(Vec4 a, Vec4 b)
+        {
+          return new Vec4(a.X - b.X, a.Y - b.Y, a.Z - b.Z, 0); // w=0 для вектора направления
+        }
         public static Vec4 Cross(Vec4 a, Vec4 b)
         {
             return new Vec4(
@@ -27,7 +27,6 @@ namespace lab1_obj_parser
             );
         }
 
-        // Скалярное произведение (Dot Product)
         public static double Dot(Vec4 a, Vec4 b) {
             return a.X* b.X + a.Y * b.Y + a.Z * b.Z;
         }
@@ -66,8 +65,8 @@ namespace lab1_obj_parser
 
         // Матрица на матрицу
        public static Matrix4x4 operator *(Matrix4x4 a, Matrix4x4 b)
-        {
-            Matrix4x4 res = new Matrix4x4();
+       {
+            Matrix4x4 res = new();
             for (int r = 0; r < 4; r++)
             {
                 for (int c = 0; c < 4; c++)
@@ -78,7 +77,8 @@ namespace lab1_obj_parser
                 }
             }
             return res;
-        }
+       }
+
         // Матрица на вектор
         public static Vec4 operator *(Matrix4x4 m, Vec4 v)
         {
@@ -167,7 +167,7 @@ namespace lab1_obj_parser
 
        public static Matrix4x4 Perspective(double fov, double aspect, double zNear, double zFar)
         {
-            Matrix4x4 res = new Matrix4x4(); 
+            Matrix4x4 res = new(); 
             double tanHalfFov = Math.Tan(fov / 2.0);
 
             res.M[0, 0] = 1.0 / (aspect * tanHalfFov);
