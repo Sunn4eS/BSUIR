@@ -89,12 +89,19 @@ namespace Lab1_3D
             {
                 g.Clear(Color.White);
 
+            }
                 if (_model != null)
                 {
-                    Rasterizer rasterizer = new Rasterizer(bmp);
-                    _linker.Render(_model, rasterizer);
+                    using(NewBitmap newBitmap = new NewBitmap(bmp))
+                    {
+                    Rasterizer rasterizer = new Rasterizer(newBitmap);
+                        _linker.Render(_model, rasterizer);
+                    }
+                    
                 }
                 else
+                {
+                using (Graphics g = Graphics.FromImage(bmp))
                 {
                     string msg = "Нажмите кнопку 'Загрузить .obj', чтобы открыть модель";
                     Font font = new Font("Arial", 14);
@@ -103,7 +110,9 @@ namespace Lab1_3D
                         (ClientSize.Width - size.Width) / 2,
                         (ClientSize.Height - size.Height) / 2);
                 }
+                
             }
+           
 
             e.Graphics.DrawImage(bmp, 0, 0);
             bmp.Dispose();

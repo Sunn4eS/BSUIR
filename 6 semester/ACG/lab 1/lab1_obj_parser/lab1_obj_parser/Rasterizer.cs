@@ -5,19 +5,19 @@ namespace lab1_obj_parser
 {
     public class Rasterizer
     {
-        private Bitmap _canvas;
+        private NewBitmap _canvas;
 
-        public Rasterizer(Bitmap canvas)
+        public Rasterizer(NewBitmap canvas)
         {
             _canvas = canvas;
         }
-        private void SetPixel(int x, int y, Color color)
-        {
-            if (x >= 0 && x < _canvas.Width && y >= 0 && y < _canvas.Height)
-            {
-                _canvas.SetPixel(x, y, color);
-            }
-        }
+        //private void SetPixel(int x, int y, Color color)
+        //{
+        //    if (x >= 0 && x < _canvas.Width && y >= 0 && y < _canvas.Height)
+        //    {
+        //        _canvas.SetPixel(x, y, color);
+        //    }
+        //}
 
         // Алгоритм Брезенхема
         public void DrawLine(int x0, int y0, int x1, int y1, Color color)
@@ -33,7 +33,7 @@ namespace lab1_obj_parser
 
             while (steps < maxSteps)
             {
-                SetPixel(x0, y0, color);
+                _canvas.SetPixel(x0, y0, color);   
 
                 if (x0 == x1 && y0 == y1) break;
 
