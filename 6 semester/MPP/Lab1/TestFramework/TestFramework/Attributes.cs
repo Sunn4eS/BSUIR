@@ -7,6 +7,22 @@ namespace TestFramework
     public class TestClassAttribute : Attribute
     {
         public string Description { get; set; }
+
+        //Паралеллизм 
+        public bool RunParallel { get; set; } = true;
+        public TestClassAttribute() { }
+    }
+
+    // Для таймаута
+    [AttributeUsage(AttributeTargets.Method)]
+    public class TimeoutAttribute : Attribute
+    {
+        public int Milliseconds { get; }
+
+        public TimeoutAttribute(int milliseconds)
+        {
+            Milliseconds = milliseconds;
+        }
     }
 
 

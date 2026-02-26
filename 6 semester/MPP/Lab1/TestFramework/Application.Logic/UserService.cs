@@ -1,7 +1,7 @@
-﻿using Application.Logic;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Application.Logic
@@ -10,14 +10,12 @@ namespace Application.Logic
     {
         private readonly Database _database;
 
-        // Если базы нет, создаем локальную (для обычных тестов)
         public UserService()
         {
             _database = new Database();
-            _database.Init(); // В реальном коде так делать не стоит, но для лабы сойдет
+            _database.Init();
         }
 
-        // Конструктор для внедрения зависимости (для Shared Context тестов)
         public UserService(Database database)
         {
             _database = database;
@@ -25,6 +23,7 @@ namespace Application.Logic
 
         public void RegisterUser(string username, string email, int age)
         {
+            Thread.Sleep(1000);
             if (string.IsNullOrWhiteSpace(username))
                 throw new ArgumentNullException(nameof(username), "Имя пользователя не может быть пустым");
 
@@ -45,7 +44,12 @@ namespace Application.Logic
                 Age = age
             };
 
-            _database.Users.Add(user);
+            _database.AddUserSafe(user);
+        }
+
+        public void SlowOperation()
+        {
+            Thread.Sleep(2000); 
         }
 
         public User GetByEmail(string email)
@@ -53,30 +57,28 @@ namespace Application.Logic
             return _database.Users.FirstOrDefault(u => u.Email == email);
         }
 
-        // Асинхронный метод: отправка приветственного письма
         public async Task<bool> SendWelcomeEmailAsync(string email)
         {
             var user = GetByEmail(email);
             if (user == null) return false;
 
-            // Имитация отправки по сети
             await Task.Delay(300);
             return true;
         }
         
-        // 1. Возвращает всех пользователей (для CollectionContains)
+        // 1. Возвращает всех пользователей
         public List<User> GetAllUsers()
         {
             return _database.Users;
         }
 
-        // 2. Возвращает список имен (для CollectionContains<string>)
+        // 2. Возвращает список имен 
         public List<string> GetAllUsernames()
         {
             return _database.Users.Select(u => u.Username).ToList();
         }
 
-        // 3. Удаляет пользователя (для проверки уменьшения списка)
+        // 3. Удаляет пользователя 
         public bool DeleteUser(string email)
         {
             var user = GetByEmail(email);
@@ -84,14 +86,14 @@ namespace Application.Logic
             return _database.Users.Remove(user);
         }
 
-        // 4. Проверка возраста (для IsTrue/IsFalse)
+        // 4. Проверка возраста 
         public bool IsUserPensioner(User user)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             return user.Age >= 65;
         }
 
-        // 5. Метод генерации отчета (для StringContains)
+        // 5. Метод генерации отчета 
         public string GetUserReport(string email)
         {
             var user = GetByEmail(email);

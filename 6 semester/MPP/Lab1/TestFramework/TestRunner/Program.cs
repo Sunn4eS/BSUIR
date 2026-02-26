@@ -1,185 +1,248 @@
-﻿using Application.Tests; 
-using TestFramework;
+﻿using Application.Tests;
+using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
+using TestFramework;
 
 namespace TestRunner
 {
     class Program
     {
-        static void Main(string[] args)
+        private static readonly object _consoleLock = new object();
+
+        static void Main()
         {
-            Console.WriteLine("==================================================");
-            Console.WriteLine("                  TEST RUNNER                     ");
-            Console.WriteLine("==================================================\n");
+            Console.WriteLine("=== TEST RUNNER ===\n");
 
-            var testAssembly = Assembly.GetAssembly(typeof(ValidationTests));
+            int maxDegree = 6;
+            Console.WriteLine($"Максимум потоков: {maxDegree}");
 
-            var testClasses = testAssembly.GetTypes()
-                .Where(t => t.GetCustomAttribute<TestClassAttribute>() != null)
-                .ToArray();
+            var testTypes = GetTestClasses();
+            
+            var sw = Stopwatch.StartNew();
 
-            int globalTotal = 0, globalPassed = 0, globalFailed = 0;
+            var (total, passed, failed) = RunAllTests(testTypes, maxDegree);
 
-            foreach (var classType in testClasses)
-            {
-                RunTestsForClass(classType, ref globalTotal, ref globalPassed, ref globalFailed);
-                Console.WriteLine();
-            }
+            sw.Stop();
 
-            Console.WriteLine("==================================================");
-            Console.WriteLine($"ИТОГО: Запущено: {globalTotal}, Успешно: {globalPassed}, Провалено: {globalFailed}");
+            Console.WriteLine($"\nИТОГО: Запущено: {total}, Успешно: {passed}, Провалено: {failed}");
+            Console.WriteLine($"ВРЕМЯ ВЫПОЛНЕНИЯ: {sw.Elapsed.TotalSeconds:F3} сек.");
             Console.ReadLine();
         }
 
-       
-        static void RunTestsForClass(Type classType, ref int total, ref int passed, ref int failed)
+        private static Type[] GetTestClasses()
         {
-            var classAttr = classType.GetCustomAttribute<TestClassAttribute>();
-            string description = classAttr.Description ?? "";
-
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($"КЛАСС: {classType.Name}");
-            if (!string.IsNullOrEmpty(description)) Console.WriteLine($"INFO:  {description}");
-            Console.ResetColor();
-
-            object sharedContextObject = null;
-            ISharedContext contextInterface = null;
-
-            var contextAttr = classType.GetCustomAttribute<UseSharedContextAttribute>();
-            if (contextAttr != null)
-            {
-                try
-                {
-                    sharedContextObject = Activator.CreateInstance(contextAttr.ContextType);
-
-                    if (sharedContextObject is ISharedContext ctx)
-                    {
-                        contextInterface = ctx;
-                        ctx.Init();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"CRITICAL: Не удалось создать Shared Context: {ex.Message}");
-                    Console.ResetColor();
-                    return;
-                }
-            }
-
-            var setupMethod = classType.GetMethods().FirstOrDefault(m => m.GetCustomAttribute<SetupAttribute>() != null);
-            var teardownMethod = classType.GetMethods().FirstOrDefault(m => m.GetCustomAttribute<TeardownAttribute>() != null);
-
-            var testMethods = classType.GetMethods()
-                .Where(m => m.GetCustomAttribute<TestMethodAttribute>() != null)
-                .OrderBy(m => m.GetCustomAttribute<TestMethodAttribute>().Priority)
+            return Assembly.GetAssembly(typeof(ValidationTests))!
+                .GetTypes()
+                .Where(t => t.HasAttr<TestClassAttribute>())
                 .ToArray();
-
-            foreach (var method in testMethods)
-            {
-                var methodAttr = method.GetCustomAttribute<TestMethodAttribute>();
-
-                if (methodAttr.Skip)
-                {
-                    PrintResult(method.Name, "SKIPPED", ConsoleColor.Yellow, "Пропущен");
-                    continue;
-                }
-
-                var testCases = method.GetCustomAttributes<TestCaseAttribute>().ToArray();
-                if (testCases.Length > 0)
-                {
-                    foreach (var tc in testCases)
-                    {
-                        ExecuteSingleTest(classType, method, setupMethod, teardownMethod, sharedContextObject, tc.Arguments, ref total, ref passed, ref failed);
-                    }
-                }
-                else
-                {
-                    ExecuteSingleTest(classType, method, setupMethod, teardownMethod, sharedContextObject, null, ref total, ref passed, ref failed);
-                }
-            }
-
-            if (contextInterface != null)
-            {
-                try
-                {
-                    contextInterface.Cleanup();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Ошибка очистки контекста: {ex.Message}");
-                }
-            }
         }
 
-        static void ExecuteSingleTest(Type classType, MethodInfo method, MethodInfo setup, MethodInfo teardown,
-                                      object sharedContext, object[] args,
-                                      ref int total, ref int passed, ref int failed)
+        private static (int t, int p, int f) RunAllTests(Type[] classes, int maxDegree)
         {
-            total++;
-            string testName = method.Name + (args != null ? $"({string.Join(", ", args)})" : "");
+            int t = 0, p = 0, f = 0;
+            foreach (var type in classes)
+            {
+                var res = RunTestsForClass(type, maxDegree);
+                t += res.t; p += res.p; f += res.f;
+            }
+            return (t, p, f);
+        }
 
-            object instance = null;
+        static (int t, int p, int f) RunTestsForClass(Type type, int maxDegree)
+        {
+            LogClassName(type);
+
+            
+            var context = CreateSharedContext(type);
+            context?.Init();
+
+           
+            var methods = type.GetMethods();
+            var setup = methods.FirstOrDefault(m => m.HasAttr<SetupAttribute>());
+            var teardown = methods.FirstOrDefault(m => m.HasAttr<TeardownAttribute>());
+
+            var classAttr = type.GetCustomAttribute<TestClassAttribute>();
+            bool runParallel = classAttr?.RunParallel ?? true;
+
+
+            int t = 0, p = 0, f = 0;
+            var tests = GetSortedTests(methods).ToList();
+
+            if (runParallel)
+            {
+                var options = new ParallelOptions { MaxDegreeOfParallelism = maxDegree };
+
+                Parallel.ForEach(tests, options, method =>
+                {
+                    var (mt, mp, mf) = RunTestMethod(type, method, setup, teardown, context);
+                    Interlocked.Add(ref t, mt);
+                    Interlocked.Add(ref p, mp);
+                    Interlocked.Add(ref f, mf);
+                });
+            }
+            else
+            {
+                foreach (var method in tests)
+                {
+                    var (mt, mp, mf) = RunTestMethod(type, method, setup, teardown, context);
+                    t += mt; p += mp; f += mf;
+                }
+            }
+
+            context?.Cleanup();
+            return (t, p, f);
+        }
+
+        static (int t, int p, int f) RunTestMethod(Type type, MethodInfo m, MethodInfo? s, MethodInfo? td, object? ctx)
+        {
+            var attr = m.GetCustomAttribute<TestMethodAttribute>()!;
+            if (attr.Skip)
+            {
+                PrintStatus(m.Name, "SKIPPED", ConsoleColor.Yellow);
+                return (0, 0, 0);
+            }
+
+            int t = 0, p = 0, f = 0;
+            var testCases = m.GetCustomAttributes<TestCaseAttribute>()
+                .Select(a => a.Arguments)
+                .DefaultIfEmpty(null);
+
+            foreach (var args in testCases)
+            {
+                t++;
+                bool success = Execute(type, m, s, td, ctx, args);
+                if (success) p++; else f++;
+            }
+            return (t, p, f);
+        }
+
+        static bool Execute(Type type, MethodInfo m, MethodInfo? s, MethodInfo? td, object? ctx, object[]? args)
+        {
+            string name = FormatTestName(m, args);
+
+            var timeoutAttr = m.GetCustomAttribute<TimeoutAttribute>();
+            int timeoutMs = timeoutAttr?.Milliseconds ?? -1;
 
             try
             {
-                if (sharedContext != null)
+                object? instance = CreateInstance(type, ctx);
+
+                Action testAction = () =>
                 {
-                    instance = Activator.CreateInstance(classType, new object[] { sharedContext });
-                }
-                else
+                    s?.Invoke(instance, null);       
+                    try
+                    {
+                        m.Invoke(instance, args);    
+                    }
+                    catch (TargetInvocationException ex)
+                    {
+                        throw ex.InnerException!;
+                    }
+                    finally
+                    {
+                        InvokeSafe(td, instance);   
+                    }
+                };
+
+                Task task = Task.Run(testAction);
+
+                bool completedInTime = task.Wait(timeoutMs);
+
+                if (!completedInTime)
                 {
-                    instance = Activator.CreateInstance(classType);
+                    PrintStatus(name, "FAILED", ConsoleColor.Red, $"Timeout ({timeoutMs}ms)");
+                    return false;
                 }
 
-                setup?.Invoke(instance, null);
-
-                var result = method.Invoke(instance, args);
-
-                if (result is Task task)
+                if (task.IsFaulted)
                 {
-                    task.GetAwaiter().GetResult();
+                    throw task.Exception!.InnerException!;
                 }
 
-                PrintResult(testName, "PASSED", ConsoleColor.Green);
-                passed++;
-            }
-            catch (TargetInvocationException ex)
-            {
-                var inner = ex.InnerException;
-                if (inner is TestAssertionException)
-                {
-                    PrintResult(testName, "FAILED", ConsoleColor.Red, inner.Message);
-                }
-                else
-                {
-                    PrintResult(testName, "ERROR", ConsoleColor.DarkRed, $"{inner.GetType().Name}: {inner.Message}");
-                }
-                failed++;
+                PrintStatus(name, "PASSED", ConsoleColor.Green, $"(Thread {Thread.CurrentThread.ManagedThreadId})");
+                return true;
             }
             catch (Exception ex)
             {
-                PrintResult(testName, "CRASH", ConsoleColor.DarkRed, ex.Message);
-                failed++;
-            }
-            finally
-            {
-                try
-                {
-                    if (instance != null) teardown?.Invoke(instance, null);
-                }
-                catch {}
+                HandleException(name, ex);
+                return false;
             }
         }
 
-        static void PrintResult(string name, string status, ConsoleColor color, string msg = "")
+        private static object CreateInstance(Type type, object? ctx)
         {
-            Console.Write($"[{name}] ");
-            Console.ForegroundColor = color;
-            Console.Write(status);
-            Console.ResetColor();
-            if (!string.IsNullOrEmpty(msg)) Console.Write($" -> {msg}");
-            Console.WriteLine();
+            return ctx != null 
+                ? Activator.CreateInstance(type, ctx)! 
+                : Activator.CreateInstance(type)!;
         }
+
+        private static void HandleException(string name, Exception ex)
+        {
+            var err = ex is AggregateException ae ? ae.Flatten().InnerException : ex;
+            bool isAssert = err is TestAssertionException;
+            
+            var status = isAssert ? "FAILED" : "ERROR";
+            var color = isAssert ? ConsoleColor.Red : ConsoleColor.DarkRed;
+
+            PrintStatus(name, status, color, err?.Message);
+        }
+
+        private static void InvokeSafe(MethodInfo? method, object? instance)
+        {
+            try { method?.Invoke(instance, null); } catch { }
+        }
+
+        private static IOrderedEnumerable<MethodInfo> GetSortedTests(MethodInfo[] methods)
+        {
+            return methods
+                .Where(m => m.HasAttr<TestMethodAttribute>())
+                .OrderBy(m => m.GetCustomAttribute<TestMethodAttribute>()!.Priority);
+        }
+
+        private static ISharedContext? CreateSharedContext(Type type)
+        {
+            var attr = type.GetCustomAttribute<UseSharedContextAttribute>();
+            if (attr == null) return null;
+            return Activator.CreateInstance(attr.ContextType) as ISharedContext;
+        }
+
+        private static string FormatTestName(MethodInfo m, object[]? args)
+        {
+            if (args == null) return m.Name;
+            return $"{m.Name}({string.Join(", ", args)})";
+        }
+
+        private static void LogClassName(Type type)
+        {
+            lock (_consoleLock)
+            {
+                var attr = type.GetCustomAttribute<TestClassAttribute>();
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine($"\nКЛАСС: {type.Name} {attr?.Description}");
+                Console.ResetColor();
+            }
+        }
+
+        private static void PrintStatus(string n, string s, ConsoleColor c, string? msg = null)
+        {
+            lock (_consoleLock)
+            {
+
+                Console.Write($"[{n}] ");
+                Console.ForegroundColor = c;
+                Console.Write(s);
+                Console.ResetColor();
+                if (msg != null) Console.Write($" -> {msg}");
+                Console.WriteLine();
+            }
+        }
+    }
+
+    public static class Ext 
+    {
+        public static bool HasAttr<T>(this MemberInfo m) where T : Attribute 
+            => m.GetCustomAttribute<T>() != null;
     }
 }

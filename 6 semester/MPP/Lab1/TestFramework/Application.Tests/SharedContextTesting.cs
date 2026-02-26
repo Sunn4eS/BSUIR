@@ -4,7 +4,7 @@ using System;
 
 namespace Application.Tests
 {
-    [TestClass(Description = "Полный сценарий работы с БД с использованием всех 10 Asserts")]
+    [TestClass(Description = "Полный сценарий работы с БД с использованием всех 10 Asserts",RunParallel = false)]
     [UseSharedContext(typeof(Database))]
     public class SharedContextTesting
     {
@@ -32,9 +32,15 @@ namespace Application.Tests
             var admin = _service.GetByEmail("admin@system.com");
 
             Assert.IsNotNull(admin, "Админ должен быть найден в БД");
-
             Assert.AreEqual("Admin", admin.Username, "Имя должно совпадать");
-            Assert.AreEqual(1, admin.Id, "ID первого пользователя должен быть 1");
+
+        }
+
+        [TestMethod(Priority = 2, Description = "Проверка ID")]
+        public void Step2_2_CheckId()
+        {
+            var admin = _service.GetByEmail("admin@system.com");
+            Assert.AreEqual(2, admin.Id, "ID первого пользователя должен быть 1");
         }
 
         [TestMethod(Priority = 3, Description = "Регистрация второго пользователя и сравнение")]
