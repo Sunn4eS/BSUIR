@@ -54,7 +54,7 @@ namespace lab1_obj_parser
             // Объединенная матрица VP (View * Projection) - чтобы не умножать лишний раз
             Matrix4x4 vpMatrix = projectionMatrix * viewMatrix;
 
-            Vec4 lightDir = new Vec4(1, 1, 1).Normalize();
+            Vec4 lightDir = new Vec4(-1.5, 1, -0.5).Normalize();
 
 
 
@@ -88,9 +88,9 @@ namespace lab1_obj_parser
                 Vec4 v2 = model.Vertices[faceIndices[1]];
                 Vec4 v3 = model.Vertices[faceIndices[2]];
 
-                Vec4 c1 = mvpMatrix * v1;
-                Vec4 c2 = mvpMatrix * v2;
-                Vec4 c3 = mvpMatrix * v3;
+                Vec4 c1 = vpMatrix * v1World;
+                Vec4 c2 = vpMatrix * v2World;
+                Vec4 c3 = vpMatrix * v3World;
 
                 if (c1.W < 0.1 || c2.W < 0.1 || c3.W < 0.1) continue;
 
@@ -98,8 +98,6 @@ namespace lab1_obj_parser
                 Vec4 s2 = PerspectiveDivide(c2, viewportMatrix);
                 Vec4 s3 = PerspectiveDivide(c3, viewportMatrix);
 
-                // --- ЭТАП 2: ОТБРАКОВКА ЗАДНИХ ГРАНЕЙ (BACK-FACE CULLING) ---
-                // Вычисляем векторное произведение двух сторон треугольника на экране
                 double ax = s2.X - s1.X;
                 double ay = s2.Y - s1.Y;
                 double bx = s3.X - s1.X;

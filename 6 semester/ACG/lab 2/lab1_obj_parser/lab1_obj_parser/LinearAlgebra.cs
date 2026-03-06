@@ -15,7 +15,7 @@ namespace lab1_obj_parser
 
         public static Vec4 operator -(Vec4 a, Vec4 b)
         {
-          return new Vec4(a.X - b.X, a.Y - b.Y, a.Z - b.Z, 0); // w=0 для вектора направления
+          return new Vec4(a.X - b.X, a.Y - b.Y, a.Z - b.Z, 0); 
         }
         public static Vec4 Cross(Vec4 a, Vec4 b)
         {
