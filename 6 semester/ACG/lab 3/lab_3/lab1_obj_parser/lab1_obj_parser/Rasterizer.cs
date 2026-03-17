@@ -11,7 +11,7 @@ namespace lab1_obj_parser
         private int _height;
 
         //Фоновое
-        private readonly double ka = 0.2;
+        private readonly double ka = 0.3;
         //Рассеянное
         private readonly double kd = 0.7;
 

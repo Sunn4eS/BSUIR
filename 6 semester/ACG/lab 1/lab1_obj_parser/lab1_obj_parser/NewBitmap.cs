@@ -7,7 +7,7 @@ namespace lab1_obj_parser
     public unsafe class NewBitmap : IDisposable
     {
         private Bitmap _bitmap;
-        private BitmapData _bitmapData;
+        private BitmapData? _bitmapData;
         private byte* _scan0; 
         private int _stride;  
         private int _width;

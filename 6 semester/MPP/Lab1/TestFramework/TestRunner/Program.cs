@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using TestFramework;
 
 namespace TestRunner
@@ -11,18 +12,31 @@ namespace TestRunner
     {
         private static readonly object _consoleLock = new object();
 
+        private static DynamicThreadPool _threadPool;
+
         static void Main()
         {
             Console.WriteLine("=== TEST RUNNER ===\n");
 
-            int maxDegree = 6;
-            Console.WriteLine($"Максимум потоков: {maxDegree}");
+            int minThreads = 5;
+            int maxThreads = 20;
+            int idleTimeout = 3000;
+            int maxTaskDuration = 8000;
+
+            Console.WriteLine($"Пул потоков: Min={minThreads}, Max={maxThreads}, IdleTimeout={idleTimeout}ms, MaxTaskDuration={maxTaskDuration}ms");
+
+            _threadPool = new DynamicThreadPool(minThreads, maxThreads, idleTimeout, maxTaskDuration);
 
             var testTypes = GetTestClasses();
-            
             var sw = Stopwatch.StartNew();
 
-            var (total, passed, failed) = RunAllTests(testTypes, maxDegree);
+            var (total, passed, failed) = RunAllTests(testTypes);
+
+            Console.WriteLine("\n=== ДЕМОНСТРАЦИЯ ДИНАМИЧЕСКОГО МАСШТАБИРОВАНИЯ ===");
+            DemonstrateScaling();
+
+             _threadPool.Stop();
+            _threadPool.Dispose();
 
             sw.Stop();
 
@@ -30,7 +44,6 @@ namespace TestRunner
             Console.WriteLine($"ВРЕМЯ ВЫПОЛНЕНИЯ: {sw.Elapsed.TotalSeconds:F3} сек.");
             Console.ReadLine();
         }
-
         private static Type[] GetTestClasses()
         {
             return Assembly.GetAssembly(typeof(ValidationTests))!
@@ -39,26 +52,24 @@ namespace TestRunner
                 .ToArray();
         }
 
-        private static (int t, int p, int f) RunAllTests(Type[] classes, int maxDegree)
+        private static (int t, int p, int f) RunAllTests(Type[] classes)
         {
             int t = 0, p = 0, f = 0;
             foreach (var type in classes)
             {
-                var res = RunTestsForClass(type, maxDegree);
+                var res = RunTestsForClass(type);
                 t += res.t; p += res.p; f += res.f;
             }
             return (t, p, f);
         }
 
-        static (int t, int p, int f) RunTestsForClass(Type type, int maxDegree)
+        static (int t, int p, int f) RunTestsForClass(Type type)
         {
             LogClassName(type);
 
-            
             var context = CreateSharedContext(type);
             context?.Init();
 
-           
             var methods = type.GetMethods();
             var setup = methods.FirstOrDefault(m => m.HasAttr<SetupAttribute>());
             var teardown = methods.FirstOrDefault(m => m.HasAttr<TeardownAttribute>());
@@ -66,28 +77,56 @@ namespace TestRunner
             var classAttr = type.GetCustomAttribute<TestClassAttribute>();
             bool runParallel = classAttr?.RunParallel ?? true;
 
-
             int t = 0, p = 0, f = 0;
             var tests = GetSortedTests(methods).ToList();
 
             if (runParallel)
             {
-                var options = new ParallelOptions { MaxDegreeOfParallelism = maxDegree };
-
-                Parallel.ForEach(tests, options, method =>
+                using (var countdown = new CountdownEvent(tests.Count))
                 {
-                    var (mt, mp, mf) = RunTestMethod(type, method, setup, teardown, context);
-                    Interlocked.Add(ref t, mt);
-                    Interlocked.Add(ref p, mp);
-                    Interlocked.Add(ref f, mf);
-                });
+                    foreach (var method in tests)
+                    {
+                        var m = method;
+                        _threadPool.EnqueueTask(() =>
+                        {
+                            try
+                            {
+                                var (mt, mp, mf) = RunTestMethod(type, m, setup, teardown, context);
+                                Interlocked.Add(ref t, mt);
+                                Interlocked.Add(ref p, mp);
+                                Interlocked.Add(ref f, mf);
+                            }
+                            finally
+                            {
+                                countdown.Signal();
+                            }
+                        });
+                    }
+                    countdown.Wait();
+                }
             }
             else
             {
                 foreach (var method in tests)
                 {
-                    var (mt, mp, mf) = RunTestMethod(type, method, setup, teardown, context);
-                    t += mt; p += mp; f += mf;
+                    using (var done = new ManualResetEventSlim(false))
+                    {
+                        _threadPool.EnqueueTask(() =>
+                        {
+                            try
+                            {
+                                var (mt, mp, mf) = RunTestMethod(type, method, setup, teardown, context);
+                                Interlocked.Add(ref t, mt);
+                                Interlocked.Add(ref p, mp);
+                                Interlocked.Add(ref f, mf);
+                            }
+                            finally
+                            {
+                                done.Set();
+                            }
+                        });
+                        done.Wait();
+                    }
                 }
             }
 
@@ -125,30 +164,42 @@ namespace TestRunner
             var timeoutAttr = m.GetCustomAttribute<TimeoutAttribute>();
             int timeoutMs = timeoutAttr?.Milliseconds ?? -1;
 
-            try
+            using (var completed = new ManualResetEventSlim(false))
             {
-                object? instance = CreateInstance(type, ctx);
+                Exception? testException = null;
+                bool testFinished = false;
 
-                Action testAction = () =>
+                _threadPool.EnqueueTask(() =>
                 {
-                    s?.Invoke(instance, null);       
                     try
                     {
-                        m.Invoke(instance, args);    
+                        object? instance = CreateInstance(type, ctx);
+                        s?.Invoke(instance, null);
+                        try
+                        {
+                            m.Invoke(instance, args);
+                        }
+                        catch (TargetInvocationException ex)
+                        {
+                            throw ex.InnerException!;
+                        }
+                        finally
+                        {
+                            InvokeSafe(td, instance);
+                        }
                     }
-                    catch (TargetInvocationException ex)
+                    catch (Exception ex)
                     {
-                        throw ex.InnerException!;
+                        testException = ex;
                     }
                     finally
                     {
-                        InvokeSafe(td, instance);   
+                        testFinished = true;
+                        completed.Set();
                     }
-                };
+                });
 
-                Task task = Task.Run(testAction);
-
-                bool completedInTime = task.Wait(timeoutMs);
+                bool completedInTime = completed.Wait(timeoutMs > 0 ? timeoutMs : Timeout.Infinite);
 
                 if (!completedInTime)
                 {
@@ -156,25 +207,52 @@ namespace TestRunner
                     return false;
                 }
 
-                if (task.IsFaulted)
+                if (testException != null)
                 {
-                    throw task.Exception!.InnerException!;
+                    HandleException(name, testException);
+                    return false;
                 }
 
                 PrintStatus(name, "PASSED", ConsoleColor.Green, $"(Thread {Thread.CurrentThread.ManagedThreadId})");
                 return true;
             }
-            catch (Exception ex)
+        }
+
+        private static void DemonstrateScaling()
+        {
+            Console.WriteLine("Запускаем 30 коротких задач с паузами и пиками...");
+
+            for (int i = 0; i < 10; i++)
             {
-                HandleException(name, ex);
-                return false;
+                int taskId = i;
+                _threadPool.EnqueueTask(() =>
+                {
+                    Thread.Sleep(500); 
+                    Console.WriteLine($"[Демо] Задача {taskId} выполнена");
+                });
             }
+
+            Thread.Sleep(2000); 
+
+            Console.WriteLine("Пиковая нагрузка: 20 задач");
+            for (int i = 10; i < 30; i++)
+            {
+                int taskId = i;
+                _threadPool.EnqueueTask(() =>
+                {
+                    Thread.Sleep(2000);
+                    Console.WriteLine($"[Демо] Задача {taskId} выполнена");
+                });
+            }
+
+            Thread.Sleep(8000);
+            Console.WriteLine("Демонстрация завершена.");
         }
 
         private static object CreateInstance(Type type, object? ctx)
         {
-            return ctx != null 
-                ? Activator.CreateInstance(type, ctx)! 
+            return ctx != null
+                ? Activator.CreateInstance(type, ctx)!
                 : Activator.CreateInstance(type)!;
         }
 
@@ -182,7 +260,7 @@ namespace TestRunner
         {
             var err = ex is AggregateException ae ? ae.Flatten().InnerException : ex;
             bool isAssert = err is TestAssertionException;
-            
+
             var status = isAssert ? "FAILED" : "ERROR";
             var color = isAssert ? ConsoleColor.Red : ConsoleColor.DarkRed;
 
@@ -229,7 +307,6 @@ namespace TestRunner
         {
             lock (_consoleLock)
             {
-
                 Console.Write($"[{n}] ");
                 Console.ForegroundColor = c;
                 Console.Write(s);
@@ -240,9 +317,9 @@ namespace TestRunner
         }
     }
 
-    public static class Ext 
+    public static class Ext
     {
-        public static bool HasAttr<T>(this MemberInfo m) where T : Attribute 
+        public static bool HasAttr<T>(this MemberInfo m) where T : Attribute
             => m.GetCustomAttribute<T>() != null;
     }
 }

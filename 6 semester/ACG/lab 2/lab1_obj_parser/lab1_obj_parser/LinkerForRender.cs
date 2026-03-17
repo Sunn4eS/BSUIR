@@ -64,30 +64,6 @@ namespace lab1_obj_parser
                 Vec4 v2World = modelMatrix * model.Vertices[faceIndices[1]];
                 Vec4 v3World = modelMatrix * model.Vertices[faceIndices[2]];
 
-                Vec4 edge1 = v2World - v1World;
-                Vec4 edge2 = v3World - v1World;
-                
-                Vec4 normal = Vec4.Cross(edge1, edge2).Normalize();
-
-                double dot = Vec4.Dot(normal, lightDir);
-
-                if (dot < 0) dot = 0;
-
-                double intensity = 0.3 + (0.7 * dot);
-
-                if (intensity > 1.0) intensity = 1.0;
-                Color baseColor = Color.White;
-
-                Color shadedColor = Color.FromArgb(
-                    (int)(baseColor.R * intensity),
-                    (int)(baseColor.G * intensity),
-                    (int)(baseColor.B * intensity)
-                );
-
-                Vec4 v1 = model.Vertices[faceIndices[0]];
-                Vec4 v2 = model.Vertices[faceIndices[1]];
-                Vec4 v3 = model.Vertices[faceIndices[2]];
-
                 Vec4 c1 = vpMatrix * v1World;
                 Vec4 c2 = vpMatrix * v2World;
                 Vec4 c3 = vpMatrix * v3World;
@@ -107,9 +83,28 @@ namespace lab1_obj_parser
 
                 if (normalZ >= 0)
                 {
-                    continue; 
+                    continue;
                 }
 
+                Vec4 edge1 = v2World - v1World;
+                Vec4 edge2 = v3World - v1World;
+                
+                Vec4 normal = Vec4.Cross(edge1, edge2).Normalize();
+
+                double dot = Vec4.Dot(normal, lightDir);
+
+                if (dot < 0) dot = 0;
+
+                double intensity = 0.2 + (0.7 * dot);
+
+                if (intensity > 1.0) intensity = 1.0;
+                Color baseColor = Color.White;
+
+                Color shadedColor = Color.FromArgb(
+                    (int)(baseColor.R * intensity),
+                    (int)(baseColor.G * intensity),
+                    (int)(baseColor.B * intensity)
+                );
                 rasterizer.DrawTriangle(s1, s2, s3, shadedColor);
             }
         }
