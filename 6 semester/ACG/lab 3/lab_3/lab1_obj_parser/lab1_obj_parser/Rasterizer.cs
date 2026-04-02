@@ -3,22 +3,18 @@ using System.Drawing;
 
 namespace lab1_obj_parser
 {
-    public class Rasterizer
+    public unsafe class Rasterizer
     {
         private NewBitmap _canvas;
         private float[] _zBuffer;
         private int _width;
         private int _height;
 
-        //Фоновое
-        private readonly double ka = 0.3;
-        //Рассеянное
-        private readonly double kd = 0.7;
-
-        //Бликовое
-        double ks = 0.5; // коэффициент отражения
-        double shininess = 32.0; // блеск
-
+        // Мягкие настройки Phong (уменьшен ks, увеличен shininess)
+        private readonly float ka = 0.2f;
+        private readonly float kd = 0.8f;
+        private readonly float ks = 0.8f;
+        private readonly float shininess = 32.0f;
 
         public Rasterizer(NewBitmap canvas)
         {
@@ -28,147 +24,93 @@ namespace lab1_obj_parser
             _zBuffer = new float[_width * _height];
         }
 
-        private void Swap(ref int a, ref int b)
-        {
-            int temp = a; 
-            a = b; 
-            b = temp;
-        }
-        private void Swap(ref float a, ref float b) 
-        {
-            float t = a; 
-            a = b; 
-            b = t; 
-        }
-
-        private void Swap(ref Vec4 a, ref Vec4 b)
-        {
-            Vec4 t = a;
-            a = b;
-            b = t;
-        }
-
-
         public void Clear()
         {
-            for (int i = 0; i < _zBuffer.Length; i++)
-            {
-                _zBuffer[i] = float.MaxValue;
-            }
+            Array.Fill(_zBuffer, float.MaxValue);
         }
-
 
         public void DrawTriangle(Vec4 v1, Vec4 v2, Vec4 v3,
                          Vec4 n1, Vec4 n2, Vec4 n3,
                          Vec4 p1, Vec4 p2, Vec4 p3,
                          Vec4 cameraPos, Vec4 lightDir)
         {
-            // Распаковываем координаты для удобства
-            // Нам важны X, Y (на экране) и Z (глубина)
-            int x1 = (int)v1.X, y1 = (int)v1.Y; float z1 = (float)v1.Z;
-            int x2 = (int)v2.X, y2 = (int)v2.Y; float z2 = (float)v2.Z;
-            int x3 = (int)v3.X, y3 = (int)v3.Y; float z3 = (float)v3.Z;
+            // Сортировка по Y (стандартно)
+            if (v1.Y > v2.Y) { Swap(ref v1, ref v2); Swap(ref n1, ref n2); Swap(ref p1, ref p2); }
+            if (v1.Y > v3.Y) { Swap(ref v1, ref v3); Swap(ref n1, ref n3); Swap(ref p1, ref p3); }
+            if (v2.Y > v3.Y) { Swap(ref v2, ref v3); Swap(ref n2, ref n3); Swap(ref p2, ref p3); }
 
-            // 1. Сортировка вершин по Y (сверху вниз)
-            // Важно: когда меняем местами Y, нужно поменять и X, и Z!
-            if (y1 > y2) { Swap(ref x1, ref x2); Swap(ref y1, ref y2); Swap(ref z1, ref z2); }
-            if (y1 > y3) { Swap(ref x1, ref x3); Swap(ref y1, ref y3); Swap(ref z1, ref z3); }
-            if (y2 > y3) { Swap(ref x2, ref x3); Swap(ref y2, ref y3); Swap(ref z2, ref z3); }
+            int y1 = (int)v1.Y, y2 = (int)v2.Y, y3 = (int)v3.Y;
+            if (y1 == y3) return;
 
-            // Высота всего треугольника
-            int totalHeight = y3 - y1;
+            byte* scan0 = _canvas.GetScan0();
+            int stride = _canvas.GetStride();
 
-            for (int i = 0; i < totalHeight; i++)
+            for (int y = y1; y <= y3; y++)
             {
-                int y = y1 + i;
                 if (y < 0 || y >= _height) continue;
 
-                bool secondHalf = i > y2 - y1 || y2 == y1;
-                int segmentHeight = secondHalf ? y3 - y2 : y2 - y1;
-                if (segmentHeight == 0) segmentHeight = 1;
+                bool isUpper = y < y2;
+                float t1 = (float)(y - y1) / (y3 - y1);
+                float t2 = isUpper ? (float)(y - y1) / (y2 - y1 + 1e-6f) : (float)(y - y2) / (y3 - y2 + 1e-6f);
 
-                float alpha = (float)i / totalHeight;
-                float beta = (float)(i - (secondHalf ? y2 - y1 : 0)) / segmentHeight;
+                Vec4 va = v1 + (v3 - v1) * t1;
+                Vec4 vb = isUpper ? v1 + (v2 - v1) * t2 : v2 + (v3 - v2) * t2;
 
-                int ax = x1 + (int)((x3 - x1) * alpha);
-                float az = z1 + (z3 - z1) * alpha;
+                Vec4 na = n1 + (n3 - n1) * t1;
+                Vec4 nb = isUpper ? n1 + (n2 - n1) * t2 : n2 + (n3 - n2) * t2;
 
+                Vec4 pa = p1 + (p3 - p1) * t1;
+                Vec4 pb = isUpper ? p1 + (p2 - p1) * t2 : p2 + (p3 - p2) * t2;
 
-                Vec4 an = n1 + (n3 - n1) * alpha; // Нормаль на длинной стороне
-                Vec4 ap = p1 + (p3 - p1) * alpha; // Позиция на длинной стороне
-                // Координаты на короткой стороне (B)
-                int bx;
-                float bz;
-                Vec4 bn;
-                Vec4 bp;
-                
+                if (va.X > vb.X) { Swap(ref va, ref vb); Swap(ref na, ref nb); Swap(ref pa, ref pb); }
 
-                if (!secondHalf) // Верхняя половина (v1 -> v2)
-                {
-                    bx = x1 + (int)((x2 - x1) * beta);
-                    bz = z1 + (z2 - z1) * beta;
-                    bn = n1 + (n2 - n1) * beta;
-                    bp = p1 + (p2 - p1) * beta;
-                }
-                else // Нижняя половина (v2 -> v3)
-                {
-                    bx = x2 + (int)((x3 - x2) * beta);
-                    bz = z2 + (z3 - z2) * beta;
-                    bn = n2 + (n3 - n2) * beta;
-                    bp = p2 + (p3 - p2) * beta;
-                }
+                int xStart = (int)Math.Ceiling(va.X);
+                int xEnd = (int)Math.Ceiling(vb.X);
 
-                // Гарантируем, что ax слева, bx справа
-                if (ax > bx) 
-                { 
-                    Swap(ref ax, ref bx); 
-                    Swap(ref az, ref bz); 
-                    Swap(ref an, ref bn); 
-                    Swap(ref ap, ref bp); 
-                }
+                // ОПТИМИЗАЦИЯ: Вычисляем шаг интерполяции один раз на строку
+                float dx = (float)(vb.X - va.X);
+                if (dx < 1e-6f) dx = 1.0f;
 
+                int offset = y * _width;
+                byte* row = scan0 + (y * stride);
 
-                // --- Рисуем горизонтальную линию ---
-                for (int x = ax; x <= bx; x++)
+                for (int x = xStart; x < xEnd; x++)
                 {
                     if (x < 0 || x >= _width) continue;
 
-                    float phi = (bx == ax) ? 1.0f : (float)(x - ax) / (bx - ax);
-                    float z = az + (bz - az) * phi;
+                    float phi = (x - (float)va.X) / dx;
+                    float z = (float)(va.Z + (vb.Z - va.Z) * phi);
 
-                    int idx = x + y * _width; 
-                    if (z < _zBuffer[idx]) 
+                    if (z < _zBuffer[offset + x])
                     {
-                        // 1. Интерполируем финальную нормаль и позицию для КОНКРЕТНОГО пикселя
-                        Vec4 pixelNormal = (an + (bn - an) * phi).Normalize();
-                        Vec4 pixelPos = ap + (bp - ap) * phi;
+                        _zBuffer[offset + x] = z;
 
-                        // А) Фоновое (Ambient)
-                        double ambient = ka;
+                        // Интерполяция нормали и позиции
+                        Vec4 n = (na + (nb - na) * phi).Normalize();
+                        Vec4 p = pa + (pb - pa) * phi;
 
-                        // Б) Рассеянное (Diffuse)
-                        double diff = Math.Max(Vec4.Dot(pixelNormal, lightDir), 0.0);
-                        double diffuse = kd * diff;
+                        // Освещение (Phong)
+                        double dotLN = Vec4.Dot(n, lightDir);
+                        double diffuse = Math.Max(dotLN, 0.0) * kd;
 
-                        Vec4 viewDir = (cameraPos - pixelPos).Normalize();
-                        
-                        Vec4 reflectDir = Vec4.Reflect(lightDir, pixelNormal).Normalize();
+                        // Мягкие блики
+                        Vec4 viewDir = (cameraPos - p).Normalize();
+                        Vec4 reflectDir = Vec4.Reflect(lightDir, n).Normalize();
+                        double specBase = Math.Max(Vec4.Dot(reflectDir, viewDir), 0.0);
+                        double specular = Math.Pow(specBase, shininess) * ks;
 
-                        double spec = Math.Pow(Math.Max(Vec4.Dot(reflectDir, viewDir), 0.0), shininess);
-                        double specular = ks * spec;
+                        // Интенсивность с мягким Ambient
+                        double intensity = ka + diffuse + specular;
+                        byte colorVal = (byte)(Math.Min(intensity, 1.0) * 255);
 
-                        // Итоговая интенсивность (формула 3.5)
-                        double intensity = ambient + diffuse + specular;
-                        if (intensity > 1.0) intensity = 1.0;
-
-                        int finalColor = (int)(255 * intensity);
-                        _canvas.SetPixel(x, y, Color.FromArgb(finalColor, finalColor, finalColor));
-
-                        _zBuffer[x + y * _width] = z;
+                        // Прямая запись в память (B-G-R-A)
+                        int* pixel = (int*)(row + x * 4);
+                        *pixel = (255 << 24) | (colorVal << 16) | (colorVal << 8) | colorVal;
                     }
                 }
             }
         }
 
+        private void Swap<T>(ref T a, ref T b) { T t = a; a = b; b = t; }
     }
 }

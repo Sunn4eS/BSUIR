@@ -13,21 +13,18 @@ namespace lab1_obj_parser
             X = x; Y = y; Z = z; W = w;
         }
 
-        // Для вычитания (уже есть, но убедись, что w=0)
+        
         public static Vec4 operator -(Vec4 a, Vec4 b) => new Vec4(a.X - b.X, a.Y - b.Y, a.Z - b.Z, 0);
 
-        // Сложение векторов
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vec4 operator +(Vec4 a, Vec4 b) => new Vec4(a.X + b.X, a.Y + b.Y, a.Z + b.Z, 0);
 
-        // Умножение вектора на число
         public static Vec4 operator *(Vec4 a, double b) => new Vec4(a.X * b, a.Y * b, a.Z * b, 0);
 
-        // Метод отражения вектора (из формулы 3.4 в методичке: R = L - 2 * (L * N) * N)
-        // Мы используем его для бликов
         public static Vec4 Reflect(Vec4 L, Vec4 N)
         {
-            double dot = Vec4.Dot(L, N);
-            return L - N * (2.0 * dot);
+            double dot = Dot(L, N);
+            return N * (2.0 * dot) - L;
         }
 
         public static Vec4 Cross(Vec4 a, Vec4 b)
@@ -39,7 +36,7 @@ namespace lab1_obj_parser
                 0
             );
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double Dot(Vec4 a, Vec4 b) {
             return a.X* b.X + a.Y * b.Y + a.Z * b.Z;
         }

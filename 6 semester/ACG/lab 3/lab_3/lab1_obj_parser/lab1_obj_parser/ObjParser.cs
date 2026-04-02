@@ -18,50 +18,32 @@ namespace lab1_obj_parser
 
         private void GenerateNormals()
         {
-            // 1. Создаем массив для накопления нормалей (по одной на каждую вершину)
             Vec4[] accumulatedNormals = new Vec4[Vertices.Count];
-            for (int i = 0; i < accumulatedNormals.Length; i++)
-                accumulatedNormals[i] = new Vec4(0, 0, 0, 0);
 
-            // 2. Проходим по всем граням, чтобы вычислить их "плоские" нормали
             foreach (var face in Faces)
             {
-                // Берем координаты вершин треугольника
                 Vec4 v1 = Vertices[face[0][0]];
                 Vec4 v2 = Vertices[face[1][0]];
                 Vec4 v3 = Vertices[face[2][0]];
 
-                // Находим два вектора сторон
+                // Векторное произведение (нормаль грани)
                 Vec4 edge1 = v2 - v1;
                 Vec4 edge2 = v3 - v1;
+                Vec4 faceNormal = Vec4.Cross(edge1, edge2);
+                // Не нормализуем сразу! Вес нормали должен зависеть от площади грани для лучшего сглаживания
 
-                // Векторное произведение дает нормаль к плоскости треугольника
-                Vec4 faceNormal = Vec4.Cross(edge1, edge2).Normalize();
-
-                // Прибавляем эту нормаль к каждой из трех вершин этой грани
-                // Так мы "накапливаем" влияние всех соседних граней на вершину
-                accumulatedNormals[face[0][0]] = accumulatedNormals[face[0][0]] + faceNormal;
-                accumulatedNormals[face[1][0]] = accumulatedNormals[face[1][0]] + faceNormal;
-                accumulatedNormals[face[2][0]] = accumulatedNormals[face[2][0]] + faceNormal;
+                for (int i = 0; i < face.Length; i++)
+                    accumulatedNormals[face[i][0]] += faceNormal;
             }
 
-            // 3. Теперь нормализуем накопленные векторы и записываем их в список Normals
             Normals.Clear();
             for (int i = 0; i < accumulatedNormals.Length; i++)
-            {
                 Normals.Add(accumulatedNormals[i].Normalize());
-            }
 
-            // 4. Обновляем индексы нормалей в гранях (теперь nIdx будет равен vIdx)
             foreach (var face in Faces)
-            {
                 for (int i = 0; i < face.Length; i++)
-                {
-                    face[i][1] = face[i][0]; // Индекс нормали теперь совпадает с индексом вершины
-                }
-            }
+                    face[i][1] = face[i][0];
         }
-
 
         private void ParseObj(string path)
         {

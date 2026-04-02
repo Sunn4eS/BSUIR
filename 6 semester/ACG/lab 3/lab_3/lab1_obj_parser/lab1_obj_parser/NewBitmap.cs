@@ -15,6 +15,8 @@ namespace lab1_obj_parser
         public int Width;
         public int Height;
 
+        public byte* GetScan0() => _scan0;
+        public int GetStride() => _stride;
         public NewBitmap(Bitmap bitmap)
         {
             _bitmap = bitmap;
