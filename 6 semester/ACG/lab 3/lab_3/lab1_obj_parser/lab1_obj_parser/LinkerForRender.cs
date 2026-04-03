@@ -9,23 +9,22 @@ namespace lab1_obj_parser
         public int Width { get; set; }
         public int Height { get; set; }
 
-        // Параметры трансформации модели (Model Matrix)
         public Vec4 ModelPosition { get; set; } = new Vec4(0, 0, 0);
-        public Vec4 ModelRotation { get; set; } = new Vec4(0, 0, 0); // Углы Эйлера
+        public Vec4 ModelRotation { get; set; } = new Vec4(0, 0, 0); 
         public Vec4 ModelScale { get; set; } = new Vec4(1, 1, 1);
 
-        // Параметры камеры (View Matrix)
         public Vec4 CameraPosition { get; set; } = new Vec4(0, 0, 5);
         public Vec4 CameraTarget { get; set; } = new Vec4(0, 0, 0);
         public Vec4 CameraUp { get; set; } = new Vec4(0, 1, 0);
+
+        Vec4 lightDir = new Vec4(0.5, 1, -0.3).Normalize();
+
 
         public LinkerForRender(int width, int height)
         {
             Width = width;
             Height = height;
         }
-
-        private Random _rnd = new Random();
 
         public void Render(Model model, Rasterizer rasterizer)
         {
@@ -51,10 +50,10 @@ namespace lab1_obj_parser
             // MVP = Projection * View * Model
             Matrix4x4 mvpMatrix = projectionMatrix * viewMatrix * modelMatrix;
 
-            // Объединенная матрица VP (View * Projection) - чтобы не умножать лишний раз
+            // Объединенная матрица VP (View * Projection)
             Matrix4x4 vpMatrix = projectionMatrix * viewMatrix;
 
-            Vec4 lightDir = new Vec4(1, 1, 1).Normalize();
+           // Vec4 lightDir = new Vec4(1, 1, 1).Normalize();
 
 
 
@@ -69,19 +68,17 @@ namespace lab1_obj_parser
                 int v3Idx = faceIndices[2][0];
                 int n3Idx = faceIndices[2][1];
 
-                // 2. Мировые координаты (для освещения)
+                // Мировые координаты 
                 Vec4 p1 = modelMatrix * model.Vertices[v1Idx];
                 Vec4 p2 = modelMatrix * model.Vertices[v2Idx];
                 Vec4 p3 = modelMatrix * model.Vertices[v3Idx];
 
-                // 3. Нормали (из файла или рассчитанные)
-                // Примечание: по-хорошему их надо умножать на спец. матрицу нормалей, 
-                // но для простоты и без неровного масштаба можно просто modelMatrix
+                // Нормали 
                 Vec4 n1 = (n1Idx != -1) ? (modelMatrix * model.Normals[n1Idx]).Normalize() : new Vec4(0, 0, 1);
                 Vec4 n2 = (n2Idx != -1) ? (modelMatrix * model.Normals[n2Idx]).Normalize() : new Vec4(0, 0, 1);
                 Vec4 n3 = (n3Idx != -1) ? (modelMatrix * model.Normals[n3Idx]).Normalize() : new Vec4(0, 0, 1);
 
-                // 4. Экранные координаты
+                // Экранные координаты
                 Vec4 c1 = projectionMatrix * viewMatrix * p1;
                 Vec4 c2 = projectionMatrix * viewMatrix * p2;
                 Vec4 c3 = projectionMatrix * viewMatrix * p3;
@@ -96,7 +93,6 @@ namespace lab1_obj_parser
                 double normalZ = (s2.X - s1.X) * (s3.Y - s1.Y) - (s2.Y - s1.Y) * (s3.X - s1.X);
                 if (normalZ >= 0) continue;
 
-                // 5. Вызываем наш новый DrawTriangle
                 rasterizer.DrawTriangle(s1, s2, s3, n1, n2, n3, p1, p2, p3, CameraPosition, lightDir);
             }
         }

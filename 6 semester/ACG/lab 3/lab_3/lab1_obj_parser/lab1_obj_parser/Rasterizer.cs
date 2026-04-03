@@ -10,7 +10,7 @@ namespace lab1_obj_parser
         private int _width;
         private int _height;
 
-        // Мягкие настройки Phong (уменьшен ks, увеличен shininess)
+        // Мягкие настройки Phong 
         private readonly float ka = 0.2f;
         private readonly float kd = 0.8f;
         private readonly float ks = 0.8f;
@@ -67,7 +67,6 @@ namespace lab1_obj_parser
                 int xStart = (int)Math.Ceiling(va.X);
                 int xEnd = (int)Math.Ceiling(vb.X);
 
-                // ОПТИМИЗАЦИЯ: Вычисляем шаг интерполяции один раз на строку
                 float dx = (float)(vb.X - va.X);
                 if (dx < 1e-6f) dx = 1.0f;
 
@@ -103,7 +102,6 @@ namespace lab1_obj_parser
                         double intensity = ka + diffuse + specular;
                         byte colorVal = (byte)(Math.Min(intensity, 1.0) * 255);
 
-                        // Прямая запись в память (B-G-R-A)
                         int* pixel = (int*)(row + x * 4);
                         *pixel = (255 << 24) | (colorVal << 16) | (colorVal << 8) | colorVal;
                     }
