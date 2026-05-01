@@ -49,7 +49,7 @@ namespace Application.Logic
 
         public void SlowOperation()
         {
-            Thread.Sleep(2000); 
+            Thread.Sleep(5000); 
         }
 
         public User GetByEmail(string email)

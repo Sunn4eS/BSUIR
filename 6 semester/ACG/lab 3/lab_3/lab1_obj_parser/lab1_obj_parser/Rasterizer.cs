@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 
 namespace lab1_obj_parser
 {
@@ -10,11 +11,15 @@ namespace lab1_obj_parser
         private int _width;
         private int _height;
 
-        // Мягкие настройки Phong 
+        // Фоновый
         private readonly float ka = 0.2f;
-        private readonly float kd = 0.8f;
+        // Поверхность
+        private readonly float kd = 0.6f;
+        // Сила блика
         private readonly float ks = 0.8f;
-        private readonly float shininess = 32.0f;
+
+        // Острота блика
+        private readonly float shininess = 128.0f;
 
         public Rasterizer(NewBitmap canvas)
         {
@@ -29,12 +34,14 @@ namespace lab1_obj_parser
             Array.Fill(_zBuffer, float.MaxValue);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         public void DrawTriangle(Vec4 v1, Vec4 v2, Vec4 v3,
                          Vec4 n1, Vec4 n2, Vec4 n3,
                          Vec4 p1, Vec4 p2, Vec4 p3,
                          Vec4 cameraPos, Vec4 lightDir)
         {
-            // Сортировка по Y (стандартно)
+            // Сортировка по Y
             if (v1.Y > v2.Y) { Swap(ref v1, ref v2); Swap(ref n1, ref n2); Swap(ref p1, ref p2); }
             if (v1.Y > v3.Y) { Swap(ref v1, ref v3); Swap(ref n1, ref n3); Swap(ref p1, ref p3); }
             if (v2.Y > v3.Y) { Swap(ref v2, ref v3); Swap(ref n2, ref n3); Swap(ref p2, ref p3); }

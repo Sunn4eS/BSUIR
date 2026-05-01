@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "lab1_obj_parser/1.0.0": {
+        "runtime": {
+          "lab1_obj_parser.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "lab1_obj_parser/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

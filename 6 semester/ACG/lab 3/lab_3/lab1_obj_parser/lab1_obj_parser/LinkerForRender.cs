@@ -17,7 +17,7 @@ namespace lab1_obj_parser
         public Vec4 CameraTarget { get; set; } = new Vec4(0, 0, 0);
         public Vec4 CameraUp { get; set; } = new Vec4(0, 1, 0);
 
-        Vec4 lightDir = new Vec4(0.5, 1, -0.3).Normalize();
+        Vec4 lightDir = new Vec4(0.5, 2, -0.3).Normalize();
 
 
         public LinkerForRender(int width, int height)
@@ -89,7 +89,6 @@ namespace lab1_obj_parser
                 Vec4 s2 = PerspectiveDivide(c2, viewportMatrix);
                 Vec4 s3 = PerspectiveDivide(c3, viewportMatrix);
 
-                // Back-face culling
                 double normalZ = (s2.X - s1.X) * (s3.Y - s1.Y) - (s2.Y - s1.Y) * (s3.X - s1.X);
                 if (normalZ >= 0) continue;
 

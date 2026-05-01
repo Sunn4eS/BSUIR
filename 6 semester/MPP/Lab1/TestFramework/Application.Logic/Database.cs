@@ -14,23 +14,22 @@ namespace Application.Logic
 
         public void Init()
         {
-            Console.WriteLine("  [DB] Подключение к базе данных...");
+           // Console.WriteLine("  [DB] Подключение к базе данных...");
             Thread.Sleep(800);
             Users = new List<User>();
             IsConnected = true;
-            Console.WriteLine("  [DB] Соединение установлено.");
+          //  Console.WriteLine("  [DB] Соединение установлено.");
         }
 
         public void Cleanup()
         {
-            Console.WriteLine("  [DB] Очистка базы данных и закрытие соединения.");
+          //  Console.WriteLine("  [DB] Очистка базы данных и закрытие соединения.");
             Users.Clear();
             IsConnected = false;
         }
 
         public void AddUserSafe(User user)
         {
-            // Lock гарантирует, что только один поток зайдет сюда в единицу времени
             lock (_syncLock)
             {
                 user.Id = Users.Count + 1;
@@ -42,7 +41,6 @@ namespace Application.Logic
         {
             lock (_syncLock)
             {
-                // Возвращаем копию, чтобы никто не менял оригинал во время перебора
                 return new List<User>(Users);
             }
         }

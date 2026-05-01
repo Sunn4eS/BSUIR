@@ -3,6 +3,22 @@
 namespace TestFramework
 {
 
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+    public class CategoryAttribute : Attribute
+    {
+        public string Name { get; }
+        public CategoryAttribute(string name) => Name = name;
+    }
+
+    // yield return
+    [AttributeUsage(AttributeTargets.Method)]
+    public class TestCaseSourceAttribute : Attribute
+    {
+        public string MethodName { get; }
+        public TestCaseSourceAttribute(string methodName) => MethodName = methodName;
+    }
+
+
     [AttributeUsage(AttributeTargets.Class)]
     public class TestClassAttribute : Attribute
     {
