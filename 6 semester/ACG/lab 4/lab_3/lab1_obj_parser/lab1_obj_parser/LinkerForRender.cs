@@ -18,6 +18,8 @@ namespace lab1_obj_parser
 
         public LinkerForRender(int width, int height) { Width = width; Height = height; }
 
+
+
         public void Render(Model model, Rasterizer rasterizer)
         {
             rasterizer.Clear();
@@ -31,7 +33,7 @@ namespace lab1_obj_parser
                                   * Matrix4x4.RotateZ(ModelRotation.Z)
                                   * Matrix4x4.Translation(ModelPosition.X, ModelPosition.Y, ModelPosition.Z);
 
-            rasterizer.ModelMatrix = modelMatrix; // Передаем матрицу для нормалей
+            rasterizer.ModelMatrix = modelMatrix; 
 
             Matrix4x4 viewMatrix = Matrix4x4.LookAt(CameraPosition, new Vec4(0, 0, 0), new Vec4(0, 1, 0));
             Matrix4x4 projectionMatrix = Matrix4x4.Perspective(Math.PI / 4, (double)Width / Height, 0.1, 100.0);
@@ -39,12 +41,10 @@ namespace lab1_obj_parser
 
             foreach (var face in model.Faces)
             {
-                if (face.Length < 3) continue; // Защита от битых полигонов
+                if (face.Length < 3) continue; 
 
-                // Разбиваем любой многоугольник (N-gon/Quad) на треугольники (веерная триангуляция)
                 for (int i = 1; i < face.Length - 1; i++)
                 {
-                    // 0-я вершина всегда общая, остальные берутся попарно (1-2, 2-3, 3-4 и т.д.)
                     int v1Idx = face[0][0], t1Idx = face[0][1], n1Idx = face[0][2];
                     int v2Idx = face[i][0], t2Idx = face[i][1], n2Idx = face[i][2];
                     int v3Idx = face[i + 1][0], t3Idx = face[i + 1][1], n3Idx = face[i + 1][2];
@@ -65,16 +65,14 @@ namespace lab1_obj_parser
                     Vec4 c2 = projectionMatrix * viewMatrix * p2;
                     Vec4 c3 = projectionMatrix * viewMatrix * p3;
 
-                    // Отсечение по ближней плоскости камеры (Z near)
                     if (c1.W < 0.001 || c2.W < 0.001 || c3.W < 0.001) continue;
 
                     Vec4 s1 = PerspectiveDivide(c1, viewportMatrix);
                     Vec4 s2 = PerspectiveDivide(c2, viewportMatrix);
                     Vec4 s3 = PerspectiveDivide(c3, viewportMatrix);
 
-                    // Отсечение нелицевых граней (Backface Culling)
                     double normalZ = (s2.X - s1.X) * (s3.Y - s1.Y) - (s2.Y - s1.Y) * (s3.X - s1.X);
-                    if (normalZ >= 0) continue; // <-- Если дыры все еще есть, попробуйте поменять на <= 0 или вообще закомментировать строку
+                    if (normalZ >= 0) continue; 
 
                     rasterizer.DrawTriangle(s1, s2, s3, n1, n2, n3, p1, p2, p3, uv1, uv2, uv3, CameraPosition, lightDir);
                 }
@@ -83,10 +81,10 @@ namespace lab1_obj_parser
 
         private Vec4 PerspectiveDivide(Vec4 vClip, Matrix4x4 viewport)
         {
-            double w = vClip.W; // Запоминаем W для перспективной коррекции!
+            double w = vClip.W; 
             vClip.X /= w; vClip.Y /= w; vClip.Z /= w; vClip.W = 1.0;
             Vec4 res = viewport * vClip;
-            res.W = w; // Восстанавливаем оригинальный W в вектор для Растеризатора
+            res.W = w; 
             return res;
         }
     }

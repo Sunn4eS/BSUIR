@@ -52,7 +52,7 @@ namespace lab1_obj_parser
                         int tIdx = (sub.Length > 1 && !string.IsNullOrEmpty(sub[1])) ? int.Parse(sub[1]) - 1 : -1;
                         int nIdx = (sub.Length > 2 && !string.IsNullOrEmpty(sub[2])) ? int.Parse(sub[2]) - 1 : -1;
 
-                        faceData[i - 1] = new int[] { vIdx, tIdx, nIdx }; // Индексы: 0=V, 1=T, 2=N
+                        faceData[i - 1] = new int[] { vIdx, tIdx, nIdx }; 
                     }
                     Faces.Add(faceData);
                 }

@@ -9,11 +9,11 @@ namespace lab1_obj_parser
         private float[] _zBuffer;
         private int _width, _height;
 
-        // Текстуры и Матрица
+  
         public Texture DiffuseMap { get; set; }
         public Texture NormalMap { get; set; }
         public Texture SpecularMap { get; set; }
-        public Matrix4x4 ModelMatrix { get; set; } // Для карты нормалей
+        public Matrix4x4 ModelMatrix { get; set; } 
 
         private readonly float ka = 0.2f, kd = 0.8f, ks = 1.0f;
         private readonly float shininess = 128.0f;
@@ -30,7 +30,7 @@ namespace lab1_obj_parser
         public void DrawTriangle(Vec4 v1, Vec4 v2, Vec4 v3,
                                  Vec4 n1, Vec4 n2, Vec4 n3,
                                  Vec4 p1, Vec4 p2, Vec4 p3,
-                                 Vec2 uv1, Vec2 uv2, Vec2 uv3, // <- Добавлено UV
+                                 Vec2 uv1, Vec2 uv2, Vec2 uv3,
                                  Vec4 cameraPos, Vec4 lightDir)
         {
             if (v1.Y > v2.Y) { Swap(ref v1, ref v2); Swap(ref n1, ref n2); Swap(ref p1, ref p2); Swap(ref uv1, ref uv2); }
@@ -40,11 +40,8 @@ namespace lab1_obj_parser
             int y1 = (int)v1.Y, y2 = (int)v2.Y, y3 = (int)v3.Y;
             if (y1 == y3) return;
 
-            // --- ПЕРСПЕКТИВНАЯ КОРРЕКЦИЯ ---
-            // Значение W содержит Z в пространстве камеры
             double invW1 = 1.0 / v1.W, invW2 = 1.0 / v2.W, invW3 = 1.0 / v3.W;
 
-            // Делим атрибуты на W (для линейной интерполяции на экране)
             p1 *= invW1; p2 *= invW2; p3 *= invW3;
             n1 *= invW1; n2 *= invW2; n3 *= invW3;
             uv1 *= invW1; uv2 *= invW2; uv3 *= invW3;
@@ -83,32 +80,28 @@ namespace lab1_obj_parser
                     {
                         _zBuffer[offset + x] = z;
 
-                        // Интерполируем 1/W
                         double invW = iWa + (iWb - iWa) * phi;
-                        double w = 1.0 / invW; // Возвращаем перспективу
+                        double w = 1.0 / invW; 
 
-                        // Умножаем обратно на W
                         Vec4 p = (pa + (pb - pa) * phi) * w;
                         Vec4 n = (na + (nb - na) * phi) * w;
                         Vec2 uv = (uva + (uvb - uva) * phi) * w;
 
-                        // 1. Диффузная карта
+                        // Диффузная карта
                         Vec4 color = DiffuseMap != null ? DiffuseMap.Sample(uv) : new Vec4(1, 1, 1);
 
-                        // 2. Карта нормалей (Object space)
+                        // Карта нормалей
                         if (NormalMap != null)
                         {
                             Vec4 nm = NormalMap.Sample(uv);
-                            // Цвет [0,1] -> Вектор [-1,1]
                             Vec4 localNorm = new Vec4(nm.X * 2.0 - 1.0, nm.Y * 2.0 - 1.0, nm.Z * 2.0 - 1.0, 0);
-                            n = (ModelMatrix * localNorm).Normalize(); // Из пространства модели в мировое
+                            n = (ModelMatrix * localNorm).Normalize();
                         }
                         else { n = n.Normalize(); }
 
-                        // 3. Карта бликов (Зеркальная)
+                        // Карта бликов 
                         double specStr = SpecularMap != null ? SpecularMap.Sample(uv).X : 1.0;
 
-                        // Освещение (Фонг)
                         double dotLN = Math.Max(Vec4.Dot(n, lightDir), 0.0);
                         Vec4 viewDir = (cameraPos - p).Normalize();
                         Vec4 reflectDir = Vec4.Reflect(lightDir, n).Normalize();
@@ -119,7 +112,6 @@ namespace lab1_obj_parser
 
                         double intensity = ka + diffuse + specular;
 
-                        // Применяем освещение к цвету текстуры
                         byte r = (byte)(Math.Min(color.X * intensity, 1.0) * 255);
                         byte g = (byte)(Math.Min(color.Y * intensity, 1.0) * 255);
                         byte b = (byte)(Math.Min(color.Z * intensity, 1.0) * 255);

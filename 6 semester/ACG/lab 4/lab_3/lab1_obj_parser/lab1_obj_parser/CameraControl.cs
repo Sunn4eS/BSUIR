@@ -24,7 +24,6 @@ namespace lab1_obj_parser
             _onUpdate = onUpdateCallback;
         }
 
-        // Обработка нажатия кнопки
         public void OnMouseDown(MouseEventArgs e)
         {
             _lastMousePosition = e.Location;
@@ -35,7 +34,6 @@ namespace lab1_obj_parser
                 _isRightMouseDown = true;
         }
 
-        // Обработка отпускания кнопки
         public void OnMouseUp(MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -44,7 +42,8 @@ namespace lab1_obj_parser
                 _isRightMouseDown = false;
         }
 
-        // Обработка движения мыши
+       
+        
         public void OnMouseMove(MouseEventArgs e)
         {
             int deltaX = e.X - _lastMousePosition.X;
@@ -63,7 +62,6 @@ namespace lab1_obj_parser
                 changed = true;
             }
 
-            // Перемещение (ПКМ)
             if (_isRightMouseDown)
             {
                 var currentPos = _linker.ModelPosition;
@@ -86,7 +84,6 @@ namespace lab1_obj_parser
             }
         }
 
-        // Обработка колесика (Масштабирование)
         public void OnMouseWheel(MouseEventArgs e)
         {
             double scaleFactor = (e.Delta > 0) ? (1 + ZOOM_SPEED) : (1 - ZOOM_SPEED);

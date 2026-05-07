@@ -12,11 +12,10 @@ namespace lab1_obj_parser
             using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
             using (BinaryReader reader = new BinaryReader(fs))
             {
-                // Чтение заголовка
                 byte idLength = reader.ReadByte();
                 byte colorMapType = reader.ReadByte();
                 byte imageType = reader.ReadByte();
-                reader.ReadBytes(5); // цветовая карта (не используется)
+                reader.ReadBytes(5);
                 ushort xOrigin = reader.ReadUInt16();
                 ushort yOrigin = reader.ReadUInt16();
                 ushort width = reader.ReadUInt16();
@@ -24,11 +23,9 @@ namespace lab1_obj_parser
                 byte bitsPerPixel = reader.ReadByte();
                 byte descriptor = reader.ReadByte();
 
-                // Проверка типа
                 if (imageType != 2 && imageType != 3 && imageType != 10 && imageType != 11)
                     throw new NotSupportedException($"Неподдерживаемый тип TGA: {imageType}. Ожидались 2,3,10,11");
 
-                // bitsPerPixel может быть 8, 24 или 32
                 if (bitsPerPixel != 8 && bitsPerPixel != 24 && bitsPerPixel != 32)
                     throw new NotSupportedException($"Неподдерживаемая глубина цвета: {bitsPerPixel} бит");
 
@@ -36,20 +33,18 @@ namespace lab1_obj_parser
                     reader.ReadBytes(idLength);
 
                 int pixelCount = width * height;
-                int srcBytesPerPixel = bitsPerPixel / 8; // 1, 3 или 4
+                int srcBytesPerPixel = bitsPerPixel / 8; 
                 byte[] rawData;
 
-                // Распаковка RLE для типов 10 и 11
                 if (imageType == 10 || imageType == 11)
                 {
                     rawData = DecompressRle(reader, pixelCount, srcBytesPerPixel);
                 }
-                else // типы 2 и 3
+                else 
                 {
                     rawData = reader.ReadBytes(pixelCount * srcBytesPerPixel);
                 }
 
-                // Преобразование в 32-битный ARGB (всегда RGBA)
                 int[] pixels = new int[pixelCount];
                 bool isTopLeft = (descriptor & 0x20) == 0x20;
 
@@ -63,12 +58,12 @@ namespace lab1_obj_parser
 
                         byte r, g, b, a = 255;
 
-                        if (bitsPerPixel == 8) // монохром
+                        if (bitsPerPixel == 8) 
                         {
                             byte grey = rawData[srcIdx];
                             r = g = b = grey;
                         }
-                        else // 24 или 32 бит (BGR порядок)
+                        else
                         {
                             b = rawData[srcIdx];
                             g = rawData[srcIdx + 1];

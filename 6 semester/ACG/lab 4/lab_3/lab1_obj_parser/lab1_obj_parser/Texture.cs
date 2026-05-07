@@ -11,7 +11,6 @@ namespace lab1_obj_parser
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        // Существующий конструктор для PNG/JPG/BMP
         public Texture(string path)
         {
             using (Bitmap bmp = new Bitmap(path))
@@ -26,7 +25,6 @@ namespace lab1_obj_parser
             }
         }
 
-        // Новый защищённый конструктор для создания текстуры из готовых пикселей
         protected Texture(int width, int height, int[] pixels)
         {
             Width = width;
@@ -34,7 +32,6 @@ namespace lab1_obj_parser
             _pixels = pixels;
         }
 
-        // Фабричный метод, который сам выбирает способ загрузки
         public static Texture LoadFromFile(string path)
         {
             string ext = Path.GetExtension(path).ToLower();
