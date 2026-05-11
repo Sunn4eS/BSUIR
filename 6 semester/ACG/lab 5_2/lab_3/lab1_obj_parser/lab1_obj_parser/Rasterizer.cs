@@ -138,10 +138,15 @@ namespace lab1_obj_parser
         }
 
         // ДОБАВЛЕНО: Алгоритм Screen Space Reflection
+        // ДОБАВЛЕНО: Алгоритм Screen Space Reflection (улучшенный)
+        // ДОБАВЛЕНО: Алгоритм Screen Space Reflection (С честной 3D-проверкой)
         public void ApplySSR(Matrix4x4 viewProjMatrix, Matrix4x4 viewportMatrix, Vec4 cameraPos)
         {
             byte* scan0 = _canvas.GetScan0();
             int stride = _canvas.GetStride();
+
+            double maxReflectionDist = 12.0; // Максимальная дальность луча в 3D пространстве
+            double thickness = 0.6;          // Допустимая "толщина" объекта для столкновения
 
             for (int y = 0; y < _height; y++)
             {
@@ -163,9 +168,9 @@ namespace lab1_obj_parser
                     Vec4 viewDir = (cameraPos - wPos).Normalize();
                     Vec4 reflectDir = Vec4.Reflect(viewDir, wNorm).Normalize();
 
-                    // Чтобы избежать самопересечений (acne), немного сдвигаем луч вдоль нормали/отражения
+                    // Сдвиг, чтобы избежать самопересечений (acne)
                     Vec4 pStart = wPos + reflectDir * 0.1;
-                    Vec4 pEnd = wPos + reflectDir * 15.0; // Максимальная дальность луча
+                    Vec4 pEnd = wPos + reflectDir * maxReflectionDist;
 
                     // Проекция луча в экранное пространство
                     Vec4 sStartClip = viewProjMatrix * pStart;
@@ -177,15 +182,17 @@ namespace lab1_obj_parser
                     Vec4 sEnd = viewportMatrix * new Vec4(sEndClip.X / sEndClip.W, sEndClip.Y / sEndClip.W, sEndClip.Z / sEndClip.W, 1.0);
 
                     Vec4 delta = sEnd - sStart;
-                    double maxDist = Math.Max(Math.Abs(delta.X), Math.Abs(delta.Y));
-                    if (maxDist < 1) continue;
+                    double maxStepsScreen = Math.Max(Math.Abs(delta.X), Math.Abs(delta.Y));
+                    if (maxStepsScreen < 1) continue;
 
-                    delta = delta * (1.0 / maxDist);
-                    int maxSteps = (int)Math.Min(maxDist, 250); // Ограничение шагов (для производительности)
+                    delta = delta * (1.0 / maxStepsScreen);
+                    int maxSteps = (int)Math.Min(maxStepsScreen, 150);
 
                     Vec4 current = sStart;
                     bool hit = false;
                     int hitColor = 0;
+                    int hitCx = -1, hitCy = -1;
+                    double hitDistance3D = 0;
 
                     // Raymarching
                     for (int i = 1; i <= maxSteps; i++)
@@ -201,44 +208,79 @@ namespace lab1_obj_parser
 
                         if (currentBufZ == float.MaxValue) continue;
 
-                        // Если Z луча "глубже" (больше) Z буфера, произошло пересечение
+                        // Если экранный Z луча "ушел" за пиксель на экране
                         if (rayZ > currentBufZ)
                         {
-                            // Проверка толщины поверхности (не попали ли мы в задний фон или другой удаленный объект)
-                            if (rayZ - currentBufZ < 0.05f)
+                            // === ЧЕСТНАЯ ПРОВЕРКА В 3D-ПРОСТРАНСТВЕ ===
+                            Vec4 gbufPos = _worldPosBuffer[cy * _width + cx];
+                            Vec4 toHit = gbufPos - wPos;
+
+                            // Проекция вектора (от начала луча до объекта) на направление луча
+                            double rayT = Vec4.Dot(toHit, reflectDir);
+
+                            if (rayT > 0) // Если объект находится спереди по ходу луча
                             {
-                                hit = true;
-                                hitColor = _colorBuffer[cy * _width + cx];
-                                break;
+                                // Где луч должен находиться в этот момент в 3D пространстве
+                                Vec4 expectedRayPos = wPos + reflectDir * rayT;
+
+                                // Измеряем реальное 3D-расстояние от луча до объекта в буфере
+                                double errX = expectedRayPos.X - gbufPos.X;
+                                double errY = expectedRayPos.Y - gbufPos.Y;
+                                double errZ = expectedRayPos.Z - gbufPos.Z;
+                                double error3D = Math.Sqrt(errX * errX + errY * errY + errZ * errZ);
+
+                                // Если луч летит очень близко к объекту - это столкновение
+                                if (error3D < thickness)
+                                {
+                                    hit = true;
+                                    hitColor = _colorBuffer[cy * _width + cx];
+                                    hitCx = cx;
+                                    hitCy = cy;
+                                    hitDistance3D = rayT;
+                                    break;
+                                }
+                                // Если error3D >= thickness, значит мы смотрим на парящий объект, 
+                                // а луч пролетает далеко ПОД ним. Игнорируем и летим дальше!
                             }
                         }
                     }
 
                     if (hit)
                     {
-                        // Смешивание базового цвета с цветом отражения
-                        int baseColor = _colorBuffer[idx];
-                        int rBase = (baseColor >> 16) & 255;
-                        int gBase = (baseColor >> 8) & 255;
-                        int bBase = baseColor & 255;
+                        // Затухание по дистанции (Distance Fade)
+                        double distanceFade = Math.Max(0.0, 1.0 - (hitDistance3D / maxReflectionDist));
+                        distanceFade *= distanceFade;
 
-                        int rHit = (hitColor >> 16) & 255;
-                        int gHit = (hitColor >> 8) & 255;
-                        int bHit = hitColor & 255;
+                        // Затухание по краям экрана (Edge Fade)
+                        double edgeFadeX = Math.Min(1.0, Math.Min(hitCx, _width - hitCx) / (_width * 0.05));
+                        double edgeFadeY = Math.Min(1.0, Math.Min(hitCy, _height - hitCy) / (_height * 0.05));
+                        double edgeFade = edgeFadeX * edgeFadeY;
 
-                        float refStr = spec * 0.4f; // Интенсивность отражения (масштабирование)
+                        // Итоговая сила отражения
+                        float refStr = spec * 0.6f * (float)(distanceFade * edgeFade);
                         refStr = Math.Min(refStr, 1.0f);
 
-                        int rF = (int)(rBase * (1 - refStr) + rHit * refStr);
-                        int gF = (int)(gBase * (1 - refStr) + gHit * refStr);
-                        int bF = (int)(bBase * (1 - refStr) + bHit * refStr);
+                        if (refStr > 0.01f)
+                        {
+                            int baseColor = _colorBuffer[idx];
+                            int rBase = (baseColor >> 16) & 255;
+                            int gBase = (baseColor >> 8) & 255;
+                            int bBase = baseColor & 255;
 
-                        row[x] = (255 << 24) | (rF << 16) | (gF << 8) | bF;
+                            int rHit = (hitColor >> 16) & 255;
+                            int gHit = (hitColor >> 8) & 255;
+                            int bHit = hitColor & 255;
+
+                            int rF = (int)(rBase * (1 - refStr) + rHit * refStr);
+                            int gF = (int)(gBase * (1 - refStr) + gHit * refStr);
+                            int bF = (int)(bBase * (1 - refStr) + bHit * refStr);
+
+                            row[x] = (255 << 24) | (rF << 16) | (gF << 8) | bF;
+                        }
                     }
                 }
             }
         }
-
         private void Swap<T>(ref T a, ref T b) { T t = a; a = b; b = t; }
     }
 }
