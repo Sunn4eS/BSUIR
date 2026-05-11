@@ -11,7 +11,7 @@ namespace lab1_obj_parser
         public Vec4 ModelScale { get; set; } = new Vec4(1, 1, 1);
         public Vec4 CameraPosition { get; set; } = new Vec4(0, 0, 5);
 
-        // Переменные для текстур
+       
         public Texture DiffuseMap, NormalMap, SpecularMap;
 
         Vec4 lightDir = new Vec4(0.5, 2, -0.3).Normalize();
