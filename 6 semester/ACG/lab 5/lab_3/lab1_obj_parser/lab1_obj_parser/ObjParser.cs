@@ -12,7 +12,6 @@ namespace lab1_obj_parser
         public List<Vec4> Normals { get; private set; } = new List<Vec4>();
         public List<int[][]> Faces { get; private set; } = new List<int[][]>();
 
-        // ДОБАВЛЕНО: пути для авто-загрузки текстур из MTL
         public string DiffuseMapPath { get; private set; }
         public string NormalMapPath { get; private set; }
         public string SpecularMapPath { get; private set; }
@@ -49,7 +48,7 @@ namespace lab1_obj_parser
                 if (parts[0] == "v") Vertices.Add(new Vec4(double.Parse(parts[1], CultureInfo.InvariantCulture), double.Parse(parts[2], CultureInfo.InvariantCulture), double.Parse(parts[3], CultureInfo.InvariantCulture)));
                 else if (parts[0] == "vt") UVs.Add(new Vec2(double.Parse(parts[1], CultureInfo.InvariantCulture), double.Parse(parts[2], CultureInfo.InvariantCulture)));
                 else if (parts[0] == "vn") Normals.Add(new Vec4(double.Parse(parts[1], CultureInfo.InvariantCulture), double.Parse(parts[2], CultureInfo.InvariantCulture), double.Parse(parts[3], CultureInfo.InvariantCulture), 0).Normalize());
-                else if (parts[0] == "mtllib") // ДОБАВЛЕНО: Парсинг материалов
+                else if (parts[0] == "mtllib") 
                 {
                     if (parts.Length > 1)
                         ParseMtl(Path.Combine(dir, parts[1]), dir);
@@ -72,7 +71,6 @@ namespace lab1_obj_parser
             if (Normals.Count == 0) GenerateNormals();
         }
 
-        // ДОБАВЛЕНО: Метод для чтения текстур из MTL файла
         private void ParseMtl(string mtlPath, string baseDir)
         {
             if (!File.Exists(mtlPath)) return;
@@ -83,7 +81,7 @@ namespace lab1_obj_parser
                 if (parts.Length < 2) continue;
 
                 string type = parts[0].ToLower();
-                string filePart = parts[parts.Length - 1]; // Берем последний аргумент (имя файла)
+                string filePart = parts[parts.Length - 1];
                 string fullPath = Path.Combine(baseDir, filePart);
 
                 if (type == "map_kd" && DiffuseMapPath == null) DiffuseMapPath = fullPath;

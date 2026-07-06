@@ -10,7 +10,7 @@ namespace lab1_obj_parser
         public Vec4 ModelRotation { get; set; } = new Vec4(0, 0, 0);
         public Vec4 ModelScale { get; set; } = new Vec4(1, 1, 1);
         public Vec4 CameraPosition { get; set; } = new Vec4(0, 0, 5);
-        public bool EnableSSR { get; set; } = true; // ДОБАВЛЕНО
+        public bool EnableSSR { get; set; } = true; 
 
         public Texture DiffuseMap, NormalMap, SpecularMap;
 
@@ -76,7 +76,6 @@ namespace lab1_obj_parser
                 }
             }
 
-            // ДОБАВЛЕНО: Применение Screen Space Reflection (SSR)
             if (EnableSSR)
             {
                 Matrix4x4 viewProjMatrix = projectionMatrix * viewMatrix;
