@@ -14,3 +14,65 @@
 **/obj/
 .vs/
 **/.vs/
+# === NODE.JS (JavaScript / TypeScript) ===
+# Папка с зависимостями (самая тяжелая)
+node_modules/
+
+# Логи ошибок и логи npm/yarn
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Директории сборки (опционально, если используете Next.js, Nuxt и т.д.)
+.next/
+.nuxt/
+dist/
+build/
+
+
+# === PYTHON ===
+# Байт-код (компилированные файлы)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Виртуальные окружения (все популярные названия)
+venv/
+.venv/
+env/
+.env/
+ENV/
+pip-wheel-metadata/
+
+# Расширения для Jupyter Notebook
+.ipynb_checkpoints/
+
+# Распределенные пакеты и сборка
+poetry.lock
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+
+# === ОБЩИЕ ФАЙЛЫ (Переменные окружения и системные файлы) ===
+# Файлы с секретами и ключами (ВАЖНО не залить в сеть)
+.env
+.env.local
+.env.*.local
+
+# Системные файлы Apple и Windows
+.DS_Store
+Thumbs.db
