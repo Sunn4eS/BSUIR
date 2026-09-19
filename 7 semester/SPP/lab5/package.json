@@ -1,0 +1,14 @@
+{
+"name": "lab5",
+"version": "1.0.0",
+"description": "TaskList with GraphQL",
+"main": "server/server.js",
+"scripts": {
+"start": "node server/server.js"
+},
+"dependencies": {
+"@apollo/server": "^4.12.2",
+"express": "^5.1.0",
+"graphql": "^16.11.0"
+}
+}

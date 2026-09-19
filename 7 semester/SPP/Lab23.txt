@@ -1,0 +1,678 @@
+# Структура проекта `lab2_3`
+
+```
+lab2_3
+├── client
+│   ├── index.html
+│   ├── script.js
+│   └── style.css
+├── package.json
+└── server
+    ├── authMiddleware.js
+    ├── data.js
+    └── server.js
+```
+
+# Содержимое файлов
+
+## `client/index.html`
+
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+<title>Список задач</title>
+<link
+  rel="stylesheet"
+  href="style.css"
+>
+</head>
+<body>
+<div class="container">
+  <h1>Список задач</h1>
+  <div id="loginBlock">
+    <h2>Авторизация</h2>
+    <input
+      type="text"
+      id="loginInput"
+      placeholder="Логин"
+    >
+    <input
+      type="password"
+      id="passwordInput"
+      placeholder="Пароль"
+    >
+    <button id="loginButton">
+      Войти
+    </button>
+    <p id="loginMessage"></p>
+  </div>
+  <div
+    id="appBlock"
+    class="hidden"
+  >
+    <button id="logoutButton">
+      Выйти
+    </button>
+    <h2>Добавление задачи</h2>
+    <input
+      type="text"
+      id="titleInput"
+      placeholder="Название задачи"
+    >
+    <textarea
+      id="descriptionInput"
+      placeholder="Описание задачи"
+    ></textarea>
+    <button id="addTaskButton">
+      Добавить задачу
+    </button>
+    <h2>Задачи</h2>
+    <div id="taskList"></div>
+  </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
+```
+
+## `client/script.js`
+
+```javascript
+const loginBlock =
+document.getElementById("loginBlock");
+const appBlock =
+document.getElementById("appBlock");
+const loginInput =
+document.getElementById("loginInput");
+const passwordInput =
+document.getElementById("passwordInput");
+const loginButton =
+document.getElementById("loginButton");
+const loginMessage =
+document.getElementById("loginMessage");
+const logoutButton =
+document.getElementById("logoutButton");
+const titleInput =
+document.getElementById("titleInput");
+const descriptionInput =
+document.getElementById("descriptionInput");
+const addTaskButton =
+document.getElementById("addTaskButton");
+const taskList =
+document.getElementById("taskList");
+loginButton.addEventListener(
+"click",
+login
+);
+async function login() {
+  const login = loginInput.value;
+  const password = passwordInput.value;
+  const response = await fetch(
+    "/api/login",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+        "application/json"
+      },
+      body: JSON.stringify({
+        login: login,
+        password: password
+      })
+    }
+  );
+  const data =
+    await response.json();
+  if (response.status === 200) {
+    loginMessage.textContent = "";
+    loginBlock.classList.add(
+      "hidden"
+    );
+    appBlock.classList.remove(
+      "hidden"
+    );
+    loadTasks();
+  } else {
+    loginMessage.textContent =
+    data.message;
+  }
+}
+logoutButton.addEventListener(
+  "click",
+  logout
+);
+async function logout() {
+  await fetch(
+    "/api/logout",
+    {
+      method: "POST"
+    }
+  );
+  appBlock.classList.add(
+    "hidden"
+  );
+  loginBlock.classList.remove(
+    "hidden"
+  );
+  taskList.innerHTML = "";
+}
+async function loadTasks() {
+  const response = await fetch(
+  "/api/tasks"
+);
+if (response.status === 401) {
+  showLogin();
+  return;
+}
+const tasks =
+  await response.json();
+taskList.innerHTML = "";
+tasks.forEach(
+  function (task) {
+    renderTask(task);
+  }
+);
+}
+addTaskButton.addEventListener(
+"click",
+createTask
+);
+async function createTask() {
+const title =
+  titleInput.value.trim();
+const description =
+  descriptionInput.value.trim();
+if (title === "") {
+  return;
+}
+const response = await fetch(
+  "/api/tasks",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type":
+        "application/json"
+    },
+    body: JSON.stringify({
+      title: title,
+      description: description
+    })
+  }
+);
+if (response.status === 401) {
+  showLogin();
+  return;
+}
+const task =
+  await response.json();
+renderTask(task);
+titleInput.value = "";
+descriptionInput.value = "";
+}
+function renderTask(task) {
+const taskElement =
+  document.createElement("div");
+taskElement.classList.add(
+  "task"
+);
+const checkbox =
+  document.createElement("input");
+checkbox.type = "checkbox";
+checkbox.checked =
+  task.isCompleted;
+const textBlock =
+  document.createElement("div");
+textBlock.classList.add(
+  "task-title"
+);
+const title =
+  document.createElement("strong");
+title.textContent =
+  task.title;
+const description =
+  document.createElement("span");
+description.classList.add(
+  "task-description"
+);
+description.textContent =
+  task.description;
+if (task.isCompleted) {
+  title.classList.add(
+    "completed"
+  );
+}
+textBlock.appendChild(
+  title
+);
+textBlock.appendChild(
+  description
+);
+const deleteButton =
+  document.createElement("button");
+deleteButton.textContent =
+  "Удалить";
+taskElement.appendChild(
+  checkbox
+);
+taskElement.appendChild(
+  textBlock
+);
+taskElement.appendChild(
+  deleteButton
+);
+taskList.appendChild(
+  taskElement
+);
+checkbox.addEventListener(
+  "change",
+  async function () {
+    const response =
+      await fetch(
+        "/api/tasks/" + task.id,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+          body: JSON.stringify({
+            isCompleted:
+              checkbox.checked
+          })
+        }
+      );
+    if (
+      response.status === 401
+    ) {
+      showLogin();
+      return;
+    }
+    if (
+      checkbox.checked
+    ) {
+      title.classList.add(
+        "completed"
+      );
+    } else {
+      title.classList.remove(
+        "completed"
+      );
+    }
+  }
+);
+deleteButton.addEventListener(
+  "click",
+  async function () {
+    const response =
+      await fetch(
+        "/api/tasks/" + task.id,
+        {
+          method:
+            "DELETE"
+        }
+      );
+    if (
+      response.status === 401
+    ) {
+      showLogin();
+      return;
+    }
+    if (
+      response.status === 200
+    ) {
+      taskElement.remove();
+    }
+  }
+);
+}
+function showLogin() {
+appBlock.classList.add(
+  "hidden"
+);
+loginBlock.classList.remove(
+  "hidden"
+);
+taskList.innerHTML = "";
+}
+loadTasks();
+```
+
+## `client/style.css`
+
+```css
+* {
+  box-sizing: border-box;
+  }
+body {
+margin: 0;
+font-family: Arial, sans-serif;
+}
+.container {
+width: 600px;
+margin: 40px auto;
+}
+input,
+textarea,
+button {
+width: 100%;
+padding: 10px;
+margin-bottom: 10px;
+font-size: 16px;
+}
+textarea {
+min-height: 80px;
+resize: vertical;
+}
+button {
+cursor: pointer;
+}
+.hidden {
+display: none;
+}
+.task {
+display: flex;
+align-items: center;
+gap: 10px;
+padding: 10px;
+margin-bottom: 10px;
+border: 1px solid #cccccc;
+}
+.task-title {
+flex: 1;
+}
+.completed {
+text-decoration: line-through;
+}
+.task-description {
+display: block;
+margin-top: 5px;
+font-size: 14px;
+}
+```
+
+## `package.json`
+
+```json
+{
+"name": "lab2_3",
+"version": "1.0.0",
+"main": "server/server.js",
+"scripts": {
+"start": "node server/server.js"
+},
+"dependencies": {
+"bcrypt": "^6.0.0",
+"cookie-parser": "^1.4.7",
+"express": "^5.1.0",
+"jsonwebtoken": "^9.0.2"
+}
+}
+```
+
+## `server/authMiddleware.js`
+
+```javascript
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = "my_secret_key";
+function authMiddleware(req, res, next) {
+const token = req.cookies.token;
+if (!token) {
+  return res.status(401).json({
+    message: "Требуется авторизация"
+  });
+}
+try {
+  const user = jwt.verify(
+    token,
+    JWT_SECRET
+  );
+  req.user = user;
+  next();
+} catch (error) {
+  return res.status(401).json({
+    message: "Недействительный токен"
+  });
+}
+}
+module.exports = {
+authMiddleware,
+JWT_SECRET
+};
+```
+
+## `server/data.js`
+
+```javascript
+const crypto = require("crypto");
+const tasks = [];
+const users = [
+{
+id: crypto.randomUUID(),
+  login: "admin",
+  passwordHash: null
+}
+];
+module.exports = {
+tasks,
+users
+};
+```
+
+## `server/server.js`
+
+```javascript
+const express = require("express");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+const path = require("path");
+const crypto = require("crypto");
+const {
+tasks,
+users
+} = require("./data");
+const {
+authMiddleware,
+JWT_SECRET
+} = require("./authMiddleware");
+const app = express();
+const PORT = 3000;
+app.use(express.json());
+app.use(cookieParser());
+app.use(
+express.static(
+path.join(__dirname, "../client")
+)
+);
+async function initializeUser() {
+const user = users[0];
+if (user.passwordHash !== null) {
+  return;
+}
+user.passwordHash = await bcrypt.hash(
+  "password",
+  10
+);
+}
+initializeUser();
+app.post("/api/login", async function (req, res) {
+const login = req.body.login;
+const password = req.body.password;
+const user = users.find(
+  function (currentUser) {
+    return currentUser.login === login;
+  }
+);
+if (!user) {
+  return res.status(401).json({
+    message: "Неверный логин или пароль"
+  });
+}
+const passwordIsCorrect = await bcrypt.compare(
+  password,
+  user.passwordHash
+);
+if (!passwordIsCorrect) {
+  return res.status(401).json({
+    message: "Неверный логин или пароль"
+  });
+}
+const token = jwt.sign(
+  {
+    id: user.id,
+    login: user.login
+  },
+  JWT_SECRET,
+  {
+    expiresIn: "1h"
+  }
+);
+res.cookie(
+  "token",
+  token,
+  {
+    httpOnly: true
+  }
+);
+res.status(200).json({
+  message: "Авторизация выполнена"
+});
+});
+app.post("/api/logout", function (req, res) {
+res.clearCookie("token");
+res.status(200).json({
+  message: "Выход выполнен"
+});
+});
+app.get(
+"/api/tasks",
+authMiddleware,
+function (req, res) {
+  res.status(200).json(tasks);
+}
+);
+app.get(
+"/api/tasks/:id",
+authMiddleware,
+function (req, res) {
+  const task = tasks.find(
+    function (currentTask) {
+      return currentTask.id === req.params.id;
+    }
+  );
+  if (!task) {
+    return res.status(404).json({
+      message: "Задача не найдена"
+    });
+  }
+  res.status(200).json(task);
+}
+);
+app.post(
+"/api/tasks",
+authMiddleware,
+function (req, res) {
+  const title = req.body.title;
+  const description = req.body.description;
+  if (
+    typeof title !== "string" ||
+    title.trim() === ""
+  ) {
+    return res.status(400).json({
+      message: "Название задачи обязательно"
+    });
+  }
+  const task = {
+    id: crypto.randomUUID(),
+    title: title,
+    isCompleted: false,
+    description:
+      typeof description === "string"
+        ? description
+        : "",
+    createdAt: Date.now(),
+    createdBy: req.user.id
+  };
+  tasks.push(task);
+  res.status(200).json(task);
+}
+);
+app.put(
+"/api/tasks/:id",
+authMiddleware,
+function (req, res) {
+  const task = tasks.find(
+    function (currentTask) {
+      return currentTask.id === req.params.id;
+    }
+  );
+  if (!task) {
+    return res.status(404).json({
+      message: "Задача не найдена"
+    });
+  }
+  if (
+    typeof req.body.title === "string"
+  ) {
+    task.title = req.body.title;
+  }
+  if (
+    typeof req.body.description === "string"
+  ) {
+    task.description =
+      req.body.description;
+  }
+  if (
+    typeof req.body.isCompleted === "boolean"
+  ) {
+    task.isCompleted =
+      req.body.isCompleted;
+  }
+  res.status(200).json(task);
+}
+);
+app.delete(
+"/api/tasks/:id",
+authMiddleware,
+function (req, res) {
+  const taskIndex = tasks.findIndex(
+    function (currentTask) {
+      return currentTask.id === req.params.id;
+    }
+  );
+  if (taskIndex === -1) {
+    return res.status(404).json({
+      message: "Задача не найдена"
+    });
+  }
+  tasks.splice(
+    taskIndex,
+    1
+  );
+  res.status(200).json({
+    message: "Задача удалена"
+  });
+}
+);
+app.listen(
+PORT,
+function () {
+  console.log(
+    "Сервер запущен: http://localhost:" + PORT
+  );
+  console.log(
+    "Логин: admin"
+  );
+  console.log(
+    "Пароль: password"
+  );
+}
+);
+```
+
