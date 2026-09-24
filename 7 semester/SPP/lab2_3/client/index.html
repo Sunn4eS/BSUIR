@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Список задач</title>
+
+    <link rel="stylesheet" href="style.css">
+
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Список задач</h1>
+
+
+        <div id="loginBlock">
+
+            <h2>Авторизация</h2>
+
+
+            <input type="text" id="loginInput" placeholder="Логин">
+
+
+            <input type="password" id="passwordInput" placeholder="Пароль">
+
+
+            <button id="loginButton">
+
+                Войти
+
+            </button>
+
+
+            <p id="loginMessage"></p>
+
+        </div>
+
+
+        <div id="appBlock" class="hidden">
+
+
+            <button id="logoutButton">
+
+                Выйти
+
+            </button>
+
+
+            <h2>Добавление задачи</h2>
+
+
+            <input type="text" id="titleInput" placeholder="Название задачи">
+
+
+            <textarea id="descriptionInput" placeholder="Описание задачи"></textarea>
+
+
+            <button id="addTaskButton">
+
+                Добавить задачу
+
+            </button>
+
+
+            <h2>Задачи</h2>
+
+
+            <div id="taskList"></div>
+
+
+        </div>
+
+    </div>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

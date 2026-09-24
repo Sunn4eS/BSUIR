@@ -1,0 +1,744 @@
+# Структура проекта `lab5`
+
+```
+lab5
+├── client
+│   ├── index.html
+│   ├── script.js
+│   └── style.css
+├── package.json
+└── server
+    └── server.js
+```
+
+# Содержимое файлов
+
+## `client/index.html`
+
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+<title>
+  Список задач GraphQL
+</title>
+<link
+  rel="stylesheet"
+  href="style.css"
+>
+</head>
+<body>
+<div class="container">
+  <h1>Список задач</h1>
+  <div class="add-task">
+    <input
+      type="text"
+      id="titleInput"
+      placeholder="Название задачи"
+    >
+    <textarea
+      id="descriptionInput"
+      placeholder="Описание задачи"
+    ></textarea>
+    <input
+      type="text"
+      id="createdByInput"
+      placeholder="UUID создателя"
+    >
+    <button id="addTaskButton">
+      Добавить задачу
+    </button>
+  </div>
+  <h2>Все задачи</h2>
+  <div id="taskList"></div>
+  <div
+    id="taskDetails"
+    class="task-details hidden"
+  >
+    <h2>
+      Детальная информация
+    </h2>
+    <p>
+      <strong>ID:</strong>
+      <span id="detailId"></span>
+    </p>
+    <p>
+      <strong>Название:</strong>
+      <span id="detailTitle"></span>
+    </p>
+    <p>
+      <strong>Выполнена:</strong>
+      <span id="detailCompleted"></span>
+    </p>
+    <p>
+      <strong>Описание:</strong>
+      <span id="detailDescription"></span>
+    </p>
+    <p>
+      <strong>Дата создания:</strong>
+      <span id="detailCreatedAt"></span>
+    </p>
+    <p>
+      <strong>Создатель:</strong>
+      <span id="detailCreatedBy"></span>
+    </p>
+    <button id="closeDetailsButton">
+      Закрыть
+    </button>
+  </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
+```
+
+## `client/script.js`
+
+```javascript
+const titleInput =
+document.getElementById(
+"titleInput"
+);
+const descriptionInput =
+document.getElementById(
+"descriptionInput"
+);
+const createdByInput =
+document.getElementById(
+"createdByInput"
+);
+const addTaskButton =
+document.getElementById(
+"addTaskButton"
+);
+const taskList =
+document.getElementById(
+"taskList"
+);
+const taskDetails =
+document.getElementById(
+"taskDetails"
+);
+const closeDetailsButton =
+document.getElementById(
+"closeDetailsButton"
+);
+async function graphQLRequest(
+query,
+variables
+) {
+const response =
+  await fetch(
+    "/graphql",
+    {
+      method:
+        "POST",
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+      body:
+        JSON.stringify({
+          query:
+            query,
+          variables:
+            variables
+        })
+    }
+  );
+return await response.json();
+}
+async function loadTasks() {
+const query = `
+  query {
+    tasks {
+      id
+      title
+      isCompleted
+    }
+  }
+`;
+const result =
+  await graphQLRequest(
+    query,
+    {}
+  );
+taskList.innerHTML = "";
+result.data.tasks.forEach(
+  function (task) {
+    renderTask(
+      task
+    );
+  }
+);
+}
+addTaskButton.addEventListener(
+"click",
+createTask
+);
+async function createTask() {
+const title =
+  titleInput.value.trim();
+const description =
+  descriptionInput.value.trim();
+const createdBy =
+  createdByInput.value.trim();
+if (title === "") {
+  return;
+}
+if (description === "") {
+  return;
+}
+if (createdBy === "") {
+  return;
+}
+const mutation = `
+  mutation CreateTask(
+    $title: String!
+    $description: String!
+    $createdBy: String!
+  ) {
+    createTask(
+      title: $title
+      description: $description
+      createdBy: $createdBy
+    ) {
+      id
+      title
+      isCompleted
+    }
+  }
+`;
+const result =
+  await graphQLRequest(
+    mutation,
+    {
+      title:
+        title,
+      description:
+        description,
+      createdBy:
+        createdBy
+    }
+  );
+renderTask(
+  result.data.createTask
+);
+titleInput.value = "";
+descriptionInput.value = "";
+createdByInput.value = "";
+}
+function renderTask(task) {
+if (
+  document.getElementById(
+    task.id
+  )
+) {
+  return;
+}
+const taskElement =
+  document.createElement(
+    "div"
+  );
+taskElement.id =
+  task.id;
+taskElement.classList.add(
+  "task"
+);
+const checkbox =
+  document.createElement(
+    "input"
+  );
+checkbox.type =
+  "checkbox";
+checkbox.checked =
+  task.isCompleted;
+const title =
+  document.createElement(
+    "span"
+  );
+title.textContent =
+  task.title;
+title.classList.add(
+  "task-title"
+);
+if (
+  task.isCompleted
+) {
+  title.classList.add(
+    "completed"
+  );
+}
+const detailsButton =
+  document.createElement(
+    "button"
+  );
+detailsButton.textContent =
+  "Подробнее";
+const deleteButton =
+  document.createElement(
+    "button"
+  );
+deleteButton.textContent =
+  "Удалить";
+taskElement.appendChild(
+  checkbox
+);
+taskElement.appendChild(
+  title
+);
+taskElement.appendChild(
+  detailsButton
+);
+taskElement.appendChild(
+  deleteButton
+);
+taskList.appendChild(
+  taskElement
+);
+checkbox.addEventListener(
+  "change",
+  async function () {
+    const mutation = `
+      mutation UpdateTask(
+        $id: ID!
+        $isCompleted: Boolean!
+      ) {
+        updateTask(
+          id: $id
+          isCompleted: $isCompleted
+        ) {
+          id
+          title
+          isCompleted
+        }
+      }
+    `;
+    await graphQLRequest(
+      mutation,
+      {
+        id:
+          task.id,
+        isCompleted:
+          checkbox.checked
+      }
+    );
+    if (
+      checkbox.checked
+    ) {
+      title.classList.add(
+        "completed"
+      );
+    } else {
+      title.classList.remove(
+        "completed"
+      );
+    }
+  }
+);
+detailsButton.addEventListener(
+  "click",
+  function () {
+    loadTaskDetails(
+      task.id
+    );
+  }
+);
+deleteButton.addEventListener(
+  "click",
+  async function () {
+    const mutation = `
+      mutation DeleteTask(
+        $id: ID!
+      ) {
+        deleteTask(
+          id: $id
+        )
+      }
+    `;
+    const result =
+      await graphQLRequest(
+        mutation,
+        {
+          id:
+            task.id
+        }
+      );
+    if (
+      result.data.deleteTask
+    ) {
+      taskElement.remove();
+    }
+  }
+);
+}
+async function loadTaskDetails(
+taskId
+) {
+const query = `
+  query GetTask(
+    $id: ID!
+  ) {
+    task(
+      id: $id
+    ) {
+      id
+      title
+      isCompleted
+      description
+      createdAt
+      createdBy
+    }
+  }
+`;
+const result =
+  await graphQLRequest(
+    query,
+    {
+      id:
+        taskId
+    }
+  );
+const task =
+  result.data.task;
+if (!task) {
+  return;
+}
+document.getElementById(
+  "detailId"
+).textContent =
+  task.id;
+document.getElementById(
+  "detailTitle"
+).textContent =
+  task.title;
+document.getElementById(
+  "detailCompleted"
+).textContent =
+  task.isCompleted
+    ? "Да"
+    : "Нет";
+document.getElementById(
+  "detailDescription"
+).textContent =
+  task.description;
+document.getElementById(
+  "detailCreatedAt"
+).textContent =
+  task.createdAt;
+document.getElementById(
+  "detailCreatedBy"
+).textContent =
+  task.createdBy;
+taskDetails.classList.remove(
+  "hidden"
+);
+}
+closeDetailsButton.addEventListener(
+"click",
+function () {
+  taskDetails.classList.add(
+    "hidden"
+  );
+}
+);
+loadTasks();
+```
+
+## `client/style.css`
+
+```css
+* {
+  box-sizing: border-box;
+  }
+body {
+margin: 0;
+font-family: Arial, sans-serif;
+}
+.container {
+width: 700px;
+margin: 40px auto;
+}
+input,
+textarea {
+width: 100%;
+padding: 10px;
+margin-bottom: 10px;
+font-size: 16px;
+}
+textarea {
+min-height: 80px;
+resize: vertical;
+}
+button {
+padding: 10px 15px;
+margin-bottom: 10px;
+font-size: 16px;
+cursor: pointer;
+}
+.task {
+display: flex;
+align-items: center;
+gap: 10px;
+padding: 10px;
+margin-bottom: 10px;
+border: 1px solid #cccccc;
+}
+.task-title {
+flex: 1;
+}
+.completed {
+text-decoration: line-through;
+}
+.task-details {
+margin-top: 30px;
+padding: 20px;
+border: 1px solid #000000;
+}
+.hidden {
+display: none;
+}
+```
+
+## `package.json`
+
+```json
+{
+"name": "lab5",
+"version": "1.0.0",
+"description": "TaskList with GraphQL",
+"main": "server/server.js",
+"scripts": {
+"start": "node server/server.js"
+},
+"dependencies": {
+"@apollo/server": "^4.12.2",
+"express": "^5.1.0",
+"graphql": "^16.11.0"
+}
+}
+```
+
+## `server/server.js`
+
+```javascript
+const express = require("express");
+const path = require("path");
+const http = require("http");
+const crypto = require("crypto");
+const {
+ApolloServer
+} = require("@apollo/server");
+const {
+expressMiddleware
+} = require("@apollo/server/express4");
+const app = express();
+const httpServer =
+http.createServer(app);
+const PORT = 3000;
+const tasks = [];
+const typeDefs = `
+type Task {
+  id: ID!
+  title: String!
+  isCompleted: Boolean!
+  description: String!
+  createdAt: String!
+  createdBy: String!
+}
+type Query {
+  tasks: [Task!]!
+  task(id: ID!): Task
+}
+type Mutation {
+  createTask(
+    title: String!
+    description: String!
+    createdBy: String!
+  ): Task!
+  updateTask(
+    id: ID!
+    title: String
+    description: String
+    isCompleted: Boolean
+  ): Task
+  deleteTask(
+    id: ID!
+  ): Boolean!
+}
+`;
+const resolvers = {
+Query: {
+  tasks: function () {
+    return tasks;
+  },
+  task: function (
+    parent,
+    args
+  ) {
+    const task =
+      tasks.find(
+        function (currentTask) {
+          return (
+            currentTask.id ===
+            args.id
+          );
+        }
+      );
+    if (!task) {
+      return null;
+    }
+    return task;
+  }
+},
+Mutation: {
+  createTask: function (
+    parent,
+    args
+  ) {
+    const task = {
+      id:
+        crypto.randomUUID(),
+      title:
+        args.title,
+      isCompleted:
+        false,
+      description:
+        args.description,
+      createdAt:
+        new Date()
+          .toISOString(),
+      createdBy:
+        args.createdBy
+    };
+    tasks.push(task);
+    return task;
+  },
+  updateTask: function (
+    parent,
+    args
+  ) {
+    const task =
+      tasks.find(
+        function (currentTask) {
+          return (
+            currentTask.id ===
+            args.id
+          );
+        }
+      );
+    if (!task) {
+      return null;
+    }
+    if (
+      typeof args.title ===
+      "string"
+    ) {
+      task.title =
+        args.title;
+    }
+    if (
+      typeof args.description ===
+      "string"
+    ) {
+      task.description =
+        args.description;
+    }
+    if (
+      typeof args.isCompleted ===
+      "boolean"
+    ) {
+      task.isCompleted =
+        args.isCompleted;
+    }
+    return task;
+  },
+  deleteTask: function (
+    parent,
+    args
+  ) {
+    const taskIndex =
+      tasks.findIndex(
+        function (currentTask) {
+          return (
+            currentTask.id ===
+            args.id
+          );
+        }
+      );
+    if (taskIndex === -1) {
+      return false;
+    }
+      tasks.splice(
+      taskIndex,
+      1
+    );
+    return true;
+  }
+}
+};
+const graphQLServer =
+new ApolloServer({
+  typeDefs:
+    typeDefs,
+  resolvers:
+    resolvers
+});
+async function startServer() {
+await graphQLServer.start();
+app.use(
+  express.json()
+);
+app.use(
+  "/graphql",
+  expressMiddleware(
+    graphQLServer
+  )
+);
+const clientPath =
+  path.join(
+    __dirname,
+    "../client"
+  );
+app.use(
+  express.static(
+    clientPath
+  )
+);
+app.get(
+  "/",
+  function (
+    req,
+    res
+  ) {
+    res.sendFile(
+      path.join(
+        clientPath,
+        "index.html"
+      )
+    );
+  }
+);
+httpServer.listen(
+  PORT,
+  function () {
+    console.log(
+      "Сервер запущен: http://localhost:" +
+      PORT
+    );
+    console.log(
+      "GraphQL: http://localhost:" +
+      PORT +
+      "/graphql"
+    );
+  }
+);
+}
+startServer();
+```
+
