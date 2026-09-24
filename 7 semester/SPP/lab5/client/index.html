@@ -1,137 +1,66 @@
 <!DOCTYPE html>
-
 <html lang="ru">
 
 <head>
-
-
-<meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-    Список задач GraphQL
-</title>
-
-<link
-    rel="stylesheet"
-    href="style.css"
->
-
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список задач GraphQL</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+    <div class="container">
+        <h1>Список задач</h1>
 
+        <div class="add-task">
+            <input type="text" id="titleInput" placeholder="Название задачи">
+            <textarea id="descriptionInput" placeholder="Описание задачи"></textarea>
+            <input type="text" id="createdByInput" placeholder="UUID создателя">
+            <button id="addTaskButton">Добавить задачу</button>
+        </div>
 
-<div class="container">
+        <h2>Все задачи</h2>
 
-    <h1>Список задач</h1>
+        <div id="taskList"></div>
 
-    <div class="add-task">
+        <div id="taskDetails" class="task-details hidden">
+            <h2>Детальная информация</h2>
 
-        <input
-            type="text"
-            id="titleInput"
-            placeholder="Название задачи"
-        >
+            <p>
+                <strong>ID:</strong>
+                <span id="detailId"></span>
+            </p>
 
+            <p>
+                <strong>Название:</strong>
+                <span id="detailTitle"></span>
+            </p>
 
-        <textarea
-            id="descriptionInput"
-            placeholder="Описание задачи"
-        ></textarea>
+            <p>
+                <strong>Выполнена:</strong>
+                <span id="detailCompleted"></span>
+            </p>
 
+            <p>
+                <strong>Описание:</strong>
+                <span id="detailDescription"></span>
+            </p>
 
-        <input
-            type="text"
-            id="createdByInput"
-            placeholder="UUID создателя"
-        >
+            <p>
+                <strong>Дата создания:</strong>
+                <span id="detailCreatedAt"></span>
+            </p>
 
+            <p>
+                <strong>Создатель:</strong>
+                <span id="detailCreatedBy"></span>
+            </p>
 
-        <button id="addTaskButton">
-
-            Добавить задачу
-
-        </button>
-
+            <button id="closeDetailsButton">Закрыть</button>
+        </div>
     </div>
 
-
-    <h2>Все задачи</h2>
-
-    <div id="taskList"></div>
-
-    <div
-        id="taskDetails"
-        class="task-details hidden"
-    >
-
-        <h2>
-            Детальная информация
-        </h2>
-
-
-        <p>
-            <strong>ID:</strong>
-
-            <span id="detailId"></span>
-        </p>
-
-
-        <p>
-            <strong>Название:</strong>
-
-            <span id="detailTitle"></span>
-        </p>
-
-
-        <p>
-            <strong>Выполнена:</strong>
-
-            <span id="detailCompleted"></span>
-        </p>
-
-
-        <p>
-            <strong>Описание:</strong>
-
-            <span id="detailDescription"></span>
-        </p>
-
-
-        <p>
-            <strong>Дата создания:</strong>
-
-            <span id="detailCreatedAt"></span>
-        </p>
-
-
-        <p>
-            <strong>Создатель:</strong>
-
-            <span id="detailCreatedBy"></span>
-        </p>
-
-
-        <button id="closeDetailsButton">
-
-            Закрыть
-
-        </button>
-
-    </div>
-
-</div>
-
-
-<script src="script.js"></script>
-
-
+    <script src="script.js"></script>
 </body>
 
 </html>

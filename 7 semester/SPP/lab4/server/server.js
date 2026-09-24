@@ -26,214 +26,103 @@ app.use(
         )
     )
 );
-app.get(
-    "/",
-    function (req, res) {
-        res.sendFile(
-            path.join(
-                __dirname,
-                "../client",
-                "index.html"
-            )
-        );
 
-    }
+app.get("/", function (req, res) {
+    res.sendFile(
+        path.join(
+            __dirname,
+            "../client",
+            "index.html"
+        )
+    );
+});
 
-
-);
-
-webSocketServer.on(
-    "connection",
-    function () {
-
-
-        console.log(
-            "Подключился новый WebSocket-клиент"
-        );
-
-    }
-
-
-);
+webSocketServer.on("connection", function () {
+    console.log("Подключился новый WebSocket-клиент");
+});
 
 function broadcast(data) {
-    const message =
-        JSON.stringify(data);
-    webSocketServer.clients.forEach(
-        function (client) {
-
-            if (
-                client.readyState ===
-                WebSocket.OPEN
-            ) {
-
-                client.send(message);
-
-            }
-
+    const message = JSON.stringify(data);
+    webSocketServer.clients.forEach(function (client) {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
         }
-    );
-
-
+    });
 }
 
-app.get(
-    "/api/tasks",
-    function (req, res) {
-        res.status(200).json(tasks);
+app.get("/api/tasks", function (req, res) {
+    res.status(200).json(tasks);
+});
 
-    }
-);
-
-app.post(
-    "/api/tasks",
-    function (req, res) {
-        const title =
-            req.body.title;
-        if (
-            typeof title !== "string" ||
-            title.trim() === ""
-        ) {
-
-            return res.status(400).json({
-                message:
-                    "Название задачи обязательно"
-            });
-
-        }
-
-        const task = {
-
-            id:
-                crypto.randomUUID(),
-
-            title:
-                title.trim(),
-
-            isCompleted:
-                false
-
-        };
-
-        tasks.push(task);
-        broadcast({
-            type: "taskCreated",
-            task: task
+app.post("/api/tasks", function (req, res) {
+    const title = req.body.title;
+    if (typeof title !== "string" || title.trim() === "") {
+        return res.status(400).json({
+            message: "Название задачи обязательно"
         });
-        res.status(200).json(task);
     }
 
-);
+    const task = {
+        id: crypto.randomUUID(),
+        title: title.trim(),
+        isCompleted: false
+    };
 
-app.put(
-    "/api/tasks/:id",
-    function (req, res) {
-        const task =
-            tasks.find(
-                function (currentTask) {
+    tasks.push(task);
+    broadcast({
+        type: "taskCreated",
+        task: task
+    });
+    res.status(200).json(task);
+});
 
-                    return (
-                        currentTask.id ===
-                        req.params.id
-                    );
-
-                }
-            );
-        if (!task) {
-
-            return res.status(404).json({
-                message:
-                    "Задача не найдена"
-            });
-
-        }
-        if (
-            typeof req.body.title ===
-            "string"
-        ) {
-
-            task.title =
-                req.body.title;
-
-        }
-
-        if (
-            typeof req.body.isCompleted ===
-            "boolean"
-        ) {
-
-            task.isCompleted =
-                req.body.isCompleted;
-
-        }
-
-        broadcast({
-            type: "taskUpdated",
-            task: task
+app.put("/api/tasks/:id", function (req, res) {
+    const task = tasks.find(function (currentTask) {
+        return currentTask.id === req.params.id;
+    });
+    if (!task) {
+        return res.status(404).json({
+            message: "Задача не найдена"
         });
-
-        res.status(200).json(task);
-
+    }
+    if (typeof req.body.title === "string") {
+        task.title = req.body.title;
+    }
+    if (typeof req.body.isCompleted === "boolean") {
+        task.isCompleted = req.body.isCompleted;
     }
 
+    broadcast({
+        type: "taskUpdated",
+        task: task
+    });
 
-);
+    res.status(200).json(task);
+});
 
-app.delete(
-    "/api/tasks/:id",
-    function (req, res) {
-        const taskIndex =
-            tasks.findIndex(
-                function (currentTask) {
-
-                    return (
-                        currentTask.id ===
-                        req.params.id
-                    );
-
-                }
-            );
-        if (taskIndex === -1) {
-
-            return res.status(404).json({
-                message:
-                    "Задача не найдена"
-            });
-
-        }
-
-        const deletedTask =
-            tasks[taskIndex];
-
-        tasks.splice(
-            taskIndex,
-            1
-        );
-
-        broadcast({
-            type: "taskDeleted",
-            taskId:
-                deletedTask.id
+app.delete("/api/tasks/:id", function (req, res) {
+    const taskIndex = tasks.findIndex(function (currentTask) {
+        return currentTask.id === req.params.id;
+    });
+    if (taskIndex === -1) {
+        return res.status(404).json({
+            message: "Задача не найдена"
         });
-
-
-        res.status(200).json({
-            message:
-                "Задача удалена"
-        });
-
     }
 
+    const deletedTask = tasks[taskIndex];
+    tasks.splice(taskIndex, 1);
 
-);
+    broadcast({
+        type: "taskDeleted",
+        taskId: deletedTask.id
+    });
 
-server.listen(
-    PORT,
-    function () {
-        console.log(
-            "Сервер запущен: http://localhost:" +
-            PORT
-        );
+    res.status(200).json({
+        message: "Задача удалена"
+    });
+});
 
-    }
-);
+server.listen(PORT, function () {
+    console.log("Сервер запущен: http://localhost:" + PORT);
+});
