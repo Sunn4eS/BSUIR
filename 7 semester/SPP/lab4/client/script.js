@@ -58,41 +58,31 @@ function addTaskToPage(task) {
         return;
     }
 
-    // Создаём блок задачи
     const taskElement = document.createElement("div");
     taskElement.id = task.id;
     taskElement.classList.add("task");
 
-    // Создаём checkbox
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.checked = task.isCompleted;
 
-    // Создаём текст
     const title = document.createElement("span");
     title.textContent = task.title;
     title.classList.add("task-title");
 
-    // Если задача выполнена
     if (task.isCompleted) {
         title.classList.add("completed");
     }
 
-    // Кнопка удаления
     const deleteButton = document.createElement("button");
     deleteButton.textContent = "Удалить";
 
-    // Добавляем элементы
     taskElement.appendChild(checkbox);
     taskElement.appendChild(title);
     taskElement.appendChild(deleteButton);
 
-    // Добавляем задачу
     taskList.appendChild(taskElement);
 
-    // ====================================
-    // ИЗМЕНЕНИЕ ЗАДАЧИ
-    // ====================================
     checkbox.addEventListener("change", async function () {
         await fetch("/api/tasks/" + task.id, {
             method: "PUT",
@@ -105,9 +95,6 @@ function addTaskToPage(task) {
         });
     });
 
-    // ====================================
-    // УДАЛЕНИЕ
-    // ====================================
     deleteButton.addEventListener("click", async function () {
         await fetch("/api/tasks/" + task.id, {
             method: "DELETE"
@@ -115,28 +102,20 @@ function addTaskToPage(task) {
     });
 }
 
-// ========================================
-// ОБНОВЛЕНИЕ ЗАДАЧИ
-// ========================================
 function updateTaskOnPage(task) {
     const taskElement = document.getElementById(task.id);
 
-    // Если задачи нет
     if (!taskElement) {
         return;
     }
 
-    // Получаем элементы
     const checkbox = taskElement.querySelector("input");
     const title = taskElement.querySelector(".task-title");
 
-    // Обновляем checkbox
     checkbox.checked = task.isCompleted;
 
-    // Обновляем название
     title.textContent = task.title;
 
-    // Обновляем стиль
     if (task.isCompleted) {
         title.classList.add("completed");
     } else {
@@ -144,9 +123,6 @@ function updateTaskOnPage(task) {
     }
 }
 
-// ========================================
-// УДАЛЕНИЕ ЗАДАЧИ СО СТРАНИЦЫ
-// ========================================
 function deleteTaskFromPage(taskId) {
     const taskElement = document.getElementById(taskId);
     if (taskElement) {
@@ -154,8 +130,4 @@ function deleteTaskFromPage(taskId) {
     }
 }
 
-// ========================================
-// ЗАПУСК
-// ========================================
-// Получаем существующие задачи
 loadTasks();
