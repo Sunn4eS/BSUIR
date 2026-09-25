@@ -1,0 +1,16 @@
+{
+  "name": "clients-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Подсистема ввода и модификации данных о клиентах банка (модуль «Клиенты»). Лабораторная работа №1, вариант 3.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
+  }
+}

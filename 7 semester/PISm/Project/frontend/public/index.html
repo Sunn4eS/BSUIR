@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Банк «Дабрабыт» — Лабораторная работа №1 (Модуль «Клиенты» + Модуль 2 «Депозиты» + Модуль 3 «Кредиты»)</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <div>
+      <h1>Банк «Дабрабыт»</h1>
+      <p class="subtitle">Лабораторная работа №1 (Вариант 3) · Модуль «Клиенты» · Модуль 2 «Депозитные операции» · Модуль 3 «Кредитные операции с физическими лицами»</p>
+    </div>
+
+    <!-- Панель управления банковским временем -->
+    <div class="bank-panel">
+      <div class="bank-panel-date">
+        <span class="bank-panel-label">Текущая банковская дата</span>
+        <span class="bank-date-value" id="bank-date">—</span>
+      </div>
+      <div class="bank-panel-set">
+        <span class="bank-panel-label">Изменить месяц и год</span>
+        <div class="bank-date-controls">
+          <select id="bank-month-select" aria-label="Месяц"></select>
+          <select id="bank-year-select" aria-label="Год"></select>
+          <button type="button" id="btn-set-bank-date" class="btn btn-primary" title="Установить банковскую дату на первое число выбранного месяца">
+            Установить
+          </button>
+        </div>
+      </div>
+      <button type="button" id="btn-close-month" class="btn btn-primary" title="Выполнить расчёты по активным договорам и перейти на следующий месяц">
+        Закрыть Банковский Месяц
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= Навигация по разделам ================= -->
+  <nav class="tabs-nav container" id="tabs-nav">
+    <button type="button" class="tab-btn active" data-tab="clients">Клиенты</button>
+    <button type="button" class="tab-btn" data-tab="contracts">Договоры</button>
+    <button type="button" class="tab-btn" data-tab="credits">Кредиты</button>
+    <button type="button" class="tab-btn" data-tab="balance">Баланс счетов</button>
+  </nav>
+
+  <main class="container">
+
+    <!-- ================= Раздел «Клиенты» (ЛР1) ================= -->
+    <section class="panel tab-section" id="section-clients">
+      <div class="panel-header">
+        <h2>Список клиентов</h2>
+        <button type="button" id="btn-add-client" class="btn btn-primary">+ Добавить клиента</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="clients-table" id="clients-table">
+          <thead>
+            <tr>
+              <th>ФИО</th>
+              <th>Дата рождения</th>
+              <th>Паспорт</th>
+              <th>Идентификационный номер</th>
+              <th>Город факт. проживания</th>
+              <th>Телефон моб.</th>
+              <th>Пенсионер</th>
+              <th class="col-actions">Действия</th>
+            </tr>
+          </thead>
+          <tbody id="clients-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="empty-state hidden" id="clients-empty">
+        Список клиентов пуст. Нажмите «Добавить клиента», чтобы создать первую запись.
+      </div>
+    </section>
+
+    <!-- ================= Раздел «Договоры» (Модуль 2) ================= -->
+    <section class="panel tab-section hidden" id="section-contracts">
+      <div class="panel-header">
+        <h2>Депозитные договоры</h2>
+        <button type="button" id="btn-add-contract" class="btn btn-primary">+ Заключить новый депозитный договор</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="clients-table" id="contracts-table">
+          <thead>
+            <tr>
+              <th>№ договора</th>
+              <th>Клиент</th>
+              <th>Программа</th>
+              <th>Срок (мес.)</th>
+              <th>Ставка</th>
+              <th>Сумма (BYN)</th>
+              <th>Дата открытия</th>
+              <th>Дата окончания</th>
+              <th>Начислено %</th>
+              <th>Статус</th>
+              <th>Счета</th>
+            </tr>
+          </thead>
+          <tbody id="contracts-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="empty-state hidden" id="contracts-empty">
+        Депозитных договоров пока нет. Нажмите «Заключить новый депозитный договор».
+      </div>
+    </section>
+
+    <!-- ================= Раздел «Кредиты» (Модуль 3) ================= -->
+    <section class="panel tab-section hidden" id="section-credits">
+      <div class="panel-header">
+        <h2>Кредитные договоры</h2>
+        <button type="button" id="btn-add-credit" class="btn btn-primary">+ Выдать кредит</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="clients-table" id="credits-table">
+          <thead>
+            <tr>
+              <th>№ договора</th>
+              <th>Клиент</th>
+              <th>Программа</th>
+              <th>Срок (мес.)</th>
+              <th>Ставка</th>
+              <th>Сумма (BYN)</th>
+              <th>Дата начала</th>
+              <th>Дата окончания</th>
+              <th>Статус</th>
+              <th>Счета</th>
+              <th class="col-actions">Действия</th>
+            </tr>
+          </thead>
+          <tbody id="credits-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="empty-state hidden" id="credits-empty">
+        Кредитных договоров пока нет. Нажмите «Выдать кредит», чтобы заключить первый кредитный договор.
+      </div>
+    </section>
+
+    <!-- ================= Раздел «Баланс счетов» (Модуль 2) ================= -->
+    <section class="panel tab-section hidden" id="section-balance">
+      <div class="panel-header">
+        <h2>Оборотная ведомость / Баланс счетов</h2>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="clients-table" id="accounts-table">
+          <thead>
+            <tr>
+              <th>Наименование счёта / Тип</th>
+              <th>Номер счёта (13 знаков)</th>
+              <th>Дебет оборот (BYN)</th>
+              <th>Кредит оборот (BYN)</th>
+              <th>Сальдо (BYN)</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody id="accounts-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="empty-state hidden" id="accounts-empty">
+        Счета не открыты.
+      </div>
+      <p class="field-hint ledger-hint">
+        Тип счёта: A — активный (сальдо = Дебет − Кредит), P — пассивный (сальдо = Кредит − Дебет).
+      </p>
+    </section>
+  </main>
+
+  <!-- ================= Модальное окно формы клиента ================= -->
+  <div class="modal-overlay hidden" id="client-modal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2 id="modal-title">Добавление клиента</h2>
+        <button type="button" class="modal-close" id="btn-close-modal" title="Закрыть">&times;</button>
+      </div>
+
+      <form id="client-form" novalidate>
+
+        <fieldset>
+          <legend>Личные данные</legend>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="last_name">Фамилия <span class="required">*</span></label>
+              <input type="text" id="last_name" name="last_name" placeholder="Иванов" maxlength="60">
+              <div class="field-error" id="error-last_name"></div>
+            </div>
+            <div class="form-group">
+              <label for="first_name">Имя <span class="required">*</span></label>
+              <input type="text" id="first_name" name="first_name" placeholder="Иван" maxlength="60">
+              <div class="field-error" id="error-first_name"></div>
+            </div>
+            <div class="form-group">
+              <label for="middle_name">Отчество <span class="required">*</span></label>
+              <input type="text" id="middle_name" name="middle_name" placeholder="Иванович" maxlength="60">
+              <div class="field-error" id="error-middle_name"></div>
+            </div>
+            <div class="form-group">
+              <label for="birth_date">Дата рождения <span class="required">*</span></label>
+              <input type="date" id="birth_date" name="birth_date">
+              <div class="field-error" id="error-birth_date"></div>
+            </div>
+            <div class="form-group">
+              <label for="birth_place">Место рождения <span class="required">*</span></label>
+              <input type="text" id="birth_place" name="birth_place" placeholder="г. Минск" maxlength="120">
+              <div class="field-error" id="error-birth_place"></div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Паспортные данные</legend>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="passport_series">Серия паспорта <span class="required">*</span></label>
+              <input type="text" id="passport_series" name="passport_series" placeholder="AB" maxlength="2" autocomplete="off">
+              <div class="field-error" id="error-passport_series"></div>
+            </div>
+            <div class="form-group">
+              <label for="passport_number">Номер паспорта <span class="required">*</span></label>
+              <input type="text" id="passport_number" name="passport_number" placeholder="1234567" maxlength="7" inputmode="numeric" autocomplete="off">
+              <div class="field-error" id="error-passport_number"></div>
+            </div>
+            <div class="form-group">
+              <label for="issued_by">Кем выдан <span class="required">*</span></label>
+              <input type="text" id="issued_by" name="issued_by" placeholder="Октябрьское РУВД г. Минска" maxlength="200">
+              <div class="field-error" id="error-issued_by"></div>
+            </div>
+            <div class="form-group">
+              <label for="issue_date">Дата выдачи <span class="required">*</span></label>
+              <input type="date" id="issue_date" name="issue_date">
+              <div class="field-error" id="error-issue_date"></div>
+            </div>
+            <div class="form-group form-group-wide">
+              <label for="identification_number">Идентификационный номер <span class="required">*</span></label>
+              <input type="text" id="identification_number" name="identification_number" placeholder="1234567A123PB1" maxlength="14" autocomplete="off">
+              <p class="field-hint">Формат: 7 цифр + 1 буква + 3 цифры + 2 буквы + 1 цифра, например 1234567A123PB1</p>
+              <div class="field-error" id="error-identification_number"></div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Адрес фактического проживания</legend>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="city_id">Город <span class="required">*</span></label>
+              <select id="city_id" name="city_id">
+                <option value="">— Выберите город —</option>
+              </select>
+              <div class="field-error" id="error-city_id"></div>
+            </div>
+            <div class="form-group form-group-wide">
+              <label for="actual_address">Адрес <span class="required">*</span></label>
+              <input type="text" id="actual_address" name="actual_address" placeholder="ул. Сурганова, д. 10, кв. 25" maxlength="200">
+              <div class="field-error" id="error-actual_address"></div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Контактные данные</legend>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="home_phone">Телефон домашний</label>
+              <input type="text" id="home_phone" name="home_phone" placeholder="+375 (17) 123-45-67" maxlength="18" autocomplete="off">
+              <p class="field-hint">Формат: +375 (XX) XXX-XX-XX</p>
+              <div class="field-error" id="error-home_phone"></div>
+            </div>
+            <div class="form-group">
+              <label for="mobile_phone">Телефон мобильный</label>
+              <input type="text" id="mobile_phone" name="mobile_phone" placeholder="+375 (29) 123-45-67" maxlength="18" autocomplete="off">
+              <p class="field-hint">Формат: +375 (XX) XXX-XX-XX</p>
+              <div class="field-error" id="error-mobile_phone"></div>
+            </div>
+            <div class="form-group">
+              <label for="email">E-mail</label>
+              <input type="email" id="email" name="email" placeholder="ivanov@mail.ru" maxlength="120">
+              <div class="field-error" id="error-email"></div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Дополнительные сведения</legend>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="marital_status_id">Семейное положение <span class="required">*</span></label>
+              <select id="marital_status_id" name="marital_status_id">
+                <option value="">— Выберите —</option>
+              </select>
+              <div class="field-error" id="error-marital_status_id"></div>
+            </div>
+            <div class="form-group">
+              <label for="citizenship_id">Гражданство <span class="required">*</span></label>
+              <select id="citizenship_id" name="citizenship_id">
+                <option value="">— Выберите —</option>
+              </select>
+              <div class="field-error" id="error-citizenship_id"></div>
+            </div>
+            <div class="form-group">
+              <label for="disability_group_id">Инвалидность <span class="required">*</span></label>
+              <select id="disability_group_id" name="disability_group_id">
+                <option value="">— Выберите —</option>
+              </select>
+              <div class="field-error" id="error-disability_group_id"></div>
+            </div>
+            <div class="form-group form-group-checkbox">
+              <label class="checkbox-label">
+                <input type="checkbox" id="is_pensioner" name="is_pensioner">
+                Пенсионер <span class="required">*</span>
+              </label>
+              <div class="field-error" id="error-is_pensioner"></div>
+            </div>
+            <div class="form-group form-group-checkbox">
+              <label class="checkbox-label">
+                <input type="checkbox" id="is_military_obligated" name="is_military_obligated">
+                Военнообязанный <span class="required">*</span>
+              </label>
+              <div class="field-error" id="error-is_military_obligated"></div>
+            </div>
+            <div class="form-group">
+              <label for="work_place">Место работы</label>
+              <input type="text" id="work_place" name="work_place" placeholder="ОАО «Белоруснефть»" maxlength="200">
+              <div class="field-error" id="error-work_place"></div>
+            </div>
+            <div class="form-group">
+              <label for="position">Должность</label>
+              <input type="text" id="position" name="position" placeholder="Инженер" maxlength="120">
+              <div class="field-error" id="error-position"></div>
+            </div>
+            <div class="form-group">
+              <label for="monthly_income">Ежемесячный доход (BYN)</label>
+              <input type="number" id="monthly_income" name="monthly_income" min="0" step="0.01" placeholder="1500.00">
+              <div class="field-error" id="error-monthly_income"></div>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btn-form-cancel">Отмена</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-client">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= Модальное окно подтверждения удаления ================= -->
+  <div class="modal-overlay hidden" id="delete-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Подтверждение удаления</h2>
+      </div>
+      <p id="delete-message" class="modal-text"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btn-delete-cancel">Отмена</button>
+        <button type="button" class="btn btn-danger" id="btn-delete-confirm">Удалить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Модальное окно заключения депозитного договора ================= -->
+  <div class="modal-overlay hidden" id="contract-modal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2>Заключение депозитного договора</h2>
+        <button type="button" class="modal-close" id="btn-close-contract-modal" title="Закрыть">&times;</button>
+      </div>
+
+      <form id="contract-form" novalidate>
+        <fieldset>
+          <legend>Параметры договора</legend>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="contract_client_id">Клиент <span class="required">*</span></label>
+              <select id="contract_client_id" name="client_id">
+                <option value="">— Выберите клиента —</option>
+              </select>
+              <div class="field-error" id="error-contract_client_id"></div>
+            </div>
+            <div class="form-group">
+              <label for="contract_program_id">Депозитная программа <span class="required">*</span></label>
+              <select id="contract_program_id" name="program_id">
+                <option value="">— Выберите программу —</option>
+              </select>
+              <p class="field-hint" id="program-hint"></p>
+              <div class="field-error" id="error-contract_program_id"></div>
+            </div>
+            <div class="form-group">
+              <label for="contract_term_months">Срок (в месяцах) <span class="required">*</span></label>
+              <select id="contract_term_months" name="term_months">
+                <option value="">— Выберите срок —</option>
+              </select>
+              <div class="field-error" id="error-contract_term_months"></div>
+            </div>
+            <div class="form-group">
+              <label>Процентная ставка (% годовых)</label>
+              <div class="readonly-value" id="contract-rate-display">—</div>
+              <input type="hidden" name="annual_rate" id="contract_annual_rate">
+            </div>
+            <div class="form-group">
+              <label for="contract_number">Номер договора <span class="required">*</span></label>
+              <input type="text" id="contract_number" name="contract_number" placeholder="Д-2026-0001" maxlength="50">
+              <div class="field-error" id="error-contract_number"></div>
+            </div>
+            <div class="form-group">
+              <label for="contract_start_date">Дата заключения <span class="required">*</span></label>
+              <input type="date" id="contract_start_date" name="start_date">
+              <p class="field-hint">Не позже текущей банковской даты</p>
+              <div class="field-error" id="error-contract_start_date"></div>
+            </div>
+            <div class="form-group">
+              <label for="contract_amount">Сумма депозита (BYN) <span class="required">*</span></label>
+              <input type="number" id="contract_amount" name="amount" min="0.01" step="0.01" placeholder="1000.00">
+              <div class="field-error" id="error-contract_amount"></div>
+            </div>
+            <div class="form-group">
+              <label>Валюта</label>
+              <div class="readonly-value">BYN</div>
+              <input type="hidden" name="currency" value="BYN">
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btn-contract-cancel">Отмена</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-contract">Заключить договор</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= Модальное окно выдачи кредита (Модуль 3) ================= -->
+  <div class="modal-overlay hidden" id="credit-modal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2>Выдача кредита</h2>
+        <button type="button" class="modal-close" id="btn-close-credit-modal" title="Закрыть">&times;</button>
+      </div>
+
+      <form id="credit-form" novalidate>
+        <fieldset>
+          <legend>Параметры кредитного договора</legend>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="credit_client_id">Клиент <span class="required">*</span></label>
+              <select id="credit_client_id" name="client_id">
+                <option value="">— Выберите клиента —</option>
+              </select>
+              <div class="field-error" id="error-credit_client_id"></div>
+            </div>
+            <div class="form-group">
+              <label for="credit_program_id">Кредитная программа <span class="required">*</span></label>
+              <select id="credit_program_id" name="program_id">
+                <option value="">— Выберите программу —</option>
+              </select>
+              <p class="field-hint" id="credit-program-hint"></p>
+              <div class="field-error" id="error-credit_program_id"></div>
+            </div>
+            <div class="form-group">
+              <label for="credit_term_months">Срок (в месяцах) <span class="required">*</span></label>
+              <select id="credit_term_months" name="term_months">
+                <option value="">— Выберите срок —</option>
+              </select>
+              <div class="field-error" id="error-credit_term_months"></div>
+            </div>
+            <div class="form-group">
+              <label>Процентная ставка (% годовых)</label>
+              <div class="readonly-value" id="credit-rate-display">—</div>
+              <input type="hidden" name="annual_rate" id="credit_annual_rate">
+            </div>
+            <div class="form-group">
+              <label for="credit_contract_number">Номер договора <span class="required">*</span></label>
+              <input type="text" id="credit_contract_number" name="contract_number" placeholder="К-2026-0001" maxlength="50">
+              <div class="field-error" id="error-credit_contract_number"></div>
+            </div>
+            <div class="form-group">
+              <label for="credit_start_date">Дата начала <span class="required">*</span></label>
+              <input type="date" id="credit_start_date" name="start_date">
+              <p class="field-hint">Не позже текущей банковской даты</p>
+              <div class="field-error" id="error-credit_start_date"></div>
+            </div>
+            <div class="form-group">
+              <label for="credit_amount">Сумма кредита (BYN) <span class="required">*</span></label>
+              <input type="number" id="credit_amount" name="amount" min="0.01" step="0.01" placeholder="1000.00">
+              <div class="field-error" id="error-credit_amount"></div>
+            </div>
+            <div class="form-group">
+              <label>Валюта</label>
+              <div class="readonly-value">BYN</div>
+              <input type="hidden" name="currency" value="BYN">
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btn-credit-cancel">Отмена</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-credit">Выдать кредит</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= Модальное окно графика погашения кредита (Модуль 3) ================= -->
+  <div class="modal-overlay hidden" id="schedule-modal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2 id="schedule-modal-title">График погашения</h2>
+        <button type="button" class="modal-close" id="btn-close-schedule-modal" title="Закрыть">&times;</button>
+      </div>
+      <div class="modal-body" id="schedule-modal-content"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btn-schedule-close">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Модальное окно лога проводок (закрытие месяца / открытие договора) ================= -->
+  <div class="modal-overlay hidden" id="ledger-modal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2 id="ledger-modal-title">Журнал проводок</h2>
+        <button type="button" class="modal-close" id="btn-close-ledger-modal" title="Закрыть">&times;</button>
+      </div>
+      <div class="modal-body" id="ledger-modal-content"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btn-ledger-close">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/common.js"></script>
+  <script src="js/validators.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/deposits.js"></script>
+  <script src="js/loans.js"></script>
+</body>
+</html>
