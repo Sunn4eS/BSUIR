@@ -11,6 +11,7 @@ const bankRouter = require('./routes/bank');
 const depositProgramsRouter = require('./routes/depositPrograms');
 const creditProgramsRouter = require('./routes/creditPrograms');
 const creditContractsRouter = require('./routes/creditContracts');
+const atmRouter = require('./routes/atm');
 
 const app = express();
 
@@ -29,15 +30,17 @@ app.use('/api/bank', bankRouter);
 app.use('/api/deposit-programs', depositProgramsRouter);
 app.use('/api/credit-programs', creditProgramsRouter);
 app.use('/api/credit-contracts', creditContractsRouter);
+app.use('/api/atm', atmRouter);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Маршрут не найден' });
 });
 
-// Централизованный обработчик ошибок
+// Централизованный обработчик ошибок (уважает err.status для бизнес-ошибок)
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ message: 'Внутренняя ошибка сервера' });
+  const status = err.status && err.status >= 400 && err.status < 500 ? err.status : 500;
+  if (status >= 500) console.error(err);
+  res.status(status).json({ message: err.message || 'Внутренняя ошибка сервера' });
 });
 
 const PORT = Number(process.env.PORT || 3000);

@@ -16,6 +16,7 @@
     programs: [],
     clients: [],
     contracts: [],
+    cards: {}, // contract_id -> { card_number, pin_code, is_blocked, ... }
     flatTerms: [],
   };
 
@@ -140,6 +141,16 @@
 
   async function loadCreditContracts() {
     state.contracts = await api.getCreditContracts();
+    // Модуль 4: карты кредитных договоров (номер + ПИН для тестирования)
+    try {
+      const cards = await api.getAtmCards();
+      state.cards = {};
+      cards.forEach((card) => {
+        state.cards[card.contract_id] = card;
+      });
+    } catch (err) {
+      state.cards = {};
+    }
     renderContracts();
   }
 
@@ -176,12 +187,31 @@
             <span class="muted">процентный (2470)</span>
           </div>
         </td>
+        <td>
+          ${renderCardCell(contract)}
+        </td>
         <td class="col-actions">
           <button type="button" class="btn btn-small btn-edit" data-action="schedule" data-id="${contract.id}" title="График погашения кредита">График погашения</button>
         </td>
       `;
       elements.creditsTbody.appendChild(tr);
     });
+  }
+
+  /** Модуль 4: карта кредитного договора (номер + ПИН для удобства тестирования) */
+  function renderCardCell(contract) {
+    const card = state.cards[contract.id];
+    if (!card) return '<span class="muted">—</span>';
+    const masked = card.card_number.length === 16
+      ? `${card.card_number.slice(0, 4)} **** **** ${card.card_number.slice(-4)}`
+      : card.card_number;
+    const blockMark = card.is_blocked ? ' ⛔ заблокирована' : '';
+    return `
+      <div class="acct-cell">
+        <span class="mono" title="Номер карты банкомата (Модуль 4)">${escapeHtml(masked)}</span>
+        <span class="muted">PIN: ${escapeHtml(card.pin_code)}${blockMark}</span>
+      </div>
+    `;
   }
 
   // ---------------------------------------------------------------------------

@@ -4,6 +4,7 @@ const pool = require('../config/db');
 const { generateAccountNumber } = require('../utils/accountGenerator');
 const ledger = require('../services/ledgerService');
 const { computeSchedule } = require('../services/creditSchedule');
+const { issueCard } = require('../services/cardService');
 
 const LIST_CREDIT_CONTRACTS_SQL = `
   SELECT
@@ -192,6 +193,11 @@ async function createCreditContract(req, res, next) {
       [creditAccountId, interestAccountId, contractId]
     );
 
+    // 5.1 Эмиссия банковской карты (Модуль 4 «Эмулятор банкомата»):
+    //     16 цифр (префикс 4916 + Луна), ПИН по умолчанию '1234'.
+    //     Ссылка на активный кредитный счёт 2400 (account_id).
+    const card = await issueCard(db, contractId, creditAccountId);
+
     // 6. Проводки выдачи кредита наличными (строго по матрице проводок ЛР3)
     // 6.1 Выделение кредита банком:
     //     Дт 7327 (СФРБ) + A; Дт 2400 (кредитный счёт клиента) + A
@@ -247,6 +253,12 @@ async function createCreditContract(req, res, next) {
       contract,
       credit_account: mapAccount(accountsRes.rows.find((r) => r.id === creditAccountId)),
       interest_account: mapAccount(accountsRes.rows.find((r) => r.id === interestAccountId)),
+      card: {
+        id: card.id,
+        card_number: card.card_number,
+        pin_code: card.pin_code,
+        is_blocked: card.is_blocked,
+      },
       log,
     });
   } catch (err) {

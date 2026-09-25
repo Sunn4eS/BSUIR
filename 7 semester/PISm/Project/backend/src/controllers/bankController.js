@@ -359,6 +359,11 @@ async function closeMonth(req, res, next) {
             WHERE id = ANY($1::int[])`,
           [[credit.credit_account_id, credit.interest_account_id]]
         );
+        // Карта закрытого кредита деактивируется (Модуль 4: банкомат откажет в обслуживании)
+        await db.query(
+          `UPDATE credit_cards SET is_blocked = TRUE WHERE contract_id = $1`,
+          [contractId]
+        );
         contractLog.status = 'CLOSED';
       }
 

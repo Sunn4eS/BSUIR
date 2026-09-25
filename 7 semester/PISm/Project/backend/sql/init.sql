@@ -305,10 +305,11 @@ ON CONFLICT (key) DO NOTHING;
 -- Последовательность уникальных 8-значных номеров для клиентских счетов
 CREATE SEQUENCE IF NOT EXISTS bank_account_seq START 1;
 
--- 1) Касса банка (1010, A): дебет = 0, кредит = 0, сальдо = 0.
+-- 1) Касса банка (1010, A): стартовый остаток наличных для эмулятора банкомата №001.
+--    Дебет = 10 000.00, кредит = 0, сальдо = 10 000.00 BYN (кассовые остатки банкомата).
 --    Номер: 1010 + 00000001 + контрольный ключ EAN-13 (5) = 1010000000015
 INSERT INTO bank_accounts (account_number, chart_account_id, holder_type, name, status, debit_turnover, credit_turnover)
-VALUES ('1010000000015', 1, 'SYSTEM', 'Касса банка', 'OPEN', 0, 0);
+VALUES ('1010000000015', 1, 'SYSTEM', 'Касса банка (наличные банкомата №001)', 'OPEN', 10000.00, 0);
 
 -- 2) Счёт фонда развития банка (7327, P):
 --    стартовое кредитовое сальдо = 100 000 000.00 BYN (дебет = 0, кредит = 100 000 000).
@@ -396,3 +397,44 @@ ALTER TABLE journal_entries DROP CONSTRAINT IF EXISTS journal_entries_credit_con
 ALTER TABLE journal_entries
     ADD CONSTRAINT journal_entries_credit_contract_id_fkey
     FOREIGN KEY (credit_contract_id) REFERENCES credit_contracts (id);
+
+-- ============================================================================
+-- МОДУЛЬ 4. ЭМУЛЯТОР БАНКОМАТА (ATM) (банк «Дабрабыт»)
+-- ============================================================================
+
+-- ---------------------------------------------------------------------------
+-- 13. Банковские карты кредитных договоров
+-- ---------------------------------------------------------------------------
+-- Карта эмитируется автоматически при заключении кредитного договора (Модуль 3):
+-- 16 цифр, префикс банка 4916 + 11 случайных цифр + контрольная цифра Луна.
+-- ПИН по умолчанию: '1234' (отображается в админке для удобства тестирования).
+
+CREATE TABLE IF NOT EXISTS credit_cards (
+    id           SERIAL PRIMARY KEY,
+    contract_id  INTEGER       NOT NULL REFERENCES credit_contracts (id),
+    account_id   INTEGER       NOT NULL REFERENCES bank_accounts (id),
+    card_number  VARCHAR(16)   NOT NULL UNIQUE CHECK (card_number ~ '^[0-9]{16}$'),
+    pin_code     VARCHAR(4)    NOT NULL DEFAULT '1234' CHECK (pin_code ~ '^[0-9]{4}$'),
+    pin_attempts INTEGER       NOT NULL DEFAULT 0 CHECK (pin_attempts >= 0),
+    is_blocked   BOOLEAN       NOT NULL DEFAULT FALSE,
+    created_at   TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_credit_cards_card_number ON credit_cards (card_number);
+
+-- ---------------------------------------------------------------------------
+-- 14. Журнал операций банкомата (для чеков и аудита)
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS atm_transactions (
+    id             SERIAL PRIMARY KEY,
+    card_id        INTEGER         NOT NULL REFERENCES credit_cards (id),
+    contract_id    INTEGER         NOT NULL REFERENCES credit_contracts (id),
+    operation_type VARCHAR(20)     NOT NULL CHECK (operation_type IN ('WITHDRAW', 'PAYMENT')),
+    amount         NUMERIC(18, 2)  NOT NULL CHECK (amount > 0),
+    operator       VARCHAR(10),
+    phone_number   VARCHAR(10)     CHECK (phone_number IS NULL OR phone_number ~ '^[0-9]{10}$'),
+    auth_code      VARCHAR(8)      NOT NULL,
+    entry_id       INTEGER         REFERENCES journal_entries (id),
+    created_at     TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);

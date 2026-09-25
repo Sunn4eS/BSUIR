@@ -86,6 +86,26 @@
     createCreditContract(body) {
       return request('/credit-contracts', { method: 'POST', body: JSON.stringify(body) });
     },
+
+    // --- Модуль 4 «Эмулятор банкомата (ATM)» ---
+    getAtmCards() {
+      return request('/atm/cards');
+    },
+    atmCardCheck(body) {
+      return request('/atm/card-check', { method: 'POST', body: JSON.stringify(body) });
+    },
+    atmAuthorize(body) {
+      return request('/atm/authorize', { method: 'POST', body: JSON.stringify(body) });
+    },
+    atmBalance(body) {
+      return request('/atm/balance', { method: 'POST', body: JSON.stringify(body) });
+    },
+    atmWithdraw(body) {
+      return request('/atm/withdraw', { method: 'POST', body: JSON.stringify(body) });
+    },
+    atmPayment(body) {
+      return request('/atm/payment', { method: 'POST', body: JSON.stringify(body) });
+    },
   };
 
   /** Уведомление-тост. Контейнер #toast-container создаётся при необходимости. */

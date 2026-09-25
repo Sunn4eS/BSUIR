@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Банкомат №001 · Банк «Дабрабыт» — Модуль 4 (Эмулятор банкомата)</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="atm-body">
+
+  <header class="app-header atm-topbar">
+    <div>
+      <h1>🏧 ЗАО «Банк Дабрабыт» — Эмулятор банкомата</h1>
+      <p class="subtitle">Банкомат №001 · обслуживание кредитных карт · Модуль 4 (кредиты — Модуль 3)</p>
+    </div>
+    <div class="atm-topbar-right">
+      <span class="atm-topbar-date">Текущая банковская дата: <strong id="atm-bank-date">—</strong></span>
+      <a class="btn btn-secondary" href="index.html">← В банк (оборотная ведомость)</a>
+    </div>
+  </header>
+
+  <main class="atm-stage container">
+
+    <div class="atm-machine">
+      <!-- ================= Корпус банкомата ================= -->
+      <div class="atm-shell">
+        <div class="atm-brand-row">
+          <span class="atm-brand">ДАБРАБЫТ</span>
+          <span class="atm-brand-sub">Банкомат №001</span>
+        </div>
+
+        <!-- Дисплей банкомата -->
+        <div class="atm-screen" id="atm-screen">
+
+          <!-- Шаг 1. Вставка карты -->
+          <div class="atm-view" id="view-insert">
+            <div class="atm-view-head">
+              <span class="atm-step-badge">1</span>
+              <span>Вставьте карту</span>
+            </div>
+            <p class="atm-hint">Вставьте, пожалуйста, карту (введите её номер)</p>
+            <div class="atm-field">
+              <label for="atm-card-number">Номер карты (16 цифр)</label>
+              <input type="text" id="atm-card-number" class="atm-input mono" inputmode="numeric"
+                     maxlength="16" placeholder="4916123456789010" autocomplete="off">
+            </div>
+            <div class="atm-field">
+              <label for="atm-card-quick">Быстрый выбор активной карты (для проверки преподавателем)</label>
+              <select id="atm-card-quick" class="atm-input">
+                <option value="">— Выберите карту из списка —</option>
+              </select>
+              <p class="atm-field-note">ПИН-код всех карт по умолчанию: <strong>1234</strong> (указан в выпадающем списке и в админке банка)</p>
+            </div>
+            <button type="button" class="btn btn-primary atm-btn" id="btn-insert-card">💳 Вставить карту</button>
+          </div>
+
+          <!-- Шаг 2. Заставка «Авторизация на сервере...» -->
+          <div class="atm-view" id="view-auth">
+            <div class="atm-spinner"></div>
+            <p class="atm-auth-text">Авторизация на сервере...</p>
+          </div>
+
+          <!-- Шаг 3. Ввод ПИН-кода -->
+          <div class="atm-view" id="view-pin">
+            <div class="atm-view-head">
+              <span class="atm-step-badge">3</span>
+              <span>Введите ПИН-код</span>
+            </div>
+            <p class="atm-hint" id="pin-client-label">Карта: —</p>
+            <div class="atm-pin-dots" id="pin-dots">
+              <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
+            </div>
+            <p class="atm-pin-attempts" id="pin-attempts"></p>
+            <p class="atm-pin-error" id="pin-error"></p>
+            <button type="button" class="btn btn-secondary atm-btn" id="btn-pin-cancel">Отмена (вернуть карту)</button>
+          </div>
+
+          <!-- Шаг 4. Главное меню -->
+          <div class="atm-view" id="view-menu">
+            <div class="atm-view-head">
+              <span class="atm-step-badge">✔</span>
+              <span>Главное меню</span>
+            </div>
+            <div class="atm-card-info">
+              <div class="atm-card-line">
+                <span class="mono" id="menu-card-number">—</span>
+                <span id="menu-client-name">—</span>
+              </div>
+              <div class="atm-balance-grid">
+                <div class="atm-balance-item">
+                  <span class="atm-balance-label">Лимит кредита</span>
+                  <span class="atm-balance-value" id="menu-limit">—</span>
+                </div>
+                <div class="atm-balance-item">
+                  <span class="atm-balance-label">Задолженность (счёт 2400)</span>
+                  <span class="atm-balance-value" id="menu-debt">—</span>
+                </div>
+                <div class="atm-balance-item atm-balance-avail">
+                  <span class="atm-balance-label">Доступный остаток</span>
+                  <span class="atm-balance-value" id="menu-available">—</span>
+                </div>
+              </div>
+            </div>
+            <div class="atm-menu-buttons">
+              <button type="button" class="atm-menu-btn" data-menu="withdraw"><b>1.</b> Снять деньги с кредитного счёта</button>
+              <button type="button" class="atm-menu-btn" data-menu="balance"><b>2.</b> Просмотреть остаток кредитного счёта</button>
+              <button type="button" class="atm-menu-btn" data-menu="payment"><b>3.</b> Оплатить мобильную связь</button>
+              <button type="button" class="atm-menu-btn" id="btn-eject-card"><b>4.</b> Забрать карту (Выход)</button>
+            </div>
+          </div>
+
+          <!-- Шаг 5. Снятие наличных: выбор суммы -->
+          <div class="atm-view" id="view-withdraw">
+            <div class="atm-view-head">
+              <span class="atm-step-badge">1</span>
+              <span>Снятие наличных</span>
+            </div>
+            <p class="atm-hint">Выберите сумму (доступно: <span id="withdraw-available" class="mono">—</span>):</p>
+            <div class="atm-amount-grid">
+              <button type="button" class="atm-amount-btn" data-amount="10">10 BYN</button>
+              <button type="button" class="atm-amount-btn" data-amount="20">20 BYN</button>
+              <button type="button" class="atm-amount-btn" data-amount="50">50 BYN</button>
+              <button type="button" class="atm-amount-btn" data-amount="100">100 BYN</button>
+            </div>
+            <button type="button" class="btn btn-secondary atm-btn" id="btn-custom-amount">Другая сумма</button>
+            <div class="atm-custom-amount hidden" id="custom-amount-block">
+              <p class="atm-hint">Введите сумму на клавиатуре:</p>
+              <div class="atm-entry-display" id="custom-amount-value">0</div>
+              <button type="button" class="btn btn-primary atm-btn" id="btn-confirm-custom-amount">Подтвердить</button>
+            </div>
+            <button type="button" class="btn btn-secondary atm-btn" id="btn-withdraw-back">← Назад в меню</button>
+          </div>
+
+          <!-- Шаг 5a. Вопрос: распечатать чек? -->
+          <div class="atm-view" id="view-withdraw-receipt">
+            <div class="atm-view-head">
+              <span class="atm-step-badge">2</span>
+              <span>Чек</span>
+            </div>
+            <p class="atm-hint">Распечатать чек?</p>
+            <div class="atm-yesno">
+              <button type="button" class="atm-menu-btn" id="btn-receipt-yes">Да</button>
+              <button type="button" class="atm-menu-btn" id="btn-receipt-no">Нет</button>
+            </div>
+          </div>
+
+          <!-- Шаг 5b. Анимация выдачи наличных -->
+          <div class="atm-view" id="view-dispense">
+            <div class="atm-view-head">
+              <span class="atm-step-badge">✔</span>
+              <span>Выдача наличных</span>
+            </div>
+            <div class="atm-cash-slot-wrap">
+              <div class="atm-cash-notes" id="cash-notes">
+                <div class="atm-note"></div>
+                <div class="atm-note"></div>
+                <div class="atm-note"></div>
+                <div class="atm-note"></div>
+                <div class="atm-note"></div>
+              </div>
+            </div>
+            <p class="atm-hint" id="dispense-text">Заберите наличные</p>
+            <p class="mono" id="dispense-amount">—</p>
+            <button type="button" class="btn btn-primary atm-btn" id="btn-take-cash">Забрать наличные</button>
+          </div>
+
+          <!-- Шаг 6. Оплата мобильной связи -->
+          <div class="atm-view" id="view-payment">
+            <div class="atm-view-head">
+              <span class="atm-step-badge">3</span>
+              <span>Оплата мобильной связи</span>
+            </div>
+            <div class="atm-field">
+              <label for="payment-operator">Оператор</label>
+              <select id="payment-operator" class="atm-input">
+                <option value="">— Выберите оператора —</option>
+                <option value="МТС">МТС</option>
+                <option value="А1">А1</option>
+                <option value="Life">Life:)</option>
+              </select>
+            </div>
+            <div class="atm-field">
+              <label for="payment-phone">Номер телефона (10 цифр)</label>
+              <input type="tel" id="payment-phone" class="atm-input mono" inputmode="numeric"
+                     maxlength="10" placeholder="2912345678" autocomplete="off">
+              <p class="atm-field-note">Вводить можно клавиатурой внизу или с клавиатуры ПК</p>
+            </div>
+            <div class="atm-field">
+              <label for="payment-amount">Сумма (BYN)</label>
+              <input type="text" id="payment-amount" class="atm-input mono" inputmode="decimal"
+                     maxlength="8" placeholder="25.00" autocomplete="off">
+            </div>
+            <button type="button" class="btn btn-primary atm-btn" id="btn-pay">Оплатить</button>
+            <button type="button" class="btn btn-secondary atm-btn" id="btn-payment-back">← Назад в меню</button>
+          </div>
+
+          <!-- Шаг 7. Чек -->
+          <div class="atm-view" id="view-receipt">
+            <div class="atm-view-head">
+              <span class="atm-step-badge">🧾</span>
+              <span>Чек</span>
+            </div>
+            <div class="receipt-wrap">
+              <div class="receipt" id="receipt-paper">
+                <div class="receipt-center">ЗАО «Банк Дабрабыт»</div>
+                <div class="receipt-center">Банкомат #001</div>
+                <div class="receipt-line">Карта: <span id="r-card"></span></div>
+                <div class="receipt-line">Дата/время: <span id="r-datetime"></span></div>
+                <div class="receipt-line">Операция №: <span id="r-opno" class="mono"></span></div>
+                <div class="receipt-line">Код авторизации: <span id="r-auth" class="mono"></span></div>
+                <div class="receipt-line">Тип операции: <span id="r-type"></span></div>
+                <div class="receipt-line">Сумма операции: <span id="r-amount" class="mono"></span></div>
+                <div class="receipt-line">Доступный остаток: <span id="r-avail" class="mono"></span></div>
+                <div class="receipt-line receipt-status">Статус: <span id="r-status"></span></div>
+                <div class="receipt-sep"></div>
+                <div class="receipt-center receipt-foot">Спасибо за пользование<br>услугами банка!</div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary atm-btn" id="btn-take-receipt">Забрать чек</button>
+          </div>
+
+          <!-- Экран остатка (без печати чека) -->
+          <div class="atm-view" id="view-balance">
+            <div class="atm-view-head">
+              <span class="atm-step-badge">2</span>
+              <span>Остаток кредитного счёта</span>
+            </div>
+            <div class="atm-card-info">
+              <div class="atm-card-line">
+                <span class="mono" id="bal-card-number">—</span>
+                <span id="bal-client-name">—</span>
+              </div>
+              <div class="atm-balance-grid">
+                <div class="atm-balance-item">
+                  <span class="atm-balance-label">Лимит кредита</span>
+                  <span class="atm-balance-value" id="bal-limit">—</span>
+                </div>
+                <div class="atm-balance-item">
+                  <span class="atm-balance-label">Задолженность (счёт 2400)</span>
+                  <span class="atm-balance-value" id="bal-debt">—</span>
+                </div>
+                <div class="atm-balance-item atm-balance-avail">
+                  <span class="atm-balance-label">Доступный остаток</span>
+                  <span class="atm-balance-value" id="bal-available">—</span>
+                </div>
+              </div>
+              <p class="atm-field-note" id="bal-session">—</p>
+            </div>
+            <button type="button" class="btn btn-primary atm-btn" id="btn-balance-menu">← В главное меню</button>
+          </div>
+
+          <!-- Сообщения об ошибках/информация -->
+          <div class="atm-view" id="view-message">
+            <div class="atm-view-head">
+              <span class="atm-step-badge" id="message-badge">⚠</span>
+              <span id="message-title">Сообщение</span>
+            </div>
+            <p class="atm-message" id="message-text">—</p>
+            <button type="button" class="btn btn-primary atm-btn" id="btn-message-ok">OK</button>
+          </div>
+
+        </div>
+
+        <!-- Слот приёма карты -->
+        <div class="atm-card-slot" title="Слот приёма карты">
+          <div class="atm-card-peek" id="atm-card-peek"></div>
+        </div>
+        <div class="atm-shell-foot">ЗАО «Банк Дабрабыт» · Круглосуточно</div>
+      </div>
+
+      <!-- ================= Боковая панель: клавиатура ================= -->
+      <aside class="atm-side">
+        <div class="atm-keypad" id="atm-keypad" aria-label="Цифровая клавиатура банкомата"></div>
+        <div class="atm-receipt-slot">
+          <span class="atm-receipt-slot-label">Слот выдачи чека</span>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script src="js/common.js"></script>
+  <script src="js/atm.js"></script>
+</body>
+</html>
