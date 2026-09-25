@@ -49,14 +49,21 @@
     );
   }
 
-  /** Проверка даты YYYY-MM-DD: формат, реальность календаря, не из будущего */
-  function validateDate(value, label) {
+  /**
+   * Проверка даты YYYY-MM-DD: формат, реальность календаря, не из будущего.
+   * Для банковских дат (заключение договора/кредита) будущее определяется
+   * относительно банковской даты, а не реального календаря, поэтому вызывающий
+   * код передаёт { noFutureCheck: true }.
+   */
+  function validateDate(value, label, opts) {
     if (isEmpty(value)) return `Поле «${label}» обязательно`;
     const str = String(value).trim();
     if (!DATE_REGEX.test(str)) return `Поле «${label}»: неверный формат даты`;
     const [year, month, day] = str.split('-').map(Number);
     if (!isRealCalendarDate(year, month, day)) return `Поле «${label}»: указанная дата не существует`;
-    if (Date.UTC(year, month - 1, day) > Date.now()) return `Поле «${label}» не может быть в будущем`;
+    if (!opts || !opts.noFutureCheck) {
+      if (Date.UTC(year, month - 1, day) > Date.now()) return `Поле «${label}» не может быть в будущем`;
+    }
     return '';
   }
 
@@ -219,7 +226,7 @@
       errors.amount = 'Сумма депозита превышает допустимый лимит';
     }
 
-    const dateMsg = validateDate(data.start_date, 'Дата заключения договора');
+    const dateMsg = validateDate(data.start_date, 'Дата заключения договора', { noFutureCheck: true });
     if (dateMsg) {
       errors.start_date = dateMsg;
     } else if (ctx.bankDate && String(data.start_date) > String(ctx.bankDate)) {
@@ -282,7 +289,7 @@
       errors.amount = 'Сумма кредита превышает допустимый лимит';
     }
 
-    const dateMsg = validateDate(data.start_date, 'Дата заключения договора');
+    const dateMsg = validateDate(data.start_date, 'Дата заключения договора', { noFutureCheck: true });
     if (dateMsg) {
       errors.start_date = dateMsg;
     } else if (ctx.bankDate && String(data.start_date) > String(ctx.bankDate)) {

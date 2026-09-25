@@ -187,7 +187,7 @@
   // ---------------------------------------------------------------------------
   // Модальное окно выдачи кредита
   // ---------------------------------------------------------------------------
-  function openCreditModal() {
+  async function openCreditModal() {
     clearErrors();
     elements.creditForm.reset();
     elements.creditRateDisplay.textContent = '—';
@@ -214,6 +214,14 @@
     });
 
     elements.creditTerm.innerHTML = '<option value="">— Выберите срок —</option>';
+
+    // Актуальная банковская дата с сервера: она могла измениться после
+    // закрытия месяца или установки даты в модуле депозитов.
+    try {
+      await loadBankState();
+    } catch (err) {
+      /* сервер недоступен — оставляем последнюю известную дату */
+    }
     elements.creditStartDate.value = state.bankDate || '';
 
     elements.creditModal.classList.remove('hidden');
@@ -440,7 +448,13 @@
 
     // После закрытия банковского месяца (из deposits.js) перезагружаем кредиты
     window.addEventListener('app:month-closed', () => {
+      loadBankState().catch(handleRequestError);
       loadCreditContracts().catch(handleRequestError);
+    });
+
+    // Банковская дата изменена панелью установки даты (модуль депозитов)
+    window.addEventListener('app:bank-date-changed', () => {
+      loadBankState().catch(handleRequestError);
     });
 
     // Закрытие модалок по клику на подложку

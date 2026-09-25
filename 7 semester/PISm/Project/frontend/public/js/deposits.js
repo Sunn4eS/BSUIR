@@ -194,6 +194,9 @@
       elements.bankDate.textContent = formatDate(result.bank_date);
       populateDateControls();
       showToast(`Банковская дата установлена: ${formatDate(result.bank_date)}`, 'success');
+
+      // Сообщаем другим модулям (например, кредитам) о смене банковской даты
+      window.dispatchEvent(new CustomEvent('app:bank-date-changed', { detail: result }));
     } catch (err) {
       handleRequestError(err);
     } finally {
@@ -295,7 +298,7 @@
   // ---------------------------------------------------------------------------
   // Модальное окно заключения договора
   // ---------------------------------------------------------------------------
-  function openContractModal() {
+  async function openContractModal() {
     clearContractErrors();
     elements.contractForm.reset();
     elements.contractRateDisplay.textContent = '—';
@@ -324,6 +327,14 @@
     });
 
     elements.contractTerm.innerHTML = '<option value="">— Выберите срок —</option>';
+
+    // Актуальная банковская дата с сервера (гарантированно текущая, даже если
+    // она менялась ранее в этой или другой вкладке).
+    try {
+      await loadBankState();
+    } catch (err) {
+      /* сервер недоступен — оставляем последнюю известную дату */
+    }
     elements.contractStartDate.value = state.bankDate || '';
 
     elements.contractModal.classList.remove('hidden');
