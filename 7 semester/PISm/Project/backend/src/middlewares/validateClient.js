@@ -1,11 +1,5 @@
 'use strict';
 
-/**
- * Middleware валидации клиента (дублирует валидацию на фронтенде).
- * Нормализует тело запроса, проверяет обязательность, форматы масок,
- * корректность календарных дат. В случае ошибок отвечает 400 с объектом errors.
- */
-
 const NAME_REGEX = /^[A-Za-zА-Яа-яЁё]+(?:[\s-][A-Za-zА-Яа-яЁё]+)*$/;
 const PHONE_REGEX = /^\+375 \(\d{2}\) \d{3}-\d{2}-\d{2}$/;
 const IDENTIFICATION_REGEX = /^\d{7}[A-Z]\d{3}[A-Z]{2}\d$/;
@@ -35,7 +29,6 @@ function isEmpty(value) {
   return value === undefined || value === null || String(value).trim() === '';
 }
 
-/** Проверка реальной календарной даты (блокирует 31.02, 29.02 в невисокосный год и т.п.) */
 function isRealCalendarDate(year, month, day) {
   if (month < 1 || month > 12 || day < 1 || day > 31) return false;
   const date = new Date(Date.UTC(year, month - 1, day));
@@ -46,7 +39,6 @@ function isRealCalendarDate(year, month, day) {
   );
 }
 
-/** Дата в формате YYYY-MM-DD, реальная и не из будущего */
 function isValidIsoDateNotInFuture(value) {
   if (typeof value !== 'string' || !DATE_REGEX.test(value)) return false;
   const [year, month, day] = value.split('-').map(Number);
@@ -54,7 +46,6 @@ function isValidIsoDateNotInFuture(value) {
   return Date.UTC(year, month - 1, day) <= Date.now();
 }
 
-/** Приведение входных данных к единому виду */
 function normalize(body) {
   const out = {};
 
@@ -103,7 +94,6 @@ function validateClient(req, res, next) {
     }
   });
 
-  // Паспорт: серия и номер
   if (isEmpty(data.passport_series)) {
     errors.passport_series = 'Поле «Серия паспорта» обязательно';
   } else if (!PASSPORT_SERIES_REGEX.test(data.passport_series)) {
@@ -116,14 +106,12 @@ function validateClient(req, res, next) {
     errors.passport_number = 'Номер паспорта: ровно 7 цифр';
   }
 
-  // Идентификационный номер (маска: 7 цифр + 1 буква + 3 цифры + 2 буквы + 1 цифра)
   if (isEmpty(data.identification_number)) {
     errors.identification_number = 'Поле «Идентификационный номер» обязательно';
   } else if (!IDENTIFICATION_REGEX.test(data.identification_number)) {
     errors.identification_number = 'Идентификационный номер: формат 7 цифр + 1 буква + 3 цифры + 2 буквы + 1 цифра (например, 1234567A123PB1)';
   }
 
-  // Календарные даты
   if (isEmpty(data.birth_date)) {
     errors.birth_date = 'Поле «Дата рождения» обязательно';
   } else if (!isValidIsoDateNotInFuture(data.birth_date)) {
@@ -136,14 +124,12 @@ function validateClient(req, res, next) {
     errors.issue_date = 'Дата выдачи некорректна, не существует или относится к будущему';
   }
 
-  // Обязательные поля-справочники
   Object.entries(REQUIRED_SELECT_FIELDS).forEach(([field, label]) => {
     if (!Number.isInteger(data[field]) || data[field] <= 0) {
       errors[field] = `Выберите значение «${label}»`;
     }
   });
 
-  // Обязательные булевы поля
   if (typeof data.is_pensioner !== 'boolean') {
     errors.is_pensioner = 'Укажите значение «Пенсионер»';
   }
@@ -151,7 +137,6 @@ function validateClient(req, res, next) {
     errors.is_military_obligated = 'Укажите значение «Военнообязанный»';
   }
 
-  // Необязательные поля (если заполнены — проверяем формат)
   if (!isEmpty(data.home_phone) && !PHONE_REGEX.test(data.home_phone)) {
     errors.home_phone = 'Телефон: формат +375 (XX) XXX-XX-XX';
   }

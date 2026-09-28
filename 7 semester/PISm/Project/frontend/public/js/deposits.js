@@ -335,7 +335,7 @@
     } catch (err) {
       /* сервер недоступен — оставляем последнюю известную дату */
     }
-    elements.contractStartDate.value = state.bankDate || '';
+    DateMask.set(elements.contractStartDate, state.bankDate);
 
     elements.contractModal.classList.remove('hidden');
     elements.contractClient.focus();
@@ -387,7 +387,7 @@
       program_id: elements.contractProgram.value,
       term_months: elements.contractTerm.value,
       contract_number: elements.contractForm.elements.contract_number.value,
-      start_date: elements.contractForm.elements.start_date.value,
+      start_date: DateMask.get(elements.contractStartDate),
       amount: elements.contractForm.elements.amount.value,
       currency: 'BYN',
       annual_rate: elements.contractAnnualRate.value,
@@ -556,6 +556,12 @@
   function bindEvents() {
     elements.tabButtons.forEach((btn) => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // Маска даты договора: нативный <input type="date"> не даёт набрать 29.02
+    DateMask.mount(elements.contractStartDate, {
+      label: 'Дата заключения договора',
+      noFutureCheck: true,
     });
 
     elements.btnAddContract.addEventListener('click', openContractModal);

@@ -1,7 +1,4 @@
-/**
- * Валидаторы фронтенда (дублируют серверную валидацию).
- * Global object: Validators.validateClient(data) -> { field: message, ... }
- */
+
 (function (global) {
   'use strict';
 
@@ -12,6 +9,7 @@
   const PASSPORT_NUMBER_REGEX = /^\d{7}$/;
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+  const PARTIAL_DATE_REGEX = /^\d{1,2}(\.\d{1,2})?(\.\d{1,4})?$/;
   const INCOME_REGEX = /^\d+(\.\d{1,2})?$/;
 
   const FIELD_LABELS = {
@@ -38,7 +36,6 @@
     return value === undefined || value === null || String(value).trim() === '';
   }
 
-  /** Реальная календарная дата (31.02, 29.02 невисокосного года -> false) */
   function isRealCalendarDate(year, month, day) {
     if (month < 1 || month > 12 || day < 1 || day > 31) return false;
     const date = new Date(Date.UTC(year, month - 1, day));
@@ -49,15 +46,12 @@
     );
   }
 
-  /**
-   * Проверка даты YYYY-MM-DD: формат, реальность календаря, не из будущего.
-   * Для банковских дат (заключение договора/кредита) будущее определяется
-   * относительно банковской даты, а не реального календаря, поэтому вызывающий
-   * код передаёт { noFutureCheck: true }.
-   */
   function validateDate(value, label, opts) {
     if (isEmpty(value)) return `Поле «${label}» обязательно`;
     const str = String(value).trim();
+    if (PARTIAL_DATE_REGEX.test(str)) {
+      return `Поле «${label}»: введите дату полностью в формате ДД.ММ.ГГГГ`;
+    }
     if (!DATE_REGEX.test(str)) return `Поле «${label}»: неверный формат даты`;
     const [year, month, day] = str.split('-').map(Number);
     if (!isRealCalendarDate(year, month, day)) return `Поле «${label}»: указанная дата не существует`;
@@ -67,7 +61,6 @@
     return '';
   }
 
-  /** ФИО: только буквы (латиница/кириллица), дефисы и пробелы */
   function validateName(value, label) {
     if (isEmpty(value)) return `Поле «${label}» обязательно`;
     if (!NAME_REGEX.test(String(value).trim())) {
@@ -123,11 +116,9 @@
     return '';
   }
 
-  /** Полная валидация формы клиента */
   function validateClient(data) {
     const errors = {};
 
-    // Обязательные текстовые поля
     ['last_name', 'first_name', 'middle_name'].forEach((field) => {
       const msg = validateName(data[field], FIELD_LABELS[field]);
       if (msg) errors[field] = msg;
@@ -138,7 +129,6 @@
       if (msg) errors[field] = msg;
     });
 
-    // Обязательные поля с масками
     const seriesMsg = validatePassportSeries(data.passport_series);
     if (seriesMsg) errors.passport_series = seriesMsg;
 
@@ -148,14 +138,12 @@
     const idMsg = validateIdentificationNumber(data.identification_number);
     if (idMsg) errors.identification_number = idMsg;
 
-    // Обязательные даты
     const birthMsg = validateDate(data.birth_date, FIELD_LABELS.birth_date);
     if (birthMsg) errors.birth_date = birthMsg;
 
     const issueMsg = validateDate(data.issue_date, FIELD_LABELS.issue_date);
     if (issueMsg) errors.issue_date = issueMsg;
 
-    // Обязательные поля-справочники
     ['city_id', 'marital_status_id', 'citizenship_id', 'disability_group_id'].forEach((field) => {
       const value = Number(data[field]);
       if (!Number.isInteger(value) || value <= 0) {
@@ -163,13 +151,11 @@
       }
     });
 
-    // Обязательные булевы поля
     if (typeof data.is_pensioner !== 'boolean') errors.is_pensioner = 'Укажите значение «Пенсионер»';
     if (typeof data.is_military_obligated !== 'boolean') {
       errors.is_military_obligated = 'Укажите значение «Военнообязанный»';
     }
 
-    // Необязательные поля (проверяем только если заполнены)
     const homePhoneMsg = validatePhone(data.home_phone, 'Телефон домашний');
     if (homePhoneMsg) errors.home_phone = homePhoneMsg;
 
@@ -237,10 +223,8 @@
       errors.currency = 'Валюта договора должна быть BYN';
     }
 
-    // Проверка срока относительно выбранной программы
     const terms = (ctx.terms || []).filter((t) => Number(t.program_id) === Number(data.program_id));
     if (terms.length === 0 && !Number.isInteger(Number(data.program_id))) {
-      // программа не выбрана — ошибка уже добавлена выше
     } else if (terms.length > 0 && !terms.some((t) => Number(t.term_months) === Number(data.term_months))) {
       errors.term_months = 'Для выбранной программы недоступен указанный срок';
     }

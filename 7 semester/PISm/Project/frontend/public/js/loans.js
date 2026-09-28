@@ -252,7 +252,7 @@
     } catch (err) {
       /* сервер недоступен — оставляем последнюю известную дату */
     }
-    elements.creditStartDate.value = state.bankDate || '';
+    DateMask.set(elements.creditStartDate, state.bankDate);
 
     elements.creditModal.classList.remove('hidden');
     elements.creditClient.focus();
@@ -304,7 +304,7 @@
       program_id: elements.creditProgram.value,
       term_months: elements.creditTerm.value,
       contract_number: elements.creditForm.elements.contract_number.value,
-      start_date: elements.creditForm.elements.start_date.value,
+      start_date: DateMask.get(elements.creditStartDate),
       amount: elements.creditForm.elements.amount.value,
       currency: 'BYN',
       annual_rate: elements.creditAnnualRate.value,
@@ -450,6 +450,12 @@
   // События
   // ---------------------------------------------------------------------------
   function bindEvents() {
+    // Маска даты кредита: нативный <input type="date"> не даёт набрать 29.02
+    DateMask.mount(elements.creditStartDate, {
+      label: 'Дата заключения договора',
+      noFutureCheck: true,
+    });
+
     elements.btnAddCredit.addEventListener('click', openCreditModal);
     elements.creditProgram.addEventListener('change', selectProgramTerms);
     elements.creditTerm.addEventListener('change', onTermChange);

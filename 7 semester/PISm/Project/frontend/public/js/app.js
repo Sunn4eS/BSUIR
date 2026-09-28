@@ -165,6 +165,9 @@
     initIdentificationMask(fieldEl('identification_number'));
     initPassportSeriesMask(fieldEl('passport_series'));
     initPassportNumberMask(fieldEl('passport_number'));
+    // Маски дат: нативный <input type="date"> не даёт набрать 29.02 вручную
+    DateMask.mount(fieldEl('birth_date'), { label: 'Дата рождения' });
+    DateMask.mount(fieldEl('issue_date'), { label: 'Дата выдачи' });
   }
 
   // ---------------------------------------------------------------------------
@@ -263,11 +266,11 @@
     fieldEl('last_name').value = client.last_name;
     fieldEl('first_name').value = client.first_name;
     fieldEl('middle_name').value = client.middle_name;
-    fieldEl('birth_date').value = client.birth_date;
+    DateMask.set(fieldEl('birth_date'), client.birth_date);
     fieldEl('passport_series').value = client.passport_series;
     fieldEl('passport_number').value = client.passport_number;
     fieldEl('issued_by').value = client.issued_by;
-    fieldEl('issue_date').value = client.issue_date;
+    DateMask.set(fieldEl('issue_date'), client.issue_date);
     fieldEl('identification_number').value = client.identification_number;
     fieldEl('birth_place').value = client.birth_place;
     fieldEl('city_id').value = String(client.city_id);
@@ -301,8 +304,8 @@
       data[field] = fieldEl(field).value;
     });
 
-    data.birth_date = fieldEl('birth_date').value;
-    data.issue_date = fieldEl('issue_date').value;
+    data.birth_date = DateMask.get(fieldEl('birth_date'));
+    data.issue_date = DateMask.get(fieldEl('issue_date'));
 
     CHECKBOX_FIELDS.forEach((field) => {
       data[field] = fieldEl(field).checked;
