@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CASE-средства — Технология автоматизированного проектирования</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#152A4E; --navy2:#1F3A66;
+  --blue:#4A90E2; --blue-d:#2C6FBF;
+  --bg:#F4F7FB; --text:#1B2A44; --muted:#61738F;
+  --line:#DCE5F0;
+  --green:#22A06B; --orange:#E07B39; --red:#D6544E;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#0B1524;
+  font-family:'Open Sans',system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased}
+
+/* ---------- СЦЕНА ---------- */
+.viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+.stage{width:1280px;height:720px;flex:none;position:relative;background:var(--bg);
+  overflow:hidden;transform-origin:center center;border-radius:3px;
+  box-shadow:0 40px 100px rgba(0,0,0,.65)}
+
+/* ---------- СЛАЙД ---------- */
+.slide{position:absolute;inset:0;padding:52px 64px 68px;display:flex;flex-direction:column;
+  background:var(--bg);color:var(--text);opacity:0;visibility:hidden;
+  transform:translateY(18px);
+  transition:opacity .4s ease,transform .45s cubic-bezier(.22,.9,.3,1),visibility .4s}
+.slide.active{opacity:1;visibility:visible;transform:none}
+
+/* ---------- ЗАГОЛОВОК СЛАЙДА ---------- */
+.s-head{flex:none;margin-bottom:24px}
+.kicker{display:inline-flex;align-items:center;gap:9px;font-size:11.5px;font-weight:700;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--blue-d);margin-bottom:9px}
+.kicker::before{content:'';width:22px;height:2px;background:var(--blue);border-radius:2px}
+.s-title{font-family:'Montserrat',sans-serif;font-size:33px;line-height:1.16;
+  font-weight:700;color:var(--navy);letter-spacing:-.015em}
+.s-body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
+
+/* ---------- АНИМАЦИЯ ПОЯВЛЕНИЯ ---------- */
+.slide.active .rv{animation:rise .55s cubic-bezier(.22,.9,.3,1) both;
+  animation-delay:calc(var(--i,0) * 70ms)}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* ---------- ТИПОГРАФИКА ---------- */
+.lead{font-size:18.5px;line-height:1.6;color:#33455F;max-width:1080px}
+.lead b{color:var(--navy);font-weight:600}
+
+/* ---------- СЕТКИ / КАРТОЧКИ ---------- */
+.grid{display:grid;gap:16px}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;
+  box-shadow:0 2px 12px rgba(21,42,78,.05);display:flex;flex-direction:column;gap:11px}
+.card .ico{width:42px;height:42px;border-radius:11px;flex:none;
+  background:linear-gradient(135deg,#E9F2FD,#D5E5FA);color:var(--blue-d);
+  display:flex;align-items:center;justify-content:center}
+.card .ico svg{width:22px;height:22px}
+.card h3{font-family:'Montserrat',sans-serif;font-size:16.5px;font-weight:700;color:var(--navy);line-height:1.25}
+.card p{font-size:13.5px;line-height:1.5;color:var(--muted)}
+
+.card.row{flex-direction:row;align-items:center;gap:15px;padding:16px 18px}
+.card.row .tx{display:flex;flex-direction:column;gap:4px}
+
+/* ---------- ВЫНОСКА ---------- */
+.note{margin-top:22px;padding:16px 22px;border-left:4px solid var(--blue);background:#fff;
+  border-radius:0 12px 12px 0;font-size:16px;color:var(--navy);
+  box-shadow:0 2px 12px rgba(21,42,78,.06)}
+.note b{color:var(--blue-d)}
+
+/* ---------- НУМЕРОВАННЫЕ СТРОКИ ---------- */
+.nrow{display:flex;align-items:center;gap:16px;background:#fff;border:1px solid var(--line);
+  border-radius:12px;padding:13px 20px;font-size:15.5px;color:#2A3B57;
+  box-shadow:0 1px 6px rgba(21,42,78,.045)}
+.num{flex:none;width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,#4A90E2,#2C6FBF);color:#fff;font-size:13.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif}
+.stack{display:flex;flex-direction:column;gap:10px}
+
+/* ---------- УРОВНИ ИНТЕГРАЦИИ ---------- */
+.tier{display:flex;align-items:center;gap:22px;background:#fff;border:1px solid var(--line);
+  border-radius:14px;padding:19px 24px;border-left:5px solid var(--blue);
+  box-shadow:0 2px 12px rgba(21,42,78,.05)}
+.tier h3{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:700;color:var(--navy);margin-bottom:3px}
+.tier p{font-size:14px;color:var(--muted)}
+.tier .tt{flex:1}
+.gauge{display:flex;gap:5px;flex:none}
+.gauge i{width:22px;height:8px;border-radius:4px;background:#E3EAF4}
+.gauge i.on{background:currentColor}
+
+/* ---------- СТРОКИ НАПРАВЛЕНИЙ ---------- */
+.arow{display:flex;align-items:center;gap:20px;background:#fff;border:1px solid var(--line);
+  border-radius:12px;padding:14px 22px;box-shadow:0 1px 6px rgba(21,42,78,.045)}
+.ab{flex:none;width:78px;text-align:center;font-family:'Montserrat',sans-serif;font-weight:800;
+  font-size:14px;letter-spacing:.03em;padding:6px 0;border-radius:8px;
+  background:#EDF3FB;color:var(--blue-d)}
+.ad{font-size:15.5px;color:#2A3B57}
+.arow.hl{background:linear-gradient(90deg,#1B3A66,#254B7E);border-color:transparent;
+  box-shadow:0 6px 20px rgba(27,58,102,.28)}
+.arow.hl .ab{background:rgba(255,255,255,.16);color:#fff}
+.arow.hl .ad{color:#EAF2FC;font-weight:600}
+
+/* ---------- ПЛЮСЫ / МИНУСЫ ---------- */
+.pc{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 26px;
+  box-shadow:0 2px 14px rgba(21,42,78,.06)}
+.pc.pros{border-top:4px solid var(--green)}
+.pc.cons{border-top:4px solid var(--orange)}
+.pc-head{display:flex;align-items:center;gap:10px;font-family:'Montserrat',sans-serif;
+  font-weight:700;font-size:18px;margin-bottom:15px}
+.pc-head svg{width:20px;height:20px}
+.pros .pc-head{color:var(--green)}
+.cons .pc-head{color:var(--orange)}
+.pc ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.pc li{position:relative;padding-left:20px;font-size:14.5px;line-height:1.45;color:#33455F}
+.pc li::before{content:'';position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:3px}
+.pros li::before{background:#A9E0C6}
+.cons li::before{background:#F7D4B4}
+
+/* ---------- ТИТУЛЬНЫЙ СЛАЙД ---------- */
+.slide.title{padding:0 80px;justify-content:center;overflow:hidden;
+  background:linear-gradient(135deg,#101F38 0%,#1B3A66 55%,#14304F 100%);color:#fff}
+.tglow{position:absolute;width:900px;height:900px;right:-330px;top:-390px;border-radius:50%;
+  background:radial-gradient(circle,rgba(74,144,226,.55) 0%,rgba(74,144,226,0) 65%)}
+.tglow2{position:absolute;width:620px;height:620px;left:-260px;bottom:-330px;border-radius:50%;
+  background:radial-gradient(circle,rgba(44,111,191,.45) 0%,rgba(44,111,191,0) 68%)}
+.tgrid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+  background-size:56px 56px;
+  -webkit-mask-image:radial-gradient(circle at 35% 55%,#000 0%,transparent 75%);
+  mask-image:radial-gradient(circle at 35% 55%,#000 0%,transparent 75%)}
+.tinner{position:relative;z-index:3;max-width:1000px}
+.t-title{font-family:'Montserrat',sans-serif;font-size:52px;line-height:1.12;font-weight:800;
+  letter-spacing:-.025em;color:#fff}
+
+/* ---------- ПОДВАЛ СЛАЙДА ---------- */
+.s-foot{position:absolute;left:64px;bottom:25px;font-size:11.5px;color:#9AACC4;letter-spacing:.04em}
+
+/* ---------- ИНТЕРФЕЙС ---------- */
+.progress{position:absolute;left:0;bottom:0;height:4px;width:100%;
+  background:rgba(128,152,184,.22);z-index:45}
+.progress i{display:block;height:100%;width:0;
+  background:linear-gradient(90deg,#4A90E2,#2C6FBF);transition:width .4s ease}
+.hud{position:absolute;right:22px;bottom:17px;display:flex;align-items:center;gap:6px;z-index:46}
+.hud button{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);
+  background:rgba(255,255,255,.92);color:var(--navy);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:.18s;padding:0}
+.hud button:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.hud button svg{width:16px;height:16px}
+.hud .counter{font-size:12.5px;font-weight:600;color:#8496B0;min-width:58px;
+  text-align:center;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+
+<div class="viewport">
+  <div class="stage" id="stage">
+
+    <!-- ========== 1. ТИТУЛ (только тема) ========== -->
+    <section class="slide title active">
+      <div class="tglow"></div>
+      <div class="tglow2"></div>
+      <div class="tgrid"></div>
+      <div class="tinner">
+        <h1 class="t-title rv" style="--i:0">Технология автоматизированного проектирования.<br>Общая характеристика и классификация CASE-средств</h1>
+      </div>
+    </section>
+
+    <!-- ========== 2. ВВЕДЕНИЕ ========== -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="kicker rv" style="--i:0">Введение</div>
+        <h2 class="s-title rv" style="--i:1">Зачем автоматизировать проектирование</h2>
+      </div>
+      <div class="s-body">
+        <p class="lead rv" style="--i:2">
+          Развитие современных информационных систем и программного обеспечения требует
+          автоматизации не только <b>кодирования</b>, но и процессов <b>анализа,
+          проектирования и документирования</b>.
+        </p>
+
+        <div class="grid g3" style="margin-top:28px">
+          <div class="card rv" style="--i:3">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/>
+              </svg>
+            </div>
+            <h3>Анализ</h3>
+            <p>Исследование предметной области, выявление требований и ограничений.</p>
+          </div>
+          <div class="card rv" style="--i:4">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+                <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+                <path d="M10 6.5h4a3 3 0 0 1 3 3v4"/>
+              </svg>
+            </div>
+            <h3>Проектирование</h3>
+            <p>Построение архитектуры, моделей данных и логики будущей системы.</p>
+          </div>
+          <div class="card rv" style="--i:5">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+                <path d="M14 3v5h5M9 13h6M9 17h4"/>
+              </svg>
+            </div>
+            <h3>Документирование</h3>
+            <p>Автоматическая подготовка проектной и эксплуатационной документации.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 3. АВТОМАТИЗИРОВАННОЕ ПРОЕКТИРОВАНИЕ ========== -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="kicker rv" style="--i:0">Раздел 1</div>
+        <h2 class="s-title rv" style="--i:1">Понятие автоматизированного проектирования</h2>
+      </div>
+      <div class="s-body">
+        <div class="note rv" style="--i:2;margin-top:0;font-size:18px">
+          <b>Автоматизированное проектирование</b> — процесс создания проектных решений
+          с использованием программно-аппаратных средств вычислительной техники.
+        </div>
+
+        <div class="grid g3" style="margin-top:26px">
+          <div class="card rv" style="--i:3">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>
+              </svg>
+            </div>
+            <h3>Сокращение трудоёмкости</h3>
+            <p>Рутинные операции выполняются средствами автоматизации.</p>
+          </div>
+          <div class="card rv" style="--i:4">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3l7 3v6c0 4.4-3 8-7 9-4-1-7-4.6-7-9V6l7-3z"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+            </div>
+            <h3>Уменьшение ошибок</h3>
+            <p>Формальные проверки моделей и единая согласованная база данных проекта.</p>
+          </div>
+          <div class="card rv" style="--i:5">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/>
+              </svg>
+            </div>
+            <h3>Ускорение результата</h3>
+            <p>Быстрое получение готовых проектных решений и их вариантов.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 4. CASE-ТЕХНОЛОГИЯ ========== -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="kicker rv" style="--i:0">Раздел 1</div>
+        <h2 class="s-title rv" style="--i:1">CASE-технология: определение и история</h2>
+      </div>
+      <div class="s-body">
+        <div class="grid g3" style="align-items:stretch">
+          <div class="card rv" style="--i:2">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>
+              </svg>
+            </div>
+            <h3>80-е годы XX века</h3>
+            <p>Возникновение CASE. Изначально — автоматизация наиболее трудоёмких этапов анализа и проектирования.</p>
+          </div>
+          <div class="card rv" style="--i:3">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+                <path d="M14 3v5h5M9 14l2 2 4-4"/>
+              </svg>
+            </div>
+            <h3>ISO/IEC 14102</h3>
+            <p>CASE-средства — программные средства для поддержки процессов жизненного цикла ПО.</p>
+          </div>
+          <div class="card rv" style="--i:4">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3v6M12 15v6M3 12h6M15 12h6"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </div>
+            <h3>Основная цель</h3>
+            <p>Отделить проектирование от кодирования и максимально автоматизировать создание и документирование программного продукта.</p>
+          </div>
+        </div>
+
+        <div class="note rv" style="--i:5">
+          <b>CASE</b> (Computer-Aided Software Engineering) — совокупность методов и
+          инструментальных средств автоматизации процессов жизненного цикла программного обеспечения.
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 5. ОБЩАЯ ХАРАКТЕРИСТИКА ========== -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="kicker rv" style="--i:0">Раздел 2</div>
+        <h2 class="s-title rv" style="--i:1">Общая характеристика CASE-средств</h2>
+      </div>
+      <div class="s-body">
+        <div class="grid g3" style="row-gap:15px">
+          <div class="card rv" style="--i:2">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="6" rx="8" ry="3"/>
+                <path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/>
+                <path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>
+              </svg>
+            </div>
+            <h3>Единая информационная модель</h3>
+            <p>Проект хранится в общем репозитории — едином источнике данных.</p>
+          </div>
+          <div class="card rv" style="--i:3">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </div>
+            <h3>Визуальное моделирование</h3>
+            <p>Построение UML-, ER- и других диаграмм вместо ручных описаний.</p>
+          </div>
+          <div class="card rv" style="--i:4">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3l7 3v6c0 4.4-3 8-7 9-4-1-7-4.6-7-9V6l7-3z"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+            </div>
+            <h3>Поддержка стандартов</h3>
+            <p>UML, ER-модели, ГОСТ, международные стандарты проектирования.</p>
+          </div>
+          <div class="card rv" style="--i:5">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/>
+                <path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>
+              </svg>
+            </div>
+            <h3>Интегрированность</h3>
+            <p>Согласованная работа различных инструментов в единой среде.</p>
+          </div>
+          <div class="card rv" style="--i:6">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>
+              </svg>
+            </div>
+            <h3>Автоматизация рутинных операций</h3>
+            <p>Генерация кода, схем баз данных, проектной документации.</p>
+          </div>
+          <div class="card rv" style="--i:7">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="8" r="3.4"/><path d="M2.6 20a6.4 6.4 0 0 1 12.8 0"/>
+                <path d="M17 5.2a3.4 3.4 0 0 1 0 6.4M18.4 20a6.4 6.4 0 0 0-2.1-4.7"/>
+              </svg>
+            </div>
+            <h3>Коллективная разработка</h3>
+            <p>Разграничение прав, версионирование, параллельная работа команды.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 6. НАЗНАЧЕНИЕ И ЦЕЛИ ========== -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="kicker rv" style="--i:0">Раздел 3</div>
+        <h2 class="s-title rv" style="--i:1">Назначение и цели применения</h2>
+      </div>
+      <div class="s-body">
+        <div class="note rv" style="--i:2;margin-top:0">
+          <b>Назначение:</b> автоматизация процессов проектирования, анализа,
+          документирования и подготовки к реализации информационных систем.
+        </div>
+
+        <div class="stack" style="margin-top:20px">
+          <div class="nrow rv" style="--i:3"><span class="num">1</span><span>Снижение затрат на разработку и сопровождение программного обеспечения</span></div>
+          <div class="nrow rv" style="--i:4"><span class="num">2</span><span>Повышение качества проектных решений</span></div>
+          <div class="nrow rv" style="--i:5"><span class="num">3</span><span>Сокращение сроков разработки</span></div>
+          <div class="nrow rv" style="--i:6"><span class="num">4</span><span>Обеспечение управляемости и контролируемости проекта</span></div>
+          <div class="nrow rv" style="--i:7"><span class="num">5</span><span>Повторное использование наработок и компонентов</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 7. КЛАССИФИКАЦИЯ ПО НАЗНАЧЕНИЮ ========== -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="kicker rv" style="--i:0">Раздел 4 · Классификация</div>
+        <h2 class="s-title rv" style="--i:1">По функциональному назначению</h2>
+      </div>
+      <div class="s-body">
+        <div class="grid g2" style="row-gap:13px">
+          <div class="card row rv" style="--i:2">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/>
+              </svg>
+            </div>
+            <div class="tx"><h3>Средства анализа</h3><p>Построение моделей предметной области</p></div>
+          </div>
+          <div class="card row rv" style="--i:3">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="6" rx="8" ry="3"/>
+                <path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/>
+                <path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>
+              </svg>
+            </div>
+            <div class="tx"><h3>Средства проектирования БД</h3><p>Логическое и физическое моделирование</p></div>
+          </div>
+          <div class="card row rv" style="--i:4">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/>
+              </svg>
+            </div>
+            <div class="tx"><h3>Средства разработки приложений</h3><p>Проектирование и генерация программного кода</p></div>
+          </div>
+          <div class="card row rv" style="--i:5">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/>
+              </svg>
+            </div>
+            <div class="tx"><h3>Средства реинжиниринга</h3><p>Анализ и модификация существующих систем</p></div>
+          </div>
+          <div class="card row rv" style="--i:6">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="18" height="16" rx="2"/>
+                <path d="M3 10h18M8 3v4M16 3v4"/>
+              </svg>
+            </div>
+            <div class="tx"><h3>Планирование и управление проектом</h3><p>Контроль сроков, ресурсов и задач</p></div>
+          </div>
+          <div class="card row rv" style="--i:7">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/><path d="M8 12.4l2.6 2.6L16 9.6"/>
+              </svg>
+            </div>
+            <div class="tx"><h3>Тестирование и документирование</h3><p>Автоматизация проверки и подготовки документации</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 8. СТЕПЕНЬ ИНТЕГРИРОВАННОСТИ ========== -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="kicker rv" style="--i:0">Раздел 4 · Классификация</div>
+        <h2 class="s-title rv" style="--i:1">По степени интегрированности</h2>
+      </div>
+      <div class="s-body">
+        <div class="stack" style="gap:14px">
+          <div class="tier rv" style="--i:2;color:#7FB2E8">
+            <div class="tt">
+              <h3>Локальные (отдельные) CASE-средства</h3>
+              <p>Решают небольшие автономные задачи</p>
+            </div>
+            <div class="gauge"><i class="on"></i><i></i><i></i></div>
+          </div>
+
+          <div class="tier rv" style="--i:3;color:#4A90E2">
+            <div class="tt">
+              <h3>Частично интегрированные</h3>
+              <p>Охватывают несколько этапов жизненного цикла ПО</p>
+            </div>
+            <div class="gauge"><i class="on"></i><i class="on"></i><i></i></div>
+          </div>
+
+          <div class="tier rv" style="--i:4;color:#2C6FBF">
+            <div class="tt">
+              <h3>Полностью интегрированные (I-CASE)</h3>
+              <p>Охватывают весь жизненный цикл, имеют единый репозиторий и обеспечивают согласованность данных на всех этапах</p>
+            </div>
+            <div class="gauge"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          </div>
+        </div>
+
+        <div class="note rv" style="--i:5">
+          <b>Интегрированность</b> — один из ключевых признаков современных CASE-систем.
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 9. CASE И ДРУГИЕ НАПРАВЛЕНИЯ ========== -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="kicker rv" style="--i:0">Раздел 4 · Связь с другими направлениями</div>
+        <h2 class="s-title rv" style="--i:1">CASE и другие средства автоматизации проектирования</h2>
+      </div>
+      <div class="s-body">
+        <div class="stack" style="gap:11px">
+          <div class="arow rv" style="--i:2"><span class="ab">CAD</span><span class="ad">Автоматизированное конструирование</span></div>
+          <div class="arow rv" style="--i:3"><span class="ab">CAE</span><span class="ad">Инженерные расчёты и анализ</span></div>
+          <div class="arow rv" style="--i:4"><span class="ab">CAM</span><span class="ad">Технологическая подготовка производства</span></div>
+          <div class="arow rv" style="--i:5"><span class="ab">PDM/PLM</span><span class="ad">Управление данными и жизненным циклом изделия</span></div>
+          <div class="arow hl rv" style="--i:6"><span class="ab">CASE</span><span class="ad">Автоматизация разработки программного обеспечения</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 10. ПРЕИМУЩЕСТВА И НЕДОСТАТКИ ========== -->
+    <section class="slide">
+      <div class="s-head">
+        <div class="kicker rv" style="--i:0">Раздел 5</div>
+        <h2 class="s-title rv" style="--i:1">Преимущества и недостатки CASE-средств</h2>
+      </div>
+      <div class="s-body">
+        <div class="grid g2" style="gap:20px;align-items:start">
+          <div class="pc pros rv" style="--i:2">
+            <div class="pc-head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/><path d="M8 12.4l2.6 2.6L16 9.6"/>
+              </svg>
+              Преимущества
+            </div>
+            <ul>
+              <li>Повышение качества проектирования</li>
+              <li>Стандартизация проектной документации</li>
+              <li>Наглядность и однозначность моделей</li>
+              <li>Сокращение времени разработки</li>
+              <li>Снижение количества ошибок</li>
+              <li>Улучшение управляемости проекта</li>
+            </ul>
+          </div>
+
+          <div class="pc cons rv" style="--i:3">
+            <div class="pc-head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.3v.2"/>
+              </svg>
+              Недостатки
+            </div>
+            <ul>
+              <li>Высокая стоимость программных продуктов</li>
+              <li>Сложность освоения и внедрения</li>
+              <li>Избыточность функционала для малых проектов</li>
+              <li>Необходимость изменения организационных процессов при внедрении</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ИНТЕРФЕЙС -->
+    <div class="progress"><i id="bar"></i></div>
+    <div class="hud">
+      <button id="prev" title="Назад (←)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <span class="counter" id="counter">1 / 10</span>
+      <button id="next" title="Вперёд (→)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+      <button id="fs" title="Полный экран (F)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var stage    = document.getElementById('stage');
+  var slides   = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var bar      = document.getElementById('bar');
+  var counter  = document.getElementById('counter');
+  var total    = slides.length;
+  var i        = 0;
+
+  /* --- нумерация и подписи в подвале --- */
+  slides.forEach(function(s){
+    if(s.classList.contains('title')) return;
+    var f = document.createElement('div');
+    f.className = 's-foot';
+    f.textContent = 'CASE-средства · Технология автоматизированного проектирования';
+    s.appendChild(f);
+  });
+
+  /* --- навигация --- */
+  function go(n){
+    n = Math.max(0, Math.min(total - 1, n));
+    if(n === i) return;
+    slides[i].classList.remove('active');
+    i = n;
+    slides[i].classList.add('active');
+    update();
+  }
+  function next(){ go(i + 1); }
+  function prev(){ go(i - 1); }
+  function update(){
+    bar.style.width = ((i + 1) / total * 100) + '%';
+    counter.textContent = (i + 1) + ' / ' + total;
+  }
+
+  document.getElementById('next').addEventListener('click', next);
+  document.getElementById('prev').addEventListener('click', prev);
+
+  /* --- клавиатура --- */
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+    if(k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === ' ' || k === 'Enter'){
+      e.preventDefault(); next();
+    } else if(k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || k === 'Backspace'){
+      e.preventDefault(); prev();
+    } else if(k === 'Home'){
+      e.preventDefault(); go(0);
+    } else if(k === 'End'){
+      e.preventDefault(); go(total - 1);
+    } else if(k === 'f' || k === 'F' || k === 'а' || k === 'А'){
+      e.preventDefault(); toggleFs();
+    }
+  });
+
+  /* --- свайпы --- */
+  var x0 = null, y0 = null;
+  stage.addEventListener('touchstart', function(e){
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+  }, {passive:true});
+  stage.addEventListener('touchend', function(e){
+    if(x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    var dy = e.changedTouches[0].clientY - y0;
+    if(Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)){
+      dx < 0 ? next() : prev();
+    }
+    x0 = y0 = null;
+  }, {passive:true});
+
+  /* --- полный экран --- */
+  function toggleFs(){
+    if(!document.fullscreenElement){
+      (document.documentElement.requestFullscreen ||
+       document.documentElement.webkitRequestFullscreen ||
+       function(){}).call(document.documentElement);
+    } else {
+      (document.exitFullscreen ||
+       document.webkitExitFullscreen ||
+       function(){}).call(document);
+    }
+  }
+  document.getElementById('fs').addEventListener('click', toggleFs);
+
+  /* --- масштабирование сцены 1280×720 --- */
+  function fit(){
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = 'scale(' + s + ')';
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('orientationchange', fit);
+
+  fit();
+  update();
+})();
+</script>
+</body>
+</html>
