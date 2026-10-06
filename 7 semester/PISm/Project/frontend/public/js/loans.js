@@ -217,14 +217,14 @@
   function renderCardCell(contract) {
     const card = state.cards[contract.id];
     if (!card) return '<span class="muted">—</span>';
-    const masked = card.card_number.length === 16
-      ? `${card.card_number.slice(0, 4)} **** **** ${card.card_number.slice(-4)}`
-      : card.card_number;
     const blockMark = card.is_blocked ? ' ⛔ заблокирована' : '';
+    // Номер карты показываем полностью и с однокликовым выделением: клиент
+    // банка вводит его руками в банкомате (Модуль 4), маскировать нечего —
+    // это собственная карта банка, а не реквизит третьего лица.
     return `
       <div class="acct-cell">
-        <span class="mono" title="Номер карты банкомата (Модуль 4)">${escapeHtml(masked)}</span>
-        <span class="muted">PIN: ${escapeHtml(card.pin_code)}${blockMark}</span>
+        <span class="mono copyable" title="Номер карты банкомата — кликните, чтобы выделить и скопировать">${escapeHtml(card.card_number)}</span>
+        <span class="muted copyable" title="ПИН-код — кликните, чтобы выделить">PIN: ${escapeHtml(card.pin_code)}${blockMark}</span>
       </div>
     `;
   }

@@ -676,6 +676,25 @@ body.admin-mode button.admin-only {
   line-height: 1.35;
 }
 
+/* ---------- Значения, удобные для копирования ---------- */
+/* user-select: all — одиночный клик выделяет всё значение целиком,
+   Ctrl+C копирует его без лишних нажатий. */
+.copyable {
+  user-select: all;
+  -webkit-user-select: all;
+  cursor: text;
+}
+
+.copyable::selection {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.copyable:hover {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
 /* ---------- Бейджи статусов ---------- */
 .badge-success {
   background: var(--color-success-soft);
@@ -801,11 +820,27 @@ body.admin-mode button.admin-only {
   display: flex;
   align-items: center;
 }
+
 /* ============================================================================
    МОДУЛЬ 4. ЭМУЛЯТОР БАНКОМАТА (ATM)
+   Оформление в духе классических банкоматов, распространённых в РБ
+   (NCR / Diebold Nixdorf): тёмно-синий экран, крупный рубленый шрифт
+   белого и жёлтого цветов, пункты меню — текстовые лейблы у левого края,
+   физические клавиши — у правого края, на пластике корпуса.
    ============================================================================ */
 
 .atm-body {
+  /* Палитра экрана банкомата */
+  --atm-screen-top: #12314f;
+  --atm-screen-bottom: #071627;
+  --atm-fg: #f2f7fd;              /* основной белый */
+  --atm-fg-dim: #a8bfd6;          /* приглушённый */
+  --atm-accent: #ffd24a;          /* жёлтый: номера пунктов и ключевые суммы */
+  --atm-line: #2a5c8f;            /* разделители экрана */
+  --atm-slot: #04101c;            /* «утопленные» поля ввода */
+  --atm-plastic-top: #4a5563;     /* пластик корпуса */
+  --atm-plastic-bottom: #262f3a;
+
   background: #0f172a;
   color: #e2e8f0;
   min-height: 100vh;
@@ -832,12 +867,12 @@ body.admin-mode button.admin-only {
 }
 
 .atm-topbar-date strong {
-  color: #fbbf24;
+  color: var(--atm-accent);
   font-family: 'Consolas', 'Menlo', monospace;
 }
 
 .atm-stage {
-  max-width: 1040px;
+  max-width: 1080px;
 }
 
 /* ---- Корпус ---- */
@@ -845,8 +880,8 @@ body.admin-mode button.admin-only {
   display: flex;
   gap: 20px;
   align-items: stretch;
-  background: linear-gradient(150deg, #24304a 0%, #111a30 55%, #0b1220 100%);
-  border: 1px solid #334155;
+  background: linear-gradient(150deg, #33404f 0%, #1b2432 55%, #0d1520 100%);
+  border: 1px solid #4a5768;
   border-radius: 18px;
   padding: 26px;
   box-shadow: 0 30px 60px rgba(2, 6, 23, 0.6);
@@ -856,11 +891,11 @@ body.admin-mode button.admin-only {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(160deg, #31415f, #1b2a47 70%, #14203a);
-  border: 1px solid #41557a;
+  background: linear-gradient(160deg, #4b5563 0%, #2d3743 45%, #1f2733 100%);
+  border: 1px solid #5b6776;
   border-radius: 14px;
   padding: 18px 18px 10px;
-  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.03), 0 14px 28px rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 14px 28px rgba(0, 0, 0, 0.45);
   min-width: 0;
 }
 
@@ -874,67 +909,103 @@ body.admin-mode button.admin-only {
 .atm-brand {
   font-weight: 800;
   font-size: 18px;
-  letter-spacing: 2px;
-  background: linear-gradient(90deg, #38bdf8, #818cf8);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  letter-spacing: 3px;
+  color: var(--atm-accent);
 }
 
 .atm-brand-sub {
-  color: #94a3b8;
+  color: #c3cddb;
   font-size: 13px;
 }
 
-/* ---- Экран ---- */
+/* ---- Экран: тёмно-синий «монолит» с лёгким бликом и строчной развёрткой ---- */
 .atm-screen {
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.12), transparent 60%),
-    #0a1a3a;
-  border: 1px solid #2e4a73;
-  border-radius: 10px;
-  min-height: 470px;
-  padding: 20px 22px;
-  color: #dbeafe;
-  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.25), inset 0 0 24px rgba(56, 189, 248, 0.06);
+    radial-gradient(ellipse at 50% -15%, rgba(130, 185, 255, 0.18), transparent 62%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, var(--atm-screen-top), var(--atm-screen-bottom) 72%);
+  border: 1px solid #2f6ba4;
+  border-radius: 8px;
+  min-height: 486px;
+  padding: 18px 20px 20px;
+  color: var(--atm-fg);
+  box-shadow: inset 0 0 0 5px rgba(2, 8, 18, 0.55), inset 0 0 44px rgba(3, 12, 26, 0.85);
   overflow-y: auto;
+  /* Рубленый шрифт без засечек — как на настоящих банкоматах */
+  font-family: 'Arial Narrow', 'Roboto Condensed', 'Liberation Sans Narrow',
+               'Helvetica Neue', Arial, Helvetica, sans-serif;
+  font-stretch: condensed;
 }
 
+.atm-screen .btn,
+.atm-screen .atm-input,
+.atm-screen .atm-confirm,
+.atm-screen .atm-entry-display {
+  font-family: inherit;
+}
+
+/* Плавный переход между экранами */
 .atm-view {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: 420px;
+}
+
+.atm-view.atm-view-enter {
+  animation: atm-view-in 0.28s ease-out both;
+}
+
+@keyframes atm-view-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .atm-view-head {
   display: flex;
   align-items: center;
   gap: 10px;
+  font-size: 19px;
   font-weight: 700;
-  font-size: 17px;
-  color: #7dd3fc;
-  border-bottom: 1px dashed #33517a;
-  padding-bottom: 10px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--atm-accent);
+  border-bottom: 2px solid var(--atm-line);
+  padding-bottom: 8px;
 }
 
 .atm-step-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #1d4ed8;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 7px;
+  border-radius: 3px;
+  background: var(--atm-accent);
+  color: #10233a;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .atm-hint {
-  color: #93c5fd;
+  color: var(--atm-fg);
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* Вопрос, на который клиент отвечает физической клавишей */
+.atm-question {
+  font-size: 21px;
+  font-weight: 700;
+  text-align: center;
+  padding: 10px 0 2px;
 }
 
 .atm-field {
@@ -944,44 +1015,78 @@ body.admin-mode button.admin-only {
 }
 
 .atm-field label {
-  font-size: 13px;
-  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--atm-accent);
 }
 
 .atm-field-note {
   margin: 2px 0 0;
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--atm-fg-dim);
 }
 
 .atm-input {
   width: 100%;
-  padding: 10px 12px;
-  font-size: 16px;
-  background: #0b1220;
-  color: #f1f5f9;
-  border: 1px solid #334155;
-  border-radius: 8px;
+  padding: 11px 13px;
+  font-size: 19px;
+  letter-spacing: 2px;
+  background: var(--atm-slot);
+  color: var(--atm-accent);
+  border: 1px solid var(--atm-line);
+  border-radius: 4px;
   outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.atm-input::placeholder {
+  color: #4f6b88;
 }
 
 .atm-input:focus {
-  border-color: #38bdf8;
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+  border-color: var(--atm-accent);
+  box-shadow: 0 0 0 2px rgba(255, 210, 74, 0.22);
+}
+
+select.atm-input {
+  font-size: 17px;
+  letter-spacing: 0.5px;
+  color: var(--atm-fg);
 }
 
 .atm-btn {
   width: 100%;
-  margin-top: 4px;
+  margin-top: 6px;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+.atm-keyboard-hint {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #0b1220;
+  border: 1px solid #2b3a4d;
+  color: #93a7bd;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.atm-keyboard-hint b {
+  color: var(--atm-accent);
+  font-family: 'Consolas', 'Menlo', monospace;
 }
 
 /* ---- Спиннер/заставка ---- */
 .atm-spinner {
   width: 44px;
   height: 44px;
-  margin: 70px auto 16px;
-  border: 4px solid rgba(56, 189, 248, 0.2);
-  border-top-color: #38bdf8;
+  margin: 90px auto 18px;
+  border: 4px solid rgba(255, 210, 74, 0.22);
+  border-top-color: var(--atm-accent);
   border-radius: 50%;
   animation: atm-spin 0.9s linear infinite;
 }
@@ -992,53 +1097,56 @@ body.admin-mode button.admin-only {
 
 .atm-auth-text {
   text-align: center;
-  color: #7dd3fc;
-  font-size: 16px;
-  font-weight: 600;
+  color: var(--atm-accent);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
 }
 
 /* ---- ПИН ---- */
 .atm-pin-dots {
   display: flex;
-  gap: 18px;
+  gap: 22px;
   justify-content: center;
-  margin: 24px 0 8px;
+  margin: 34px 0 10px;
 }
 
 .pin-dot {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  border: 2px solid #5a7fa8;
+  border: 3px solid #7ea6cc;
   background: transparent;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
 .pin-dot.filled {
-  background: #38bdf8;
-  border-color: #e0f2fe;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+  background: var(--atm-accent);
+  border-color: #fff3c4;
+  box-shadow: 0 0 12px rgba(255, 210, 74, 0.85);
 }
 
 .atm-pin-attempts {
   text-align: center;
-  color: #fbbf24;
-  font-size: 14px;
+  color: var(--atm-accent);
+  font-size: 15px;
+  font-weight: 700;
   margin: 0;
 }
 
 .atm-pin-error {
   text-align: center;
-  color: #f87171;
-  font-size: 14px;
+  color: #ff8080;
+  font-size: 15px;
+  font-weight: 700;
   margin: 0;
 }
 
-/* ---- Меню и баланс ---- */
+/* ---- Карта и баланс ---- */
 .atm-card-info {
-  background: rgba(148, 163, 184, 0.08);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 10px;
+  background: rgba(4, 16, 28, 0.55);
+  border: 1px solid var(--atm-line);
+  border-radius: 6px;
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
@@ -1049,7 +1157,18 @@ body.admin-mode button.admin-only {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  color: #e2e8f0;
+  color: var(--atm-fg);
+  font-size: 14px;
+}
+
+.atm-receipt-note {
+  margin: 0;
+  padding: 7px 10px;
+  border-radius: 4px;
+  background: rgba(255, 210, 74, 0.12);
+  border: 1px dashed rgba(255, 210, 74, 0.55);
+  color: var(--atm-accent);
+  font-size: 12.5px;
 }
 
 .atm-balance-grid {
@@ -1059,9 +1178,9 @@ body.admin-mode button.admin-only {
 }
 
 .atm-balance-item {
-  background: #0b1220;
-  border: 1px solid #26364f;
-  border-radius: 8px;
+  background: var(--atm-slot);
+  border: 1px solid var(--atm-line);
+  border-radius: 4px;
   padding: 8px 10px;
   display: flex;
   flex-direction: column;
@@ -1069,106 +1188,270 @@ body.admin-mode button.admin-only {
 }
 
 .atm-balance-avail {
-  border-color: #16a34a;
-  background: rgba(22, 163, 74, 0.12);
+  border-color: var(--atm-accent);
+  background: rgba(255, 210, 74, 0.1);
 }
 
 .atm-balance-label {
-  font-size: 11px;
-  color: #94a3b8;
+  font-size: 10.5px;
+  color: var(--atm-fg-dim);
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.6px;
 }
 
 .atm-balance-value {
   font-size: 16px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--atm-fg);
   font-family: 'Consolas', 'Menlo', monospace;
 }
 
 .atm-balance-avail .atm-balance-value {
-  color: #4ade80;
+  color: var(--atm-accent);
 }
 
-.atm-menu-buttons {
+/* ---- Меню: лейблы у левого края + физические клавиши у правого ---- */
+.atm-menu-deck {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid #5b6776;
+  border-radius: 8px;
+  background: linear-gradient(180deg, var(--atm-plastic-top), var(--atm-plastic-bottom));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 5px 12px rgba(0, 0, 0, 0.45);
+}
+
+.atm-menu {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 6px;
 }
 
-.atm-menu-btn {
+.atm-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 7px 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.atm-menu-row:last-child {
+  border-bottom: none;
+}
+
+/* Текстовый лейбл пункта меню — не кнопка */
+.atm-menu-label {
+  flex: 1;
+  min-width: 0;
   text-align: left;
-  padding: 13px 16px;
-  font-size: 15px;
-  background: #142a4a;
-  color: #e2e8f0;
-  border: 1px solid #2c3e5f;
+  color: #fff;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.atm-menu-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  text-transform: none;
+  color: var(--atm-fg-dim);
+}
+
+.atm-menu-row-choice .atm-menu-label {
+  font-size: 19px;
+}
+
+/* Отдельная клавиша вне списка пунктов (просмотр остатка) */
+.atm-menu-deck-extra {
+  align-items: center;
+  margin-top: 10px;
+}
+
+.atm-menu-key-wide {
+  width: 64px;
+}
+
+/* Вариант, выделенный жёлтым (Да / Подтвердить) */
+.atm-menu-label-yes,
+.atm-menu-label-yes .atm-menu-sub {
+  color: var(--atm-accent);
+}
+
+.atm-menu-row:hover .atm-menu-label {
+  color: var(--atm-accent);
+}
+
+.atm-menu-row:hover .atm-menu-label .atm-menu-sub {
+  color: #ffe9a3;
+}
+
+/* Физическая клавиша на корпусе банкомата */
+.atm-menu-key {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
   border-radius: 9px;
+  background: linear-gradient(180deg, #f7f9fb 0%, #d3dae2 55%, #a8b2bd 100%);
+  border: 1px solid #7c8794;
+  color: #10233a;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 800;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  box-shadow: 0 4px 0 #5c6672, 0 6px 10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.12s ease;
 }
 
-.atm-menu-btn:hover {
-  background: #1d3a63;
+.atm-menu-key:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8ef 55%, #b6c0cb 100%);
 }
 
-.atm-menu-btn:active {
-  transform: scale(0.99);
+.atm-menu-key:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #5c6672, 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-.atm-menu-btn b {
-  color: #7dd3fc;
-  margin-right: 8px;
+.atm-menu-key:focus-visible {
+  outline: 3px solid var(--atm-accent);
+  outline-offset: 3px;
+}
+
+.atm-menu-key:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Пластиковая панель с подписью «функциональные клавиши» */
+.atm-keydeck {
+  flex: 0 0 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow: inset 2px 0 4px rgba(0, 0, 0, 0.35);
+}
+
+.atm-keydeck span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #cbd5e1;
 }
 
 /* ---- Снятие наличных ---- */
 .atm-amount-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .atm-amount-btn {
-  padding: 18px 12px;
-  font-size: 18px;
-  font-weight: 700;
-  background: linear-gradient(160deg, #0e7490, #0c4a6e);
-  color: #e0f2fe;
-  border: 1px solid #155e75;
-  border-radius: 10px;
+  padding: 20px 12px;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: linear-gradient(180deg, #f7f9fb 0%, #d3dae2 55%, #a8b2bd 100%);
+  border: 1px solid #7c8794;
+  border-radius: 9px;
+  color: #10233a;
   cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 4px 0 #5c6672, 0 6px 10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.12s ease;
 }
 
 .atm-amount-btn:hover {
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
-  transform: translateY(-1px);
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8ef 55%, #b6c0cb 100%);
+}
+
+.atm-amount-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #5c6672, 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.atm-amount-btn:focus-visible {
+  outline: 3px solid var(--atm-accent);
+  outline-offset: 3px;
 }
 
 .atm-entry-display {
   font-family: 'Consolas', 'Menlo', monospace;
-  font-size: 30px;
+  font-size: 32px;
   text-align: center;
-  background: #0b1220;
-  border: 1px dashed #33517a;
-  border-radius: 8px;
-  padding: 10px;
-  color: #4ade80;
+  background: var(--atm-slot);
+  border: 1px solid var(--atm-line);
+  border-radius: 4px;
+  padding: 12px;
+  color: var(--atm-accent);
+  letter-spacing: 3px;
 }
 
-.atm-yesno {
+/* ---- Экран подтверждения оплаты ---- */
+.atm-confirm {
   display: flex;
-  gap: 12px;
-  justify-content: center;
+  flex-direction: column;
+  background: var(--atm-slot);
+  border: 1px solid var(--atm-line);
+  border-radius: 6px;
+  padding: 6px 14px;
 }
 
-.atm-yesno .atm-menu-btn {
-  flex: 1;
-  text-align: center;
-  font-size: 18px;
-  padding: 16px;
+.atm-confirm-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 9px 0;
+  border-bottom: 1px dotted rgba(120, 165, 210, 0.45);
+}
+
+.atm-confirm-line:last-child {
+  border-bottom: none;
+}
+
+.atm-confirm-key {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--atm-fg-dim);
+}
+
+.atm-confirm-val {
+  font-size: 19px;
+  font-weight: 700;
+  color: #fff;
+  text-align: right;
+  word-break: break-all;
+}
+
+.atm-confirm-line-total {
+  margin-top: 2px;
+  padding-top: 12px;
+  border-top: 2px solid var(--atm-line);
+  border-bottom: none;
+}
+
+.atm-confirm-line-total .atm-confirm-key {
+  color: var(--atm-fg);
+  font-size: 15px;
+}
+
+.atm-confirm-line-total .atm-confirm-val {
+  font-size: 30px;
+  color: var(--atm-accent);
+  text-shadow: 0 0 16px rgba(255, 210, 74, 0.4);
 }
 
 /* ---- Выдача наличных (анимация) ---- */
@@ -1176,9 +1459,9 @@ body.admin-mode button.admin-only {
   position: relative;
   height: 150px;
   margin-top: 10px;
-  background: linear-gradient(180deg, #0b1220, #05080f);
-  border: 2px solid #22314a;
-  border-radius: 10px;
+  background: linear-gradient(180deg, #03080f, #000);
+  border: 2px solid #33445c;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -1209,12 +1492,17 @@ body.admin-mode button.admin-only {
   justify-content: center;
 }
 
+/* Банкноты без номиналов: на экране не показаны купюры, а надписи
+   «100» вводили бы в заблуждение — сумма операции может быть любой.
+   Вместо цифр на купюре светлая полоса, как на защитной ленте. */
 .atm-note::before {
-  content: '100';
-  font-size: 11px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.85);
-  letter-spacing: 1px;
+  content: '';
+  display: block;
+  width: 46px;
+  height: 7px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 0 rgba(0, 0, 0, 0.06);
 }
 
 @keyframes atm-dispense {
@@ -1241,7 +1529,7 @@ body.admin-mode button.admin-only {
   100% { bottom: 88px; }
 }
 
-/* ---- Клавиатура ---- */
+/* ---- Цифровая клавиатура ---- */
 .atm-side {
   width: 230px;
   display: flex;
@@ -1253,8 +1541,8 @@ body.admin-mode button.admin-only {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  background: #0b1220;
-  border: 1px solid #27364f;
+  background: #0d1420;
+  border: 1px solid #3b4a5e;
   border-radius: 12px;
   padding: 12px;
   box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.03);
@@ -1262,54 +1550,188 @@ body.admin-mode button.admin-only {
 
 .key-btn {
   aspect-ratio: 1;
+  font-family: inherit;
   font-size: 19px;
   font-weight: 700;
-  background: linear-gradient(180deg, #25344e, #1a2740);
-  color: #e2e8f0;
-  border: 1px solid #32466a;
+  background: linear-gradient(180deg, #f7f9fb 0%, #d3dae2 55%, #a8b2bd 100%);
+  border: 1px solid #7c8794;
   border-radius: 8px;
+  color: #10233a;
   cursor: pointer;
-  transition: transform 0.08s, background 0.12s;
+  box-shadow: 0 4px 0 #5c6672, 0 5px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.12s ease;
 }
 
 .key-btn:hover {
-  background: #2c3f63;
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8ef 55%, #b6c0cb 100%);
 }
 
 .key-btn:active {
-  transform: scale(0.93);
-  background: #1d4ed8;
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #5c6672, 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.key-btn:focus-visible {
+  outline: 3px solid var(--atm-accent);
+  outline-offset: 2px;
 }
 
 .key-btn.key-ok {
   grid-column: 1 / -1;
   aspect-ratio: auto;
-  padding: 10px 0;
+  padding: 12px 0;
   font-size: 17px;
-  background: linear-gradient(180deg, #15803d, #14532d);
-  border-color: #166534;
-  color: #f0fdf4;
+  letter-spacing: 1px;
+  background: linear-gradient(180deg, #ffd24a, #d9a417);
+  border-color: #b3870f;
+  color: #10233a;
+}
+
+.key-btn.key-ok:active {
+  box-shadow: 0 0 0 #b3870f, 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .key-dot.hidden {
   visibility: hidden;
 }
 
+/* ---- Слот выдачи чека + анимация печати ---- */
 .atm-receipt-slot {
-  height: 34px;
+  position: relative;
+  padding-top: 34px;
+  padding-bottom: 10px;
   border-radius: 8px;
-  background: linear-gradient(180deg, #05080f, #0b1220);
-  border: 1px solid #22314a;
+  background: linear-gradient(180deg, #1c2531, #0d1420);
+  border: 1px solid #3b4a5e;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Прорезь слота */
+.atm-receipt-slot-mouth {
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  right: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: #05080d;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .atm-receipt-slot-label {
   font-size: 11px;
-  color: #64748b;
+  color: #8496ab;
   letter-spacing: 1.5px;
   text-transform: uppercase;
+}
+
+/* Бумага чека: выезжает из прорези, печатается, остаётся торчать */
+.atm-receipt-paper {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  width: 118px;
+  margin-left: -59px;
+  padding: 8px 9px 14px;
+  border-radius: 0 0 2px 2px;
+  background: #f8fafc;
+  color: #334155;
+  font-family: 'Consolas', 'Menlo', Courier, monospace;
+  font-size: 6.5px;
+  line-height: 1.5;
+  text-align: center;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6);
+  /* Зубчатый нижний край — бумага не обрезана по прямой */
+  clip-path: polygon(
+    0 0, 100% 0, 100% calc(100% - 4px),
+    95% 100%, 90% calc(100% - 4px), 85% 100%, 80% calc(100% - 4px),
+    75% 100%, 70% calc(100% - 4px), 65% 100%, 60% calc(100% - 4px),
+    55% 100%, 50% calc(100% - 4px), 45% 100%, 40% calc(100% - 4px),
+    35% 100%, 30% calc(100% - 4px), 25% 100%, 20% calc(100% - 4px),
+    15% 100%, 10% calc(100% - 4px), 5% 100%, 0 calc(100% - 4px)
+  );
+  transform-origin: top center;
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.atm-receipt-paper-head {
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.atm-receipt-paper-line {
+  height: 3px;
+  margin: 3px 0;
+  border-radius: 1px;
+  background: #cbd5e1;
+  opacity: 0;
+  transform-origin: left center;
+}
+
+.atm-receipt-paper-line-short {
+  width: 62%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.atm-receipt-paper-line-bold {
+  height: 5px;
+  width: 84%;
+  margin: 5px auto 3px;
+  background: #94a3b8;
+}
+
+/* Печать: бумага выезжает, строки проявляются сверху вниз */
+.atm-receipt-slot.printing .atm-receipt-paper {
+  animation: atm-receipt-out 2.4s cubic-bezier(0.25, 0.8, 0.35, 1) forwards;
+}
+
+.atm-receipt-slot.printing .atm-receipt-paper-line {
+  animation: atm-receipt-line 0.35s ease-out forwards;
+}
+
+.atm-receipt-slot.printing .atm-receipt-paper-line:nth-child(2) { animation-delay: 0.18s; }
+.atm-receipt-slot.printing .atm-receipt-paper-line:nth-child(3) { animation-delay: 0.30s; }
+.atm-receipt-slot.printing .atm-receipt-paper-line:nth-child(4) { animation-delay: 0.42s; }
+.atm-receipt-slot.printing .atm-receipt-paper-line:nth-child(5) { animation-delay: 0.54s; }
+.atm-receipt-slot.printing .atm-receipt-paper-line:nth-child(6) { animation-delay: 0.66s; }
+.atm-receipt-slot.printing .atm-receipt-paper-line:nth-child(7) { animation-delay: 0.78s; }
+
+@keyframes atm-receipt-out {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  40% {
+    transform: translateY(4px);
+  }
+  75% {
+    transform: translateY(4px);
+  }
+  100% {
+    /* бумага остаётся в слоте до следующего чека */
+    transform: translateY(4px);
+    opacity: 1;
+  }
+}
+
+@keyframes atm-receipt-line {
+  from {
+    opacity: 0;
+    transform: scaleX(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
 }
 
 /* ---- Слот карты ---- */
@@ -1317,8 +1739,8 @@ body.admin-mode button.admin-only {
   margin-top: 12px;
   height: 46px;
   border-radius: 8px;
-  background: linear-gradient(180deg, #05080f 0%, #101926 60%, #1c2b44 100%);
-  border: 1px solid #2a3c5c;
+  background: linear-gradient(180deg, #000 0%, #0d1420 60%, #232f3f 100%);
+  border: 1px solid #3b4a5e;
   position: relative;
   overflow: hidden;
 }
@@ -1331,8 +1753,8 @@ body.admin-mode button.admin-only {
   height: 30px;
   transform: translateX(-50%) translateY(-60px);
   border-radius: 5px;
-  background: linear-gradient(135deg, #7dd3fc, #1d4ed8 55%, #0b3a8a);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 2px 6px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, #ffd24a, #d9a417 55%, #a97f0c);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45), 0 2px 6px rgba(0, 0, 0, 0.5);
   transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   opacity: 0;
 }
@@ -1344,7 +1766,7 @@ body.admin-mode button.admin-only {
   left: 8px;
   font-size: 8px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(16, 35, 58, 0.9);
   letter-spacing: 1px;
 }
 
@@ -1354,7 +1776,7 @@ body.admin-mode button.admin-only {
   top: 15px;
   left: 8px;
   font-size: 8px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(16, 35, 58, 0.8);
 }
 
 .atm-card-peek.inserted {
@@ -1364,7 +1786,7 @@ body.admin-mode button.admin-only {
 
 .atm-shell-foot {
   text-align: center;
-  color: #64748b;
+  color: #a3b1c2;
   font-size: 11px;
   padding: 8px 0 2px;
   letter-spacing: 1px;
@@ -1378,7 +1800,7 @@ body.admin-mode button.admin-only {
 }
 
 .receipt {
-  width: 264px;
+  width: 268px;
   background: #f8fafc;
   color: #0f172a;
   font-family: 'Consolas', 'Menlo', Courier, monospace;
@@ -1386,7 +1808,7 @@ body.admin-mode button.admin-only {
   line-height: 1.55;
   padding: 14px 12px 10px;
   border-radius: 2px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
 }
 
 .receipt-center {
@@ -1401,6 +1823,12 @@ body.admin-mode button.admin-only {
   border-bottom: 1px dotted #94a3b8;
   padding: 4px 0;
   word-break: break-word;
+}
+
+/* Ключевая строка чека (сумма операции либо доступный остаток) */
+.receipt-line-key {
+  font-weight: 700;
+  background: #fef3c7;
 }
 
 .receipt-status {
@@ -1421,25 +1849,96 @@ body.admin-mode button.admin-only {
 
 /* ---- Сообщения ---- */
 .atm-message {
-  font-size: 16px;
-  color: #e2e8f0;
-  background: #0b1220;
-  border: 1px solid #26364f;
-  border-radius: 10px;
-  padding: 18px;
-  margin: 20px 0;
+  font-size: 17px;
+  color: var(--atm-fg);
+  background: var(--atm-slot);
+  border: 1px solid var(--atm-line);
+  border-radius: 6px;
+  padding: 22px 18px;
+  margin: 24px 0;
   text-align: center;
+  line-height: 1.5;
+}
+
+/* ---- Уважение к системной настройке «меньше движения» ---- */
+@media (prefers-reduced-motion: reduce) {
+  .atm-view.atm-view-enter,
+  .atm-spinner,
+  #view-dispense:not(.hidden) .atm-note,
+  #view-dispense:not(.hidden) .atm-cash-notes,
+  .atm-receipt-slot.printing .atm-receipt-paper,
+  .atm-receipt-slot.printing .atm-receipt-paper-line {
+    animation: none;
+  }
+
+  /* Без анимации чек просто появляется в слоте */
+  .atm-receipt-slot.printing .atm-receipt-paper {
+    transform: translateY(4px);
+    opacity: 1;
+  }
+
+  .atm-receipt-slot.printing .atm-receipt-paper-line {
+    transform: none;
+    opacity: 1;
+  }
+
+  .atm-note {
+    opacity: 1;
+  }
+
+  .atm-card-peek,
+  .atm-menu-key,
+  .atm-amount-btn,
+  .key-btn,
+  .pin-dot,
+  .atm-input {
+    transition: none;
+  }
 }
 
 /* ---- Адаптивность ---- */
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   .atm-machine {
     flex-direction: column;
   }
+
   .atm-side {
     width: 100%;
   }
+
   .atm-balance-grid {
     grid-template-columns: 1fr;
+  }
+
+  .atm-keydeck {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .atm-screen {
+    padding: 14px;
+  }
+
+  .atm-menu-label {
+    font-size: 17px;
+  }
+
+  .atm-menu-row-choice .atm-menu-label {
+    font-size: 16px;
+  }
+
+  .atm-menu-key {
+    width: 46px;
+    height: 46px;
+    font-size: 17px;
+  }
+
+  .atm-question {
+    font-size: 18px;
+  }
+
+  .atm-confirm-line-total .atm-confirm-val {
+    font-size: 24px;
   }
 }

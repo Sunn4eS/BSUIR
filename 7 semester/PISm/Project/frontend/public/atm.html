@@ -38,18 +38,12 @@
               <span class="atm-step-badge">1</span>
               <span>Вставьте карту</span>
             </div>
-            <p class="atm-hint">Вставьте, пожалуйста, карту (введите её номер)</p>
+            <p class="atm-hint">Вставьте, пожалуйста, карту — введите её номер вручную.</p>
             <div class="atm-field">
               <label for="atm-card-number">Номер карты (16 цифр)</label>
               <input type="text" id="atm-card-number" class="atm-input mono" inputmode="numeric"
                      maxlength="16" placeholder="4916123456789010" autocomplete="off">
-            </div>
-            <div class="atm-field">
-              <label for="atm-card-quick">Быстрый выбор активной карты (для проверки преподавателем)</label>
-              <select id="atm-card-quick" class="atm-input">
-                <option value="">— Выберите карту из списка —</option>
-              </select>
-              <p class="atm-field-note">ПИН-код всех карт по умолчанию: <strong>1234</strong> (указан в выпадающем списке и в админке банка)</p>
+              <p class="atm-field-note">Наберите номер на экране или на клавиатуре ПК.</p>
             </div>
             <button type="button" class="btn btn-primary atm-btn" id="btn-insert-card">💳 Вставить карту</button>
           </div>
@@ -86,26 +80,32 @@
                 <span class="mono" id="menu-card-number">—</span>
                 <span id="menu-client-name">—</span>
               </div>
-              <div class="atm-balance-grid">
-                <div class="atm-balance-item">
-                  <span class="atm-balance-label">Лимит кредита</span>
-                  <span class="atm-balance-value" id="menu-limit">—</span>
+            </div>
+
+            <!-- Пункты меню — текстовые лейблы; физические клавиши справа на корпусе -->
+            <div class="atm-menu-deck">
+              <div class="atm-menu">
+                <div class="atm-menu-row">
+                  <span class="atm-menu-label">Снять деньги<span class="atm-menu-sub">с кредитного счёта</span></span>
+                  <button type="button" class="atm-menu-key" data-menu="withdraw" aria-label="Снять деньги">1</button>
                 </div>
-                <div class="atm-balance-item">
-                  <span class="atm-balance-label">Задолженность (счёт 2400)</span>
-                  <span class="atm-balance-value" id="menu-debt">—</span>
+                <div class="atm-menu-row">
+                  <span class="atm-menu-label">Оплатить мобильную связь<span class="atm-menu-sub">МТС · А1 · Life:)</span></span>
+                  <button type="button" class="atm-menu-key" data-menu="payment" aria-label="Оплатить мобильную связь">2</button>
                 </div>
-                <div class="atm-balance-item atm-balance-avail">
-                  <span class="atm-balance-label">Доступный остаток</span>
-                  <span class="atm-balance-value" id="menu-available">—</span>
+                <div class="atm-menu-row">
+                  <span class="atm-menu-label">Забрать карту<span class="atm-menu-sub">выход из банкомата</span></span>
+                  <button type="button" class="atm-menu-key" id="btn-eject-card" aria-label="Забрать карту">3</button>
                 </div>
               </div>
+              <div class="atm-keydeck" aria-hidden="true"><span>Функциональные клавиши</span></div>
             </div>
-            <div class="atm-menu-buttons">
-              <button type="button" class="atm-menu-btn" data-menu="withdraw"><b>1.</b> Снять деньги с кредитного счёта</button>
-              <button type="button" class="atm-menu-btn" data-menu="balance"><b>2.</b> Просмотреть остаток кредитного счёта</button>
-              <button type="button" class="atm-menu-btn" data-menu="payment"><b>3.</b> Оплатить мобильную связь</button>
-              <button type="button" class="atm-menu-btn" id="btn-eject-card"><b>4.</b> Забрать карту (Выход)</button>
+
+            <!-- Просмотр остатка вынесен из меню: отдельная физическая клавиша -->
+            <div class="atm-menu-deck atm-menu-deck-extra">
+              <span class="atm-menu-label">Просмотр остатка<span class="atm-menu-sub">лимит · задолженность · доступно</span></span>
+              <button type="button" class="atm-menu-key atm-menu-key-wide" data-menu="balance"
+                      aria-label="Просмотр остатка по счёту">4</button>
             </div>
           </div>
 
@@ -131,16 +131,25 @@
             <button type="button" class="btn btn-secondary atm-btn" id="btn-withdraw-back">← Назад в меню</button>
           </div>
 
-          <!-- Шаг 5a. Вопрос: распечатать чек? -->
+          <!-- Шаг 5a. Вопрос: распечатать чек после снятия? -->
           <div class="atm-view" id="view-withdraw-receipt">
             <div class="atm-view-head">
               <span class="atm-step-badge">2</span>
               <span>Чек</span>
             </div>
-            <p class="atm-hint">Распечатать чек?</p>
-            <div class="atm-yesno">
-              <button type="button" class="atm-menu-btn" id="btn-receipt-yes">Да</button>
-              <button type="button" class="atm-menu-btn" id="btn-receipt-no">Нет</button>
+            <p class="atm-hint atm-question">Распечатать чек?</p>
+            <div class="atm-menu-deck">
+              <div class="atm-menu">
+                <div class="atm-menu-row atm-menu-row-choice">
+                  <span class="atm-menu-label atm-menu-label-yes">Да<span class="atm-menu-sub">выдать чек</span></span>
+                  <button type="button" class="atm-menu-key" id="btn-receipt-yes" aria-label="Да, распечатать чек">1</button>
+                </div>
+                <div class="atm-menu-row atm-menu-row-choice">
+                  <span class="atm-menu-label">Нет<span class="atm-menu-sub">без чека</span></span>
+                  <button type="button" class="atm-menu-key" id="btn-receipt-no" aria-label="Нет, без чека">2</button>
+                </div>
+              </div>
+              <div class="atm-keydeck" aria-hidden="true"><span>Да · Нет</span></div>
             </div>
           </div>
 
@@ -164,7 +173,7 @@
             <button type="button" class="btn btn-primary atm-btn" id="btn-take-cash">Забрать наличные</button>
           </div>
 
-          <!-- Шаг 6. Оплата мобильной связи -->
+          <!-- Шаг 6. Оплата мобильной связи: ввод данных -->
           <div class="atm-view" id="view-payment">
             <div class="atm-view-head">
               <span class="atm-step-badge">3</span>
@@ -194,6 +203,42 @@
             <button type="button" class="btn btn-secondary atm-btn" id="btn-payment-back">← Назад в меню</button>
           </div>
 
+          <!-- Шаг 6a. Подтверждение оплаты перед отправкой на сервер -->
+          <div class="atm-view" id="view-payment-confirm">
+            <div class="atm-view-head">
+              <span class="atm-step-badge">✔</span>
+              <span>Подтвердите оплату</span>
+            </div>
+            <p class="atm-hint atm-question">Проверьте данные операции. Списание со счёта 2400 произойдёт после подтверждения.</p>
+            <div class="atm-confirm">
+              <div class="atm-confirm-line">
+                <span class="atm-confirm-key">Оператор связи</span>
+                <span class="atm-confirm-val" id="pc-operator">—</span>
+              </div>
+              <div class="atm-confirm-line">
+                <span class="atm-confirm-key">Номер телефона</span>
+                <span class="atm-confirm-val mono" id="pc-phone">—</span>
+              </div>
+              <div class="atm-confirm-line atm-confirm-line-total">
+                <span class="atm-confirm-key">К оплате</span>
+                <span class="atm-confirm-val" id="pc-amount">—</span>
+              </div>
+            </div>
+            <div class="atm-menu-deck">
+              <div class="atm-menu">
+                <div class="atm-menu-row atm-menu-row-choice">
+                  <span class="atm-menu-label atm-menu-label-yes">Подтвердить<span class="atm-menu-sub">Enter — выполнить</span></span>
+                  <button type="button" class="atm-menu-key" id="btn-payment-confirm" aria-label="Подтвердить оплату">1</button>
+                </div>
+                <div class="atm-menu-row atm-menu-row-choice">
+                  <span class="atm-menu-label">Исправить<span class="atm-menu-sub">Esc — вернуться к вводу</span></span>
+                  <button type="button" class="atm-menu-key" id="btn-payment-correct" aria-label="Исправить данные">2</button>
+                </div>
+              </div>
+              <div class="atm-keydeck" aria-hidden="true"><span>Подтв. · Испр.</span></div>
+            </div>
+          </div>
+
           <!-- Шаг 7. Чек -->
           <div class="atm-view" id="view-receipt">
             <div class="atm-view-head">
@@ -209,8 +254,8 @@
                 <div class="receipt-line">Операция №: <span id="r-opno" class="mono"></span></div>
                 <div class="receipt-line">Код авторизации: <span id="r-auth" class="mono"></span></div>
                 <div class="receipt-line">Тип операции: <span id="r-type"></span></div>
-                <div class="receipt-line">Сумма операции: <span id="r-amount" class="mono"></span></div>
-                <div class="receipt-line">Доступный остаток: <span id="r-avail" class="mono"></span></div>
+                <div class="receipt-line" id="r-amount-line">Сумма операции: <span id="r-amount" class="mono"></span></div>
+                <div class="receipt-line" id="r-avail-line">Доступный остаток: <span id="r-avail" class="mono"></span></div>
                 <div class="receipt-line receipt-status">Статус: <span id="r-status"></span></div>
                 <div class="receipt-sep"></div>
                 <div class="receipt-center receipt-foot">Спасибо за пользование<br>услугами банка!</div>
@@ -219,10 +264,32 @@
             <button type="button" class="btn btn-primary atm-btn" id="btn-take-receipt">Забрать чек</button>
           </div>
 
-          <!-- Экран остатка (без печати чека) -->
-          <div class="atm-view" id="view-balance">
+          <!-- Шаг 8. Вопрос перед запросом остатка: печатать чек? -->
+          <div class="atm-view" id="view-balance-receipt">
             <div class="atm-view-head">
               <span class="atm-step-badge">2</span>
+              <span>Остаток счёта</span>
+            </div>
+            <p class="atm-hint atm-question">Распечатать чек о запросе остатка?</p>
+            <div class="atm-menu-deck">
+              <div class="atm-menu">
+                <div class="atm-menu-row atm-menu-row-choice">
+                  <span class="atm-menu-label atm-menu-label-yes">Да<span class="atm-menu-sub">показать остаток и напечатать чек</span></span>
+                  <button type="button" class="atm-menu-key" id="btn-balreceipt-yes" aria-label="Да, распечатать чек">1</button>
+                </div>
+                <div class="atm-menu-row atm-menu-row-choice">
+                  <span class="atm-menu-label">Нет<span class="atm-menu-sub">только показать остаток</span></span>
+                  <button type="button" class="atm-menu-key" id="btn-balreceipt-no" aria-label="Нет, без чека">2</button>
+                </div>
+              </div>
+              <div class="atm-keydeck" aria-hidden="true"><span>Да · Нет</span></div>
+            </div>
+          </div>
+
+          <!-- Шаг 8a. Экран остатка -->
+          <div class="atm-view" id="view-balance">
+            <div class="atm-view-head">
+              <span class="atm-step-badge">3</span>
               <span>Остаток кредитного счёта</span>
             </div>
             <div class="atm-card-info">
@@ -245,6 +312,7 @@
                 </div>
               </div>
               <p class="atm-field-note" id="bal-session">—</p>
+              <p class="atm-receipt-note hidden" id="bal-receipt-note">—</p>
             </div>
             <button type="button" class="btn btn-primary atm-btn" id="btn-balance-menu">← В главное меню</button>
           </div>
@@ -261,6 +329,11 @@
 
         </div>
 
+        <!-- Подсказка по клавиатуре ПК: работает на всех экранах -->
+        <div class="atm-keyboard-hint">
+          Клавиатура ПК: <b>0–9</b> цифры · <b>⌫</b> удалить · <b>Enter</b> OK · <b>Esc</b> назад · <b>.</b> копейки
+        </div>
+
         <!-- Слот приёма карты -->
         <div class="atm-card-slot" title="Слот приёма карты">
           <div class="atm-card-peek" id="atm-card-peek"></div>
@@ -271,7 +344,18 @@
       <!-- ================= Боковая панель: клавиатура ================= -->
       <aside class="atm-side">
         <div class="atm-keypad" id="atm-keypad" aria-label="Цифровая клавиатура банкомата"></div>
-        <div class="atm-receipt-slot">
+        <!-- Слот выдачи чека с анимацией печати -->
+        <div class="atm-receipt-slot" id="atm-receipt-slot" title="Слот выдачи чека">
+          <div class="atm-receipt-paper" id="atm-receipt-paper">
+            <div class="atm-receipt-paper-head">ЗАО «Банк Дабрабыт»</div>
+            <div class="atm-receipt-paper-line"></div>
+            <div class="atm-receipt-paper-line atm-receipt-paper-line-short"></div>
+            <div class="atm-receipt-paper-line"></div>
+            <div class="atm-receipt-paper-line atm-receipt-paper-line-short"></div>
+            <div class="atm-receipt-paper-line atm-receipt-paper-line-bold"></div>
+            <div class="atm-receipt-paper-line atm-receipt-paper-line-short"></div>
+          </div>
+          <div class="atm-receipt-slot-mouth"></div>
           <span class="atm-receipt-slot-label">Слот выдачи чека</span>
         </div>
       </aside>
