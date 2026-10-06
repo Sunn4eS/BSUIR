@@ -386,8 +386,148 @@ async function deleteContract(req, res, next) {
   }
 }
 
+/**
+ * POST /api/contracts/:id/close-early — досрочное закрытие отзывного вклада.
+ *
+ * Клиент забирает тело вклада до истечения срока договора. Доступно только для
+ * договоров со статусом ACTIVE и программы типа REVOCABLE («Основательный»):
+ * безотзывный вклад (IRREVOCABLE) досрочно не расторгается — 400.
+ *
+ * Проводки (в одной транзакции, как при погашении по сроку):
+ *   1. Дт 7327 (СФРБ) / Кт депозитный счёт — возврат суммы вклада из фонда;
+ *   2. Дт депозитный счёт / Кт 1010 (Касса) — выдача наличных клиенту;
+ *   3. Дт 1010 (Касса) — поступление вклада в кассу для выдачи клиенту
+ *      (транзитная строка, из-за неё касса не уходит в минус — как при
+ *      погашении депозита по сроку).
+ * Проценты за текущий неполный месяц при досрочном расторжении не начисляются:
+ * возвращается только тело вклада.
+ *
+ * Затем: deposit_contracts -> COMPLETED, оба счета договора -> CLOSED.
+ */
+async function closeContractEarly(req, res, next) {
+  const db = await pool.connect();
+  try {
+    await db.query('BEGIN');
+
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      await db.query('ROLLBACK');
+      return res.status(400).json({ message: 'Некорректный идентификатор договора' });
+    }
+
+    const contractRes = await db.query(
+      `SELECT dc.id, dc.contract_number, dc.status, dc.amount, dc.currency,
+              dc.deposit_account_id, dc.interest_account_id, dp.deposit_type
+         FROM deposit_contracts dc
+         JOIN deposit_programs dp ON dp.id = dc.program_id
+        WHERE dc.id = $1`,
+      [id]
+    );
+    if (contractRes.rows.length === 0) {
+      await db.query('ROLLBACK');
+      return res.status(404).json({ message: 'Договор не найден' });
+    }
+
+    const contract = contractRes.rows[0];
+    if (contract.status !== 'ACTIVE') {
+      await db.query('ROLLBACK');
+      return res.status(400).json({ message: 'Договор уже закрыт' });
+    }
+    if (contract.deposit_type !== 'REVOCABLE') {
+      await db.query('ROLLBACK');
+      return res.status(400).json({ message: 'Досрочное расторжение доступно только для отзывных вкладов' });
+    }
+    if (!contract.deposit_account_id) {
+      await db.query('ROLLBACK');
+      return res.status(400).json({ message: 'У договора не открыт депозитный счёт' });
+    }
+
+    // Системные счета и банковская дата (как в closeMonth)
+    const cash = await ledger.getSystemAccount(db, '1010');
+    const sfrb = await ledger.getSystemAccount(db, '7327');
+    const bankDateRes = await db.query("SELECT value FROM bank_settings WHERE key = 'bank_date'");
+    const entryDate = bankDateRes.rows[0] && bankDateRes.rows[0].value
+      ? bankDateRes.rows[0].value
+      : new Date().toISOString().slice(0, 10);
+
+    const amount = Number(contract.amount);
+    const contractCurrency = contract.currency || ledger.currency.BASE_CURRENCY;
+    const depositAccountId = Number(contract.deposit_account_id);
+
+    // 1. Возврат суммы вклада из СФРБ: Дт 7327 / Кт депозитный счёт
+    const returnEntry = await ledger.postEntry(db, {
+      entryDate,
+      contractId: id,
+      currency: contractCurrency,
+      kind: 'CONTRACT_CLOSE_EARLY_RETURN',
+      comment: `Досрочное расторжение договора ${contract.contract_number}: возврат суммы вклада из СФРБ`,
+      lines: [
+        { accountId: sfrb.id, side: 'D', amount },
+        { accountId: depositAccountId, side: 'C', amount },
+      ],
+    });
+
+    // 2. Выдача наличных клиенту: Дт депозитный счёт / Кт 1010 (Касса)
+    const payoutEntry = await ledger.postEntry(db, {
+      entryDate,
+      contractId: id,
+      currency: contractCurrency,
+      kind: 'CONTRACT_CLOSE_EARLY_PAYOUT',
+      comment: `Выдача суммы вклада наличными по договору ${contract.contract_number}`,
+      lines: [
+        { accountId: depositAccountId, side: 'D', amount },
+        { accountId: cash.id, side: 'C', amount },
+      ],
+    });
+
+    // 3. Поступление вклада в кассу для выдачи клиенту: Дт 1010
+    const cashInEntry = await ledger.postEntry(db, {
+      entryDate,
+      contractId: id,
+      currency: contractCurrency,
+      kind: 'CONTRACT_CLOSE_EARLY_CASH_IN',
+      comment: `Поступление вклада ${contract.contract_number} в кассу для выдачи клиенту`,
+      lines: [
+        { accountId: cash.id, side: 'D', amount },
+      ],
+    });
+
+    // 4. Договор -> COMPLETED, счета договора -> CLOSED
+    await db.query(
+      `UPDATE deposit_contracts SET status = 'COMPLETED' WHERE id = $1`,
+      [id]
+    );
+    const accountIds = [contract.deposit_account_id, contract.interest_account_id]
+      .filter((value) => value !== null && value !== undefined)
+      .map(Number);
+    if (accountIds.length > 0) {
+      await db.query(
+        `UPDATE bank_accounts SET status = 'CLOSED' WHERE id = ANY($1::int[])`,
+        [accountIds]
+      );
+    }
+
+    const log = await decorateLogWithAccountNumbers(db, [returnEntry, payoutEntry, cashInEntry]);
+
+    await db.query('COMMIT');
+
+    const closedContract = await loadContract(db, id);
+    return res.json({
+      message: 'Договор досрочно закрыт',
+      contract: closedContract,
+      log,
+    });
+  } catch (err) {
+    await db.query('ROLLBACK');
+    return handleDbError(err, res, next);
+  } finally {
+    db.release();
+  }
+}
+
 module.exports = {
   listContracts,
   createContract,
+  closeContractEarly,
   deleteContract,
 };

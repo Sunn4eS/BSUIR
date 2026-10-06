@@ -207,50 +207,38 @@ async function createCreditContract(req, res, next) {
     //     Ссылка на активный кредитный счёт 2400 (account_id).
     const card = await issueCard(db, contractId, creditAccountId);
 
-    // 6. Проводки выдачи кредита наличными (строго по матрице проводок ЛР3)
-    // 6.1 Выделение кредита банком:
-    //     Дт 7327 (СФРБ) + A; Дт 2400 (кредитный счёт клиента) + A
-    const allocationEntry = await ledger.postEntry(db, {
+    // 6. Проводки выдачи кредита (классическая двойная запись)
+    // 6.1 Выдача кредита клиенту из кассы:
+    //     Дт 2400 (долг клиента вырос) / Кт 1010 (деньги ушли из кассы)
+    const issueEntry = await ledger.postEntry(db, {
       entryDate: b.start_date,
       creditContractId: contractId,
       currency: b.currency,
-      kind: 'CREDIT_ISSUE_ALLOCATION',
-      comment: `Выделение кредита банком по договору ${b.contract_number} (Дт 7327 СФРБ, Дт 2400)`,
-      lines: [
-        { accountId: sfrb.id, side: 'D', amount },
-        { accountId: creditAccountId, side: 'D', amount },
-      ],
-    });
-
-    // 6.2 Перевод кредита в кассу:
-    //     Дт 1010 (Касса) + A; Кт 2400 (кредитный счёт клиента) + A
-    const toCashEntry = await ledger.postEntry(db, {
-      entryDate: b.start_date,
-      creditContractId: contractId,
-      currency: b.currency,
-      kind: 'CREDIT_ISSUE_TO_CASH',
-      comment: `Перевод кредита в кассу по договору ${b.contract_number}`,
-      lines: [
-        { accountId: cash.id, side: 'D', amount },
-        { accountId: creditAccountId, side: 'C', amount },
-      ],
-    });
-
-    // 6.3 Получение клиентом через кассу: Кт 1010 (Касса) + A
-    const cashOutEntry = await ledger.postEntry(db, {
-      entryDate: b.start_date,
-      creditContractId: contractId,
-      currency: b.currency,
-      kind: 'CREDIT_CASH_OUT',
+      kind: 'CREDIT_ISSUE',
       comment: `Выдача кредита клиенту через кассу по договору ${b.contract_number}`,
       lines: [
+        { accountId: creditAccountId, side: 'D', amount },
         { accountId: cash.id, side: 'C', amount },
+      ],
+    });
+
+    // 6.2 Компенсация кассы из СФРБ (фонд финансирует выдачу):
+    //     Дт 1010 (касса пополнилась) / Кт 7327 (ресурс фонда сформирован)
+    const fundEntry = await ledger.postEntry(db, {
+      entryDate: b.start_date,
+      creditContractId: contractId,
+      currency: b.currency,
+      kind: 'CREDIT_FUNDING',
+      comment: `Финансирование кредита из фонда развития банка (СФРБ), договор ${b.contract_number}`,
+      lines: [
+        { accountId: cash.id, side: 'D', amount },
+        { accountId: sfrb.id, side: 'C', amount },
       ],
     });
 
     const log = await ledger.decorateEntriesWithAccounts(
       db,
-      [allocationEntry, toCashEntry, cashOutEntry]
+      [issueEntry, fundEntry]
     );
 
     await db.query('COMMIT');

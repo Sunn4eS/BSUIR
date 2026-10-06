@@ -62,6 +62,10 @@
     createContract(body) {
       return request('/contracts', { method: 'POST', body: JSON.stringify(body) });
     },
+    /** Досрочное закрытие отзывного депозита: возвращает { contract, log } */
+    closeDepositEarly(id) {
+      return request('/contracts/' + id + '/close-early', { method: 'POST' });
+    },
     /** Удаление депозитного договора вместе со счетами и проводками (Admin-режим) */
     deleteContract(id) {
       return request('/contracts/' + id, { method: 'DELETE' });

@@ -290,7 +290,11 @@
             <span class="muted">процентный</span>
           </div>
         </td>
-        <td class="col-actions admin-only">
+        <td class="col-actions">
+          ${contract.status === 'ACTIVE' && contract.deposit_type === 'REVOCABLE'
+            ? `<button type="button" class="btn btn-small btn-danger"
+                       data-action="close-early" data-id="${contract.id}">Досрочно забрать</button>`
+            : '<span class="muted">—</span>'}
           <button type="button" class="btn btn-small btn-danger admin-only"
                   data-action="delete-contract" data-id="${contract.id}">Удалить</button>
         </td>
@@ -541,6 +545,35 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Досрочное закрытие отзывного вклада
+  // ---------------------------------------------------------------------------
+  async function closeDepositEarly(id) {
+    const contract = state.contracts.find((item) => Number(item.id) === Number(id));
+    if (!contract) return;
+
+    const confirmed = window.confirm(
+      'Вы уверены, что хотите досрочно закрыть этот отзывный вклад? Проценты за текущий месяц начислены не будут.'
+    );
+    if (!confirmed) return;
+
+    try {
+      const result = await api.closeDepositEarly(contract.id);
+
+      showToast(
+        `Договор ${result.contract.contract_number} досрочно закрыт. Сумма вклада ${formatMoneyWithCurrency(result.contract.amount, result.contract.currency)} выдана наличными`,
+        'success'
+      );
+
+      await Promise.all([loadContracts(), loadAccounts()]);
+
+      renderLedgerEarlyClose(result.log, result.contract);
+      elements.ledgerModal.classList.remove('hidden');
+    } catch (err) {
+      handleRequestError(err);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Рендер журнала проводок
   // ---------------------------------------------------------------------------
   function renderEntryLines(entry) {
@@ -581,6 +614,18 @@
 
   function renderLedgerOpening(entries, contract) {
     elements.ledgerModalTitle.textContent = 'Проводки заключения договора';
+    const contractBlock = `
+      <div class="log-contract-header">
+        Договор <span class="mono">${escapeHtml(contract.contract_number)}</span> ·
+        ${escapeHtml(contract.client_name)} · ${escapeHtml(formatMoneyWithCurrency(contract.amount, contract.currency))}
+      </div>
+    `;
+    elements.ledgerModalContent.innerHTML =
+      contractBlock + entries.map(renderEntryLines).join('');
+  }
+
+  function renderLedgerEarlyClose(entries, contract) {
+    elements.ledgerModalTitle.textContent = 'Проводки досрочного закрытия (отзывный вклад)';
     const contractBlock = `
       <div class="log-contract-header">
         Договор <span class="mono">${escapeHtml(contract.contract_number)}</span> ·
@@ -770,6 +815,11 @@
     elements.contractForm.addEventListener('submit', submitContract);
 
     elements.contractsTbody.addEventListener('click', (event) => {
+      const closeBtn = event.target.closest('[data-action="close-early"]');
+      if (closeBtn) {
+        closeDepositEarly(Number(closeBtn.dataset.id));
+        return;
+      }
       const button = event.target.closest('[data-action="delete-contract"]');
       if (!button) return;
       openContractDeleteModal(Number(button.dataset.id));

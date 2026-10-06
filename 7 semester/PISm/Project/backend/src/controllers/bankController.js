@@ -292,7 +292,7 @@ async function closeMonth(req, res, next) {
       };
 
       // --- 1. Начисление процентов:
-      //     Кт 7327 (СФРБ) + проценты; Кт 2470 (процентный счёт клиента) + проценты
+      //     Дт 2470 (долг клиента по % вырос), Кт 7327 (доход банка)
       contractLog.entries.push(await ledger.postEntry(db, {
         entryDate: bankDate,
         creditContractId: contractId,
@@ -300,76 +300,56 @@ async function closeMonth(req, res, next) {
         kind: 'CREDIT_INTEREST_ACCRUAL',
         comment: `Начисление процентов за месяц ${bankDate} по кредитному договору ${credit.contract_number}`,
         lines: [
+          { accountId: credit.interest_account_id, side: 'D', amount: interest },
           { accountId: sfrb.id, side: 'C', amount: interest },
-          { accountId: credit.interest_account_id, side: 'C', amount: interest },
         ],
       }));
 
       // --- 2. Погашение процентов клиентом:
-      //     внесение в кассу: Дт 1010 + проценты;
-      //     перевод % из кассы: Кт 1010 + проценты; Дт 2470 + проценты
-      contractLog.entries.push(await ledger.postEntry(db, {
-        entryDate: bankDate,
-        creditContractId: contractId,
-        currency: creditCurrency,
-        kind: 'CREDIT_INTEREST_CASH_IN',
-        comment: `Внесение процентов в кассу (кредитный договор ${credit.contract_number})`,
-        lines: [
-          { accountId: cash.id, side: 'D', amount: interest },
-        ],
-      }));
+      //     Дт 1010 (клиент принес наличные в кассу), Кт 2470 (долг по % погашен)
       contractLog.entries.push(await ledger.postEntry(db, {
         entryDate: bankDate,
         creditContractId: contractId,
         currency: creditCurrency,
         kind: 'CREDIT_INTEREST_PAYMENT',
-        comment: `Погашение процентов из кассы: Кт 1010, Дт 2470 (кредитный договор ${credit.contract_number})`,
+        comment: `Погашение процентов наличными (кредитный договор ${credit.contract_number})`,
         lines: [
-          { accountId: cash.id, side: 'C', amount: interest },
-          { accountId: credit.interest_account_id, side: 'D', amount: interest },
+          { accountId: cash.id, side: 'D', amount: interest },
+          { accountId: credit.interest_account_id, side: 'C', amount: interest },
         ],
       }));
 
-      // --- 3. Погашение части/всего основного долга (по графику месяца):
-      //     внесение в кассу: Дт 1010 + сумма погашения;
-      //     погашение долга из кассы: Кт 1010 + сумма; Дт 2400 + сумма
+      // --- 3. Погашение основного долга (по графику месяца):
+      //     Дт 1010 (клиент принес наличные в кассу), Кт 2400 (основной долг погашен)
       if (principal > 0) {
         contractLog.entries.push(await ledger.postEntry(db, {
           entryDate: bankDate,
           creditContractId: contractId,
-        currency: creditCurrency,
-          kind: 'CREDIT_PRINCIPAL_CASH_IN',
-          comment: `Внесение денег в кассу в счёт погашения основного долга (кредитный договор ${credit.contract_number})`,
+          currency: creditCurrency,
+          kind: 'CREDIT_PRINCIPAL_PAYMENT',
+          comment: `Погашение основного долга наличными (кредитный договор ${credit.contract_number})`,
           lines: [
             { accountId: cash.id, side: 'D', amount: principal },
-          ],
-        }));
-        contractLog.entries.push(await ledger.postEntry(db, {
-          entryDate: bankDate,
-          creditContractId: contractId,
-        currency: creditCurrency,
-          kind: 'CREDIT_PRINCIPAL_PAYMENT',
-          comment: `Погашение основного долга из кассы: Кт 1010, Дт 2400 (кредитный договор ${credit.contract_number})`,
-          lines: [
-            { accountId: cash.id, side: 'C', amount: principal },
-            { accountId: credit.credit_account_id, side: 'D', amount: principal },
+            { accountId: credit.credit_account_id, side: 'C', amount: principal },
           ],
         }));
       }
 
       // --- 4. Окончание срока договора (последний месяц по графику):
-      //     Кт 7327 (СФРБ) + сумма кредита; Кт 2400 + сумма кредита.
+      //     Дт 7327 (СФРБ) + сумма кредита; Кт 1010 (Касса) + сумма кредита —
+      //     тело кредита возвращается из кассы в фонд (кредитный счёт 2400
+      //     к этому моменту погашен графиком полностью).
       //     Договор -> CLOSED, счета закрываются.
       if (lastMonth) {
         contractLog.entries.push(await ledger.postEntry(db, {
           entryDate: bankDate,
           creditContractId: contractId,
-        currency: creditCurrency,
+          currency: creditCurrency,
           kind: 'CREDIT_COMPLETION',
-          comment: `Окончание кредита ${credit.contract_number}: Кт 7327 СФРБ, Кт 2400`,
+          comment: `Окончание кредита ${credit.contract_number}: возврат тела кредита в фонд (Дт 7327 СФРБ, Кт 1010 Касса)`,
           lines: [
-            { accountId: sfrb.id, side: 'C', amount },
-            { accountId: credit.credit_account_id, side: 'C', amount },
+            { accountId: sfrb.id, side: 'D', amount },
+            { accountId: cash.id, side: 'C', amount },
           ],
         }));
 
