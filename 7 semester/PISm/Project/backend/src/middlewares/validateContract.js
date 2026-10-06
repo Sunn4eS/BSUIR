@@ -7,6 +7,7 @@
  */
 
 const pool = require('../config/db');
+const { ALLOWED_CURRENCIES } = require('../config/currency');
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const AMOUNT_REGEX = /^\d+(\.\d{1,2})?$/;
@@ -79,8 +80,8 @@ module.exports = async function validateContract(req, res, next) {
     }
   }
 
-  if (data.currency !== 'BYN') {
-    errors.currency = 'Валюта договора должна быть BYN';
+  if (!ALLOWED_CURRENCIES.includes(data.currency)) {
+    errors.currency = `Валюта договора должна быть одной из: ${ALLOWED_CURRENCIES.join(', ')}`;
   }
 
   if (Object.keys(errors).length > 0) {

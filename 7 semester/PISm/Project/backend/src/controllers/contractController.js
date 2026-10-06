@@ -26,8 +26,10 @@ const LIST_CONTRACTS_SQL = `
     dp.interest_payment,
     da.account_number AS deposit_account_number,
     da.status AS deposit_account_status,
+    da.currency AS deposit_account_currency,
     ia.account_number AS interest_account_number,
-    ia.status AS interest_account_status
+    ia.status AS interest_account_status,
+    ia.currency AS interest_account_currency
   FROM deposit_contracts dc
   JOIN clients c           ON c.id = dc.client_id
   JOIN deposit_programs dp ON dp.id = dc.program_id
@@ -55,8 +57,10 @@ function mapContract(row) {
     accrued_interest: Number(row.accrued_interest),
     deposit_account_number: row.deposit_account_number,
     deposit_account_status: row.deposit_account_status,
+    deposit_account_currency: row.deposit_account_currency || row.currency,
     interest_account_number: row.interest_account_number,
     interest_account_status: row.interest_account_status,
+    interest_account_currency: row.interest_account_currency || row.currency,
   };
 }
 
@@ -65,6 +69,7 @@ function mapAccount(row) {
     id: row.id,
     account_number: row.account_number,
     name: row.name,
+    currency: row.currency || ledger.currency.BASE_CURRENCY,
     status: row.status,
     holder_type: row.holder_type,
     client_id: row.client_id,
@@ -154,29 +159,31 @@ async function createContract(req, res, next) {
     );
     const contractId = Number(contractRes.rows[0].id);
 
-    // 5. Счета клиента
+    // 5. Счета клиента — в валюте договора
     const clientName = `${b.client_last_name} ${b.client_first_name} ${b.client_middle_name}`;
 
     const depositAccRes = await db.query(
       `INSERT INTO bank_accounts
-         (account_number, chart_account_id, holder_type, client_id, contract_id, name, status)
-       VALUES ($1, (SELECT id FROM chart_of_accounts WHERE code = $2), 'CLIENT', $3, $4, $5, 'OPEN')
+         (account_number, chart_account_id, holder_type, client_id, contract_id, name, currency, status)
+       VALUES ($1, (SELECT id FROM chart_of_accounts WHERE code = $2), 'CLIENT', $3, $4, $5, $6, 'OPEN')
        RETURNING id`,
       [
         depositAccountNumber, depositCode, b.client_id, contractId,
         `Депозитный (текущий) счёт: ${clientName}, договор ${b.contract_number}`,
+        b.currency,
       ]
     );
     const depositAccountId = Number(depositAccRes.rows[0].id);
 
     const interestAccRes = await db.query(
       `INSERT INTO bank_accounts
-         (account_number, chart_account_id, holder_type, client_id, contract_id, name, status)
-       VALUES ($1, (SELECT id FROM chart_of_accounts WHERE code = '3474'), 'CLIENT', $2, $3, $4, 'OPEN')
+         (account_number, chart_account_id, holder_type, client_id, contract_id, name, currency, status)
+       VALUES ($1, (SELECT id FROM chart_of_accounts WHERE code = '3474'), 'CLIENT', $2, $3, $4, $5, 'OPEN')
        RETURNING id`,
       [
         interestAccountNumber, b.client_id, contractId,
         `Процентный счёт по договору ${b.contract_number}`,
+        b.currency,
       ]
     );
     const interestAccountId = Number(interestAccRes.rows[0].id);
@@ -186,8 +193,11 @@ async function createContract(req, res, next) {
       [depositAccountId, interestAccountId, contractId]
     );
 
-    // 6. Проводки заключения договора (пример: сумма 1000 BYN)
+    // 6. Проводки заключения договора.
+    // Сумма в валюте договора; postEntry сам приводит каждую сторону к родной
+    // валюте счёта (клиентские — валюта договора, системные — BYN по курсу).
     const amount = Number(b.amount);
+    const contractCurrency = b.currency;
 
     // 6.1 Внесение денег в кассу: Дебет 1010 (Касса) + A
     const payInEntry = await ledger.postEntry(db, {
@@ -195,6 +205,7 @@ async function createContract(req, res, next) {
       contractId,
       kind: 'CONTRACT_OPEN_PAY_IN',
       comment: `Внесение денег в кассу по договору ${b.contract_number}`,
+      currency: contractCurrency,
       lines: [{ accountId: cash.id, side: 'D', amount }],
     });
 
@@ -205,6 +216,7 @@ async function createContract(req, res, next) {
       contractId,
       kind: 'CONTRACT_OPEN_TRANSFER',
       comment: `Перевод денег из кассы на текущий счёт по договору ${b.contract_number}`,
+      currency: contractCurrency,
       lines: [
         { accountId: cash.id, side: 'C', amount },
         { accountId: depositAccountId, side: 'C', amount },
@@ -218,6 +230,7 @@ async function createContract(req, res, next) {
       contractId,
       kind: 'CONTRACT_OPEN_SFRB',
       comment: `Использование денег банком (перечисление в СФРБ) по договору ${b.contract_number}`,
+      currency: contractCurrency,
       lines: [
         { accountId: depositAccountId, side: 'D', amount },
         { accountId: sfrb.id, side: 'C', amount },
@@ -230,7 +243,8 @@ async function createContract(req, res, next) {
 
     const contract = await loadContract(db, contractId);
     const accountsRes = await db.query(
-      'SELECT id, account_number, name, status, holder_type, client_id, contract_id FROM bank_accounts WHERE id = ANY($1::int[])',
+      `SELECT id, account_number, name, currency, status, holder_type, client_id, contract_id
+         FROM bank_accounts WHERE id = ANY($1::int[])`,
       [[depositAccountId, interestAccountId]]
     );
 
@@ -248,7 +262,132 @@ async function createContract(req, res, next) {
   }
 }
 
+/**
+ * DELETE /api/contracts/:id — удаление депозитного договора (Admin-режим).
+ *
+ * Порядок удаления обусловлен внешними ключами и выбран так, чтобы ничего не
+ * потерять и не нарушить ссылки:
+ *   1. строки проводок по счетам договора и по его проводкам;
+ *   2. сторно оборотов на системных счетах (Касса, СФРБ) — иначе оборотная
+ *      ведомость осталась бы с «призрачными» суммами удалённого договора;
+ *   3. сами проводки договора;
+ *   4. обнуление ссылок договора на счета (иначе счета нельзя удалить);
+ *   5. удаление счетов договора;
+ *   6. удаление самого договора.
+ * Всё выполняется в одной транзакции: при ошибке ничего не удаляется.
+ */
+async function deleteContract(req, res, next) {
+  const db = await pool.connect();
+  try {
+    await db.query('BEGIN');
+
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      await db.query('ROLLBACK');
+      return res.status(400).json({ message: 'Некорректный идентификатор договора' });
+    }
+
+    const contractRes = await db.query(
+      `SELECT id, contract_number, deposit_account_id, interest_account_id
+         FROM deposit_contracts WHERE id = $1`,
+      [id]
+    );
+    if (contractRes.rows.length === 0) {
+      await db.query('ROLLBACK');
+      return res.status(404).json({ message: 'Договор не найден' });
+    }
+
+    const contract = contractRes.rows[0];
+    const accountIds = [contract.deposit_account_id, contract.interest_account_id]
+      .filter((value) => value !== null && value !== undefined)
+      .map(Number);
+
+    // 1. Собираем удаляемые строки: понадобятся для сторно оборотов
+    const linesRes = await db.query(
+      `SELECT jel.account_id, jel.side, SUM(jel.amount) AS amount
+         FROM journal_entry_lines jel
+         JOIN journal_entries je ON je.id = jel.entry_id
+        WHERE je.contract_id = $1 OR jel.account_id = ANY($2::int[])
+        GROUP BY jel.account_id, jel.side`,
+      [id, accountIds]
+    );
+
+    // 2. Сторно оборотов на счетах, которые сохраняются (системные 1010/7327).
+    //    Счета самого договора удаляются ниже, их обороты сторноить не нужно.
+    const surviving = linesRes.rows.filter((row) => !accountIds.includes(Number(row.account_id)));
+    for (const line of surviving) {
+      const column = line.side === 'D' ? 'debit_turnover' : 'credit_turnover';
+      await db.query(
+        `UPDATE bank_accounts
+            SET ${column} = GREATEST(${column} - $1, 0)
+          WHERE id = $2`,
+        [line.amount, line.account_id]
+      );
+    }
+
+    // 3. Строки проводок: и по счетам договора, и по его проводкам
+    const deletedLines = await db.query(
+      `DELETE FROM journal_entry_lines
+        WHERE entry_id IN (SELECT id FROM journal_entries WHERE contract_id = $1)
+           OR account_id = ANY($2::int[])`,
+      [id, accountIds]
+    );
+
+    // 4. Проводки договора
+    const entriesRes = await db.query(
+      'DELETE FROM journal_entries WHERE contract_id = $1',
+      [id]
+    );
+
+    // 5. Отвязываем договор от счетов, чтобы счета можно было удалить
+    await db.query(
+      'UPDATE deposit_contracts SET deposit_account_id = NULL, interest_account_id = NULL WHERE id = $1',
+      [id]
+    );
+
+    // 6. Счета договора
+    //    Параметры разведены: $1 — массив id счетов, $2 — id договора
+    //    (один параметр нельзя использовать и как int[], и как integer).
+    let accountsRemoved = 0;
+    if (accountIds.length > 0) {
+      const accRes = await db.query(
+        'DELETE FROM bank_accounts WHERE id = ANY($1::int[]) OR contract_id = $2',
+        [accountIds, id]
+      );
+      accountsRemoved = accRes.rowCount;
+    } else {
+      const accRes = await db.query('DELETE FROM bank_accounts WHERE contract_id = $1', [id]);
+      accountsRemoved = accRes.rowCount;
+    }
+
+    // 7. Договор
+    await db.query('DELETE FROM deposit_contracts WHERE id = $1', [id]);
+
+    await db.query('COMMIT');
+
+    return res.json({
+      message: 'Договор удалён',
+      contract_number: contract.contract_number,
+      deleted_accounts: accountsRemoved,
+      deleted_entries: entriesRes.rowCount,
+      deleted_entry_lines: deletedLines.rowCount,
+      reversed_lines: surviving.length,
+    });
+  } catch (err) {
+    await db.query('ROLLBACK');
+    if (err.code === '23503') {
+      return res.status(409).json({
+        message: 'Нельзя удалить договор: на него ссылаются другие записи банка',
+      });
+    }
+    return handleDbError(err, res, next);
+  } finally {
+    db.release();
+  }
+}
+
 module.exports = {
   listContracts,
   createContract,
+  deleteContract,
 };

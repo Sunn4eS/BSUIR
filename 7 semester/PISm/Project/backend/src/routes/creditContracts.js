@@ -8,5 +8,6 @@ const router = Router();
 
 router.get('/', creditController.listCreditContracts);
 router.post('/', validateCreditContract, creditController.createCreditContract);
+router.delete('/:id', creditController.deleteCreditContract);
 
 module.exports = router;

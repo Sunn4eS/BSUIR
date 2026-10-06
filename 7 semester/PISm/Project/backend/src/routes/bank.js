@@ -8,5 +8,6 @@ const router = Router();
 router.get('/', bankController.getBankState);
 router.post('/set-date', bankController.setBankDate);
 router.post('/close-month', bankController.closeMonth);
+router.post('/reset', bankController.resetBankData);
 
 module.exports = router;

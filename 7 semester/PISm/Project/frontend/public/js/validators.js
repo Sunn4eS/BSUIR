@@ -12,6 +12,9 @@
   const PARTIAL_DATE_REGEX = /^\d{1,2}(\.\d{1,2})?(\.\d{1,4})?$/;
   const INCOME_REGEX = /^\d+(\.\d{1,2})?$/;
 
+  /** Валюты, доступные для депозитных и кредитных договоров */
+  const CURRENCIES = ['BYN', 'USD', 'EUR', 'RUB'];
+
   const FIELD_LABELS = {
     last_name: 'Фамилия',
     first_name: 'Имя',
@@ -219,8 +222,8 @@
       errors.start_date = 'Дата заключения не может быть позже текущей банковской даты';
     }
 
-    if (!isEmpty(data.currency) && String(data.currency).toUpperCase() !== 'BYN') {
-      errors.currency = 'Валюта договора должна быть BYN';
+    if (!isEmpty(data.currency) && CURRENCIES.indexOf(String(data.currency).toUpperCase()) === -1) {
+      errors.currency = `Валюта договора должна быть одной из: ${CURRENCIES.join(', ')}`;
     }
 
     const terms = (ctx.terms || []).filter((t) => Number(t.program_id) === Number(data.program_id));
@@ -280,8 +283,8 @@
       errors.start_date = 'Дата заключения не может быть позже текущей банковской даты';
     }
 
-    if (!isEmpty(data.currency) && String(data.currency).toUpperCase() !== 'BYN') {
-      errors.currency = 'Валюта договора должна быть BYN';
+    if (!isEmpty(data.currency) && CURRENCIES.indexOf(String(data.currency).toUpperCase()) === -1) {
+      errors.currency = `Валюта договора должна быть одной из: ${CURRENCIES.join(', ')}`;
     }
 
     // Проверка срока относительно выбранной кредитной программы

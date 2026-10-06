@@ -188,6 +188,8 @@ SELECT setval(pg_get_serial_sequence('chart_of_accounts', 'id'), (SELECT MAX(id)
 --    P: Сальдо = Кредит - Дебет (>= 0)
 -- ---------------------------------------------------------------------------
 
+-- Валюта счёта: клиентские счета ведутся в валюте договора,
+-- системные счета (1010 Касса, 7327 СФРБ) — строго в BYN.
 CREATE TABLE IF NOT EXISTS bank_accounts (
     id               SERIAL PRIMARY KEY,
     account_number   CHAR(13)     NOT NULL UNIQUE,
@@ -196,6 +198,7 @@ CREATE TABLE IF NOT EXISTS bank_accounts (
     client_id        INTEGER      REFERENCES clients (id),
     contract_id      INTEGER,
     name             TEXT         NOT NULL,
+    currency         CHAR(3)      NOT NULL DEFAULT 'BYN' CHECK (currency IN ('BYN', 'USD', 'EUR', 'RUB')),
     status           VARCHAR(10)  NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'CLOSED')),
     debit_turnover   NUMERIC(18, 2) NOT NULL DEFAULT 0 CHECK (debit_turnover >= 0),
     credit_turnover  NUMERIC(18, 2) NOT NULL DEFAULT 0 CHECK (credit_turnover >= 0),
@@ -250,7 +253,7 @@ CREATE TABLE IF NOT EXISTS deposit_contracts (
     program_id          INTEGER       NOT NULL REFERENCES deposit_programs (id),
     term_months         INTEGER       NOT NULL CHECK (term_months > 0),
     annual_rate         NUMERIC(6, 2) NOT NULL CHECK (annual_rate > 0 AND annual_rate < 100),
-    currency            CHAR(3)       NOT NULL DEFAULT 'BYN' CHECK (currency = 'BYN'),
+    currency            CHAR(3)       NOT NULL DEFAULT 'BYN' CHECK (currency IN ('BYN', 'USD', 'EUR', 'RUB')),
     start_date          DATE          NOT NULL,
     maturity_date       DATE          NOT NULL,
     amount              NUMERIC(18, 2) NOT NULL CHECK (amount > 0),
@@ -281,12 +284,16 @@ CREATE TABLE IF NOT EXISTS journal_entries (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- currency — валюта строки (валюта счёта-получателя стороны);
+-- amount_byn — эквивалент строки в базовой валюте BYN для сведения баланса.
 CREATE TABLE IF NOT EXISTS journal_entry_lines (
     id         SERIAL PRIMARY KEY,
     entry_id   INTEGER        NOT NULL REFERENCES journal_entries (id) ON DELETE CASCADE,
     account_id INTEGER        NOT NULL REFERENCES bank_accounts (id),
     side       CHAR(1)        NOT NULL CHECK (side IN ('D', 'C')),
-    amount     NUMERIC(18, 2) NOT NULL CHECK (amount >= 0)
+    currency   CHAR(3)        NOT NULL DEFAULT 'BYN' CHECK (currency IN ('BYN', 'USD', 'EUR', 'RUB')),
+    amount     NUMERIC(18, 2) NOT NULL CHECK (amount >= 0),
+    amount_byn NUMERIC(18, 2) NOT NULL DEFAULT 0 CHECK (amount_byn >= 0)
 );
 
 -- ---------------------------------------------------------------------------
@@ -308,14 +315,14 @@ CREATE SEQUENCE IF NOT EXISTS bank_account_seq START 1;
 -- 1) Касса банка (1010, A): стартовый остаток наличных для эмулятора банкомата №001.
 --    Дебет = 10 000.00, кредит = 0, сальдо = 10 000.00 BYN (кассовые остатки банкомата).
 --    Номер: 1010 + 00000001 + контрольный ключ EAN-13 (5) = 1010000000015
-INSERT INTO bank_accounts (account_number, chart_account_id, holder_type, name, status, debit_turnover, credit_turnover)
-VALUES ('1010000000015', 1, 'SYSTEM', 'Касса банка (наличные банкомата №001)', 'OPEN', 10000.00, 0);
+INSERT INTO bank_accounts (account_number, chart_account_id, holder_type, name, currency, status, debit_turnover, credit_turnover)
+VALUES ('1010000000015', 1, 'SYSTEM', 'Касса банка (наличные банкомата №001)', 'BYN', 'OPEN', 10000.00, 0);
 
 -- 2) Счёт фонда развития банка (7327, P):
 --    стартовое кредитовое сальдо = 100 000 000.00 BYN (дебет = 0, кредит = 100 000 000).
 --    Номер: 7327 + 00000001 + контрольный ключ EAN-13 (8) = 7327000000018
-INSERT INTO bank_accounts (account_number, chart_account_id, holder_type, name, status, debit_turnover, credit_turnover)
-VALUES ('7327000000018', 2, 'SYSTEM', 'Счёт фонда развития банка (СФРБ)', 'OPEN', 0, 100000000.00);
+INSERT INTO bank_accounts (account_number, chart_account_id, holder_type, name, currency, status, debit_turnover, credit_turnover)
+VALUES ('7327000000018', 2, 'SYSTEM', 'Счёт фонда развития банка (СФРБ)', 'BYN', 'OPEN', 0, 100000000.00);
 
 -- Последовательность продолжается с номера 3 (системные счета заняли 1 и 2)
 SELECT setval('bank_account_seq', 2);
@@ -373,7 +380,7 @@ CREATE TABLE IF NOT EXISTS credit_contracts (
     program_id          INTEGER        NOT NULL REFERENCES credit_programs (id),
     term_months         INTEGER        NOT NULL CHECK (term_months > 0),
     annual_rate         NUMERIC(6, 2)  NOT NULL CHECK (annual_rate > 0 AND annual_rate < 100),
-    currency            CHAR(3)        NOT NULL DEFAULT 'BYN' CHECK (currency = 'BYN'),
+    currency            CHAR(3)        NOT NULL DEFAULT 'BYN' CHECK (currency IN ('BYN', 'USD', 'EUR', 'RUB')),
     start_date          DATE           NOT NULL,
     maturity_date       DATE           NOT NULL,
     amount              NUMERIC(18, 2) NOT NULL CHECK (amount > 0),

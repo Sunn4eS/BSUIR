@@ -126,6 +126,32 @@ body {
   border-bottom: none;
 }
 
+/* ---------- Элементы, видимые только в Admin-режиме ----------
+   Кнопки и колонки удаления скрыты по умолчанию. Режим включается
+   тройным кликом по заголовку таблицы или комбинацией Ctrl+Shift+A
+   (переключатель — admin-mode на <body>).
+
+   Значение display восстанавливается по типу элемента: ячейке таблицы
+   нужен table-cell, кнопке — inline-flex (иначе display: table-cell
+   «натянулся» бы на <button> и сломал вёрстку). */
+.admin-only {
+  display: none !important;
+}
+
+body.admin-mode th.admin-only,
+body.admin-mode td.admin-only {
+  display: table-cell !important;
+}
+
+body.admin-mode button.admin-only {
+  display: inline-flex !important;
+}
+
+.delete-word {
+  color: var(--color-danger, #dc2626);
+  letter-spacing: 0.08em;
+}
+
 .clients-table .col-actions {
   text-align: right;
 }
@@ -521,6 +547,24 @@ body {
 .bank-panel-date {
   display: flex;
   flex-direction: column;
+}
+
+/* Подсказка о скрытой роли администратора. Низкий контраст — чтобы не спорить
+   с основными элементами панели, но её можно было найти, если не знать про
+   горячую клавишу. */
+.bank-panel-admin-hint {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.6;
+  max-width: 260px;
+}
+
+.bank-panel-admin-hint kbd {
+  font-family: inherit;
+  font-size: 11px;
+  padding: 1px 5px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
 }
 
 .bank-panel-label {

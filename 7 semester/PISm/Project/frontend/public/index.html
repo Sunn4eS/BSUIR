@@ -32,9 +32,17 @@
       <button type="button" id="btn-close-month" class="btn btn-primary" title="Выполнить расчёты по активным договорам и перейти на следующий месяц">
         Закрыть Банковский Месяц
       </button>
+      <button type="button" id="btn-reset-bank" class="btn btn-danger admin-only" title="Удалить все договоры, кредиты, карты, операции банкомата и проводки. Клиенты сохраняются.">
+        Сбросить базу
+      </button>
       <a class="btn btn-primary" href="atm.html" id="btn-atm" title="Эмулятор банкомата: кредитные карты клиентов">
         🏧 Банкомат
       </a>
+      <p class="bank-panel-admin-hint">
+        Режим администратора:
+        <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>A</kbd>
+        или тройной клик по заголовку таблицы
+      </p>
     </div>
   </header>
 
@@ -94,12 +102,13 @@
               <th>Программа</th>
               <th>Срок (мес.)</th>
               <th>Ставка</th>
-              <th>Сумма (BYN)</th>
+              <th>Сумма</th>
               <th>Дата открытия</th>
               <th>Дата окончания</th>
               <th>Начислено %</th>
               <th>Статус</th>
               <th>Счета</th>
+              <th class="col-actions admin-only">Действия</th>
             </tr>
           </thead>
           <tbody id="contracts-tbody"></tbody>
@@ -127,7 +136,7 @@
               <th>Программа</th>
               <th>Срок (мес.)</th>
               <th>Ставка</th>
-              <th>Сумма (BYN)</th>
+              <th>Сумма</th>
               <th>Дата начала</th>
               <th>Дата окончания</th>
               <th>Статус</th>
@@ -157,9 +166,9 @@
             <tr>
               <th>Наименование счёта / Тип</th>
               <th>Номер счёта (13 знаков)</th>
-              <th>Дебет оборот (BYN)</th>
-              <th>Кредит оборот (BYN)</th>
-              <th>Сальдо (BYN)</th>
+              <th>Дебет оборот</th>
+              <th>Кредит оборот</th>
+              <th>Сальдо</th>
               <th>Статус</th>
             </tr>
           </thead>
@@ -372,6 +381,86 @@
     </div>
   </div>
 
+  <!-- ================= Модальное окно удаления договора (Admin-режим) ================= -->
+  <div class="modal-overlay hidden" id="contract-delete-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Удаление депозитного договора</h2>
+      </div>
+      <p id="contract-delete-message" class="modal-text"></p>
+      <div class="form-group">
+        <label for="contract-delete-confirm-input">
+          Введите слово <strong class="delete-word">УДАЛИТЬ</strong> для подтверждения
+        </label>
+        <input type="text" id="contract-delete-confirm-input" autocomplete="off"
+               placeholder="УДАЛИТЬ" spellcheck="false">
+        <p class="field-hint">
+          Вместе с договором будут безвозвратно удалены его счета и все бухгалтерские проводки.
+        </p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btn-contract-delete-cancel">Отмена</button>
+        <button type="button" class="btn btn-danger" id="btn-contract-delete-confirm" disabled>Удалить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Модальное окно удаления кредитного договора ================= -->
+  <div class="modal-overlay hidden" id="credit-delete-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Удаление кредитного договора</h2>
+      </div>
+      <p id="credit-delete-message" class="modal-text"></p>
+      <div class="form-group">
+        <label for="credit-delete-confirm-input">
+          Введите слово <strong class="delete-word">УДАЛИТЬ</strong> для подтверждения
+        </label>
+        <input type="text" id="credit-delete-confirm-input" autocomplete="off"
+               placeholder="УДАЛИТЬ" spellcheck="false">
+        <p class="field-hint">
+          Вместе с договором будут безвозвратно удалены его счета, банковская карта,
+          операции банкомата и все бухгалтерские проводки.
+        </p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btn-credit-delete-cancel">Отмена</button>
+        <button type="button" class="btn btn-danger" id="btn-credit-delete-confirm" disabled>Удалить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Модальное окно сброса банковских данных ================= -->
+  <div class="modal-overlay hidden" id="reset-bank-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Сброс банковских данных</h2>
+      </div>
+      <p class="modal-text">
+        Вы уверены, что хотите удалить все банковские данные?
+        <strong>Клиенты будут сохранены.</strong>
+      </p>
+      <p class="field-hint">
+        Безвозвратно удаляются: депозитные и кредитные договоры, банковские карты,
+        операции банкомата, бухгалтерские проводки и клиентские счета.
+        Обороты системных счетов банка возвращаются к начальным значениям,
+        банковская дата — к первому числу текущего месяца.
+        Справочники и программы депозитов и кредитов сохраняются.
+      </p>
+      <div class="form-group">
+        <label for="reset-bank-confirm-input">
+          Введите слово <strong class="delete-word">СБРОС</strong> для подтверждения
+        </label>
+        <input type="text" id="reset-bank-confirm-input" autocomplete="off"
+               placeholder="СБРОС" spellcheck="false">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btn-reset-bank-cancel">Отмена</button>
+        <button type="button" class="btn btn-danger" id="btn-reset-bank-confirm" disabled>Сбросить базу</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= Модальное окно заключения депозитного договора ================= -->
   <div class="modal-overlay hidden" id="contract-modal">
     <div class="modal modal-wide">
@@ -429,9 +518,20 @@
               <div class="field-error" id="error-contract_amount"></div>
             </div>
             <div class="form-group">
-              <label>Валюта</label>
-              <div class="readonly-value">BYN</div>
-              <input type="hidden" name="currency" value="BYN">
+              <label for="contract_currency">Валюта договора <span class="required">*</span></label>
+              <select id="contract_currency" name="currency">
+                <option value="BYN">BYN — белорусский рубль</option>
+                <option value="USD">USD — доллар США</option>
+                <option value="EUR">EUR — евро</option>
+                <option value="RUB">RUB — российский рубль</option>
+              </select>
+              <p class="field-hint" id="currency-hint"></p>
+              <div class="field-error" id="error-contract_currency"></div>
+            </div>
+            <div class="form-group">
+              <label for="contract_maturity_date_display">Дата окончания</label>
+              <div class="readonly-value" id="contract_maturity_date_display">—</div>
+              <p class="field-hint">Рассчитывается автоматически: дата заключения + срок</p>
             </div>
           </div>
         </fieldset>
@@ -496,14 +596,25 @@
               <div class="field-error" id="error-credit_start_date"></div>
             </div>
             <div class="form-group">
-              <label for="credit_amount">Сумма кредита (BYN) <span class="required">*</span></label>
+              <label for="credit_amount">Сумма кредита <span class="required">*</span></label>
               <input type="number" id="credit_amount" name="amount" min="0.01" step="0.01" placeholder="1000.00">
               <div class="field-error" id="error-credit_amount"></div>
             </div>
             <div class="form-group">
-              <label>Валюта</label>
-              <div class="readonly-value">BYN</div>
-              <input type="hidden" name="currency" value="BYN">
+              <label for="credit_currency">Валюта договора <span class="required">*</span></label>
+              <select id="credit_currency" name="currency">
+                <option value="BYN">BYN — белорусский рубль</option>
+                <option value="USD">USD — доллар США</option>
+                <option value="EUR">EUR — евро</option>
+                <option value="RUB">RUB — российский рубль</option>
+              </select>
+              <p class="field-hint" id="credit-currency-hint"></p>
+              <div class="field-error" id="error-credit_currency"></div>
+            </div>
+            <div class="form-group">
+              <label for="credit_maturity_date_display">Дата окончания</label>
+              <div class="readonly-value" id="credit_maturity_date_display">—</div>
+              <p class="field-hint">Рассчитывается автоматически: дата заключения + срок</p>
             </div>
           </div>
         </fieldset>

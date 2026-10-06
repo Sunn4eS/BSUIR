@@ -6,7 +6,10 @@
 (function () {
   'use strict';
 
-  const { api, showToast, escapeHtml, formatDate, formatMoney } = Common;
+  const {
+    api, showToast, escapeHtml, formatDate, formatMoney, formatMoneyWithCurrency,
+    ADMIN_CONFIRM_WORD, CURRENCY_RATES, addMonths,
+  } = Common;
 
   // ---------------------------------------------------------------------------
   // Состояние
@@ -18,7 +21,15 @@
     contracts: [],
     accounts: [],
     flatTerms: [],
+    pendingDeleteId: null,
   };
+
+  /** Курсы валют к BYN — зеркало backend/src/config/currency.js */
+  /** Слово, которое нужно ввести для подтверждения удаления договора */
+  const DELETE_CONFIRM_WORD = ADMIN_CONFIRM_WORD;
+
+  /** Слово, которое нужно ввести для подтверждения сброса базы */
+  const RESET_CONFIRM_WORD = 'СБРОС';
 
   const elements = {
     tabsNav: document.getElementById('tabs-nav'),
@@ -34,6 +45,12 @@
     bankYearSelect: document.getElementById('bank-year-select'),
     btnSetBankDate: document.getElementById('btn-set-bank-date'),
     btnCloseMonth: document.getElementById('btn-close-month'),
+    btnResetBank: document.getElementById('btn-reset-bank'),
+    resetBankModal: document.getElementById('reset-bank-modal'),
+    resetBankConfirmInput: document.getElementById('reset-bank-confirm-input'),
+    btnResetBankConfirm: document.getElementById('btn-reset-bank-confirm'),
+    btnResetBankCancel: document.getElementById('btn-reset-bank-cancel'),
+    contractsTable: document.getElementById('contracts-table'),
     contractsTbody: document.getElementById('contracts-tbody'),
     contractsEmpty: document.getElementById('contracts-empty'),
     btnAddContract: document.getElementById('btn-add-contract'),
@@ -45,8 +62,12 @@
     contractProgram: document.getElementById('contract_program_id'),
     contractTerm: document.getElementById('contract_term_months'),
     contractStartDate: document.getElementById('contract_start_date'),
+    contractAmount: document.getElementById('contract_amount'),
     contractRateDisplay: document.getElementById('contract-rate-display'),
     contractAnnualRate: document.getElementById('contract_annual_rate'),
+    contractCurrency: document.getElementById('contract_currency'),
+    currencyHint: document.getElementById('currency-hint'),
+    contractMaturityDisplay: document.getElementById('contract_maturity_date_display'),
     programHint: document.getElementById('program-hint'),
     btnCloseContractModal: document.getElementById('btn-close-contract-modal'),
     btnContractCancel: document.getElementById('btn-contract-cancel'),
@@ -56,6 +77,12 @@
     ledgerModalContent: document.getElementById('ledger-modal-content'),
     btnCloseLedgerModal: document.getElementById('btn-close-ledger-modal'),
     btnLedgerClose: document.getElementById('btn-ledger-close'),
+    // Удаление договора (Admin-режим)
+    contractDeleteModal: document.getElementById('contract-delete-modal'),
+    contractDeleteMessage: document.getElementById('contract-delete-message'),
+    contractDeleteConfirmInput: document.getElementById('contract-delete-confirm-input'),
+    btnContractDeleteCancel: document.getElementById('btn-contract-delete-cancel'),
+    btnContractDeleteConfirm: document.getElementById('btn-contract-delete-confirm'),
   };
 
   // Поля ошибок формы договора: имя поля формы -> id контейнера ошибки
@@ -66,6 +93,7 @@
     contract_number: 'error-contract_number',
     start_date: 'error-contract_start_date',
     amount: 'error-contract_amount',
+    currency: 'error-contract_currency',
   };
 
   // ---------------------------------------------------------------------------
@@ -247,10 +275,10 @@
         </td>
         <td class="num">${escapeHtml(String(contract.term_months))}</td>
         <td class="num">${escapeHtml(contract.annual_rate.toFixed(2))}%</td>
-        <td class="num">${formatMoney(contract.amount)}</td>
+        <td class="num">${escapeHtml(formatMoneyWithCurrency(contract.amount, contract.currency))}</td>
         <td class="num">${formatDate(contract.start_date)}</td>
         <td class="num">${formatDate(contract.maturity_date)}</td>
-        <td class="num">${formatMoney(contract.accrued_interest)}</td>
+        <td class="num">${escapeHtml(formatMoneyWithCurrency(contract.accrued_interest, contract.currency))}</td>
         <td>${badge(contract.status)}</td>
         <td>
           <div class="acct-cell">
@@ -261,6 +289,10 @@
             <span class="mono" title="Процентный счёт">${escapeHtml(contract.interest_account_number || '—')}</span>
             <span class="muted">процентный</span>
           </div>
+        </td>
+        <td class="col-actions admin-only">
+          <button type="button" class="btn btn-small btn-danger admin-only"
+                  data-action="delete-contract" data-id="${contract.id}">Удалить</button>
         </td>
       `;
       elements.contractsTbody.appendChild(tr);
@@ -286,13 +318,56 @@
           <span class="muted acct-code">${escapeHtml(account.chart_code)} · ${typeLabel}</span>
         </td>
         <td class="mono num">${escapeHtml(account.account_number)}</td>
-        <td class="num">${formatMoney(account.debit_turnover)}</td>
-        <td class="num">${formatMoney(account.credit_turnover)}</td>
-        <td class="num"><strong>${formatMoney(account.balance)}</strong></td>
+        <td class="num">${escapeHtml(formatMoneyWithCurrency(account.debit_turnover, account.currency))}</td>
+        <td class="num">${escapeHtml(formatMoneyWithCurrency(account.credit_turnover, account.currency))}</td>
+        <td class="num"><strong>${escapeHtml(formatMoneyWithCurrency(account.balance, account.currency))}</strong></td>
         <td>${badge(account.status)}</td>
       `;
       elements.accountsTbody.appendChild(tr);
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Динамический расчёт даты окончания договора
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Прибавляет months месяцев к ISO-дате startIso и возвращает ISO-дату.
+   * Логика совпадает с серверной (Postgres: date + interval 'N months'),
+   * включая ограничение по последнему дню месяца: 31.01 + 1 мес. = 28.02
+   * (29.02 в високосный год), 31.08 + 6 мес. = 28.02.
+   */
+  /**
+   * Пересчитывает дату окончания договора по сроку и дате заключения.
+   * Если данных не хватает (нет срока или дата введена частично) — показывает «—».
+   */
+  function updateMaturityDate() {
+    const termMonths = Number(elements.contractTerm.value);
+    const startIso = DateMask.get(elements.contractStartDate);
+    if (!termMonths || termMonths <= 0 || !/^\d{4}-\d{2}-\d{2}$/.test(startIso)) {
+      elements.contractMaturityDisplay.textContent = '—';
+      return;
+    }
+    elements.contractMaturityDisplay.textContent = formatDate(addMonths(startIso, termMonths));
+  }
+
+  /** Подсказка под выбором валюты: курс к BYN и пример эквивалента суммы. */
+  function updateCurrencyHint() {
+    const code = elements.contractCurrency.value;
+    const amount = Number(elements.contractAmount.value);
+    const rate = CURRENCY_RATES[code];
+    if (code === 'BYN') {
+      elements.currencyHint.textContent = 'Базовая валюта банка — конвертация не требуется.';
+      return;
+    }
+    // Курс показываем из исходного числа, а не через formatMoney: у RUB он 0.035,
+    // и денежное округление превратило бы его в «0.04» — 1000 RUB выглядели бы
+    // как 40 BYN вместо 35. Лишние нули в конце отбрасываем.
+    const rateText = String(Number(rate.toFixed(4)));
+    const equivalent = amount > 0
+      ? ` Сумма ${formatMoney(amount)} ${code} ≈ ${formatMoney(amount * rate)} BYN.`
+      : '';
+    elements.currencyHint.textContent = `Курс: 1 ${code} = ${rateText} BYN.${equivalent}`;
   }
 
   // ---------------------------------------------------------------------------
@@ -304,6 +379,8 @@
     elements.contractRateDisplay.textContent = '—';
     elements.contractAnnualRate.value = '';
     elements.programHint.textContent = '';
+    elements.contractMaturityDisplay.textContent = '—';
+    updateCurrencyHint();
 
     // Клиенты
     elements.contractClient.innerHTML = '<option value="">— Выберите клиента —</option>';
@@ -336,6 +413,7 @@
       /* сервер недоступен — оставляем последнюю известную дату */
     }
     DateMask.set(elements.contractStartDate, state.bankDate);
+    updateMaturityDate();
 
     elements.contractModal.classList.remove('hidden');
     elements.contractClient.focus();
@@ -349,6 +427,7 @@
     elements.contractRateDisplay.textContent = '—';
     elements.contractAnnualRate.value = '';
     elements.programHint.textContent = '';
+    updateMaturityDate();
 
     if (!program) return;
 
@@ -364,6 +443,7 @@
   }
 
   function onTermChange() {
+    updateMaturityDate();
     const programId = Number(elements.contractProgram.value);
     const termMonths = Number(elements.contractTerm.value);
     const program = state.programs.find((p) => p.id === programId);
@@ -389,7 +469,7 @@
       contract_number: elements.contractForm.elements.contract_number.value,
       start_date: DateMask.get(elements.contractStartDate),
       amount: elements.contractForm.elements.amount.value,
-      currency: 'BYN',
+      currency: elements.contractCurrency.value,
       annual_rate: elements.contractAnnualRate.value,
     };
 
@@ -409,7 +489,7 @@
         contract_number: data.contract_number,
         start_date: data.start_date,
         amount: Number(data.amount),
-        currency: 'BYN',
+        currency: data.currency,
       });
 
       elements.contractModal.classList.add('hidden');
@@ -466,12 +546,20 @@
   function renderEntryLines(entry) {
     const rows = entry.lines.map((line) => {
       const side = line.side === 'D' ? 'Дт' : 'Кт';
+      const lineCurrency = line.currency || 'BYN';
+      // Для валютных операций показываем эквивалент в BYN, чтобы была видна конвертация
+      const bynCell = lineCurrency !== 'BYN'
+        ? `<span class="muted">≈ ${escapeHtml(formatMoneyWithCurrency(line.amountByn, 'BYN'))}</span>`
+        : '';
       return `
         <tr>
           <td class="mono">${side}</td>
           <td class="mono">${escapeHtml(line.accountNumber || '—')}</td>
           <td>${escapeHtml(line.accountName || '—')}</td>
-          <td class="num">${formatMoney(line.amount)}</td>
+          <td class="num">
+            ${escapeHtml(formatMoneyWithCurrency(line.amount, lineCurrency))}
+            ${bynCell}
+          </td>
         </tr>
       `;
     }).join('');
@@ -483,7 +571,7 @@
         </div>
         <table class="entry-lines">
           <thead>
-            <tr><th>Сторона</th><th>Счёт</th><th>Наименование</th><th>Сумма (BYN)</th></tr>
+            <tr><th>Сторона</th><th>Счёт</th><th>Наименование</th><th>Сумма</th></tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
@@ -496,7 +584,7 @@
     const contractBlock = `
       <div class="log-contract-header">
         Договор <span class="mono">${escapeHtml(contract.contract_number)}</span> ·
-        ${escapeHtml(contract.client_name)} · ${formatMoney(contract.amount)} BYN
+        ${escapeHtml(contract.client_name)} · ${escapeHtml(formatMoneyWithCurrency(contract.amount, contract.currency))}
       </div>
     `;
     elements.ledgerModalContent.innerHTML =
@@ -517,9 +605,10 @@
 
     const renderContractLog = (contractLog, moduleLabel) => {
       const entriesHtml = contractLog.entries.map(renderEntryLines).join('');
+      const contractCurrency = contractLog.currency || 'BYN';
       const sumLabel = moduleLabel === 'credit'
         ? `проценты за месяц ${formatMoney(contractLog.monthly_interest)} BYN · погашение тела ${formatMoney(contractLog.monthly_principal)} BYN`
-        : `проценты за месяц ${formatMoney(contractLog.monthly_interest)} BYN`;
+        : `проценты за месяц ${escapeHtml(formatMoneyWithCurrency(contractLog.monthly_interest, contractCurrency))}`;
       const statusBadge = contractLog.status === 'COMPLETED' || contractLog.status === 'CLOSED'
         ? '<span class="badge badge-muted">завершён</span>'
         : '<span class="badge badge-success">действует</span>';
@@ -529,7 +618,7 @@
             <span class="log-module-tag">${moduleLabel === 'credit' ? 'Кредит' : 'Депозит'}</span>
             Договор <span class="mono">${escapeHtml(contractLog.contract_number)}</span> ·
             ${escapeHtml(contractLog.client_name)} · ${escapeHtml(contractLog.program_name)} ·
-            сумма ${formatMoney(contractLog.amount)} BYN ·
+            сумма ${escapeHtml(formatMoneyWithCurrency(contractLog.amount, contractLog.currency || 'BYN'))} ·
             ${sumLabel} ·
             ${statusBadge}
           </div>
@@ -551,6 +640,114 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Admin-режим и удаление договора
+  // ---------------------------------------------------------------------------
+
+  /** Открывает модальное окно подтверждения удаления договора. */
+  function openContractDeleteModal(id) {
+    const contract = state.contracts.find((item) => item.id === id);
+    if (!contract) return;
+
+    state.pendingDeleteId = id;
+    elements.contractDeleteMessage.textContent =
+      `Вы уверены, что хотите удалить договор «${contract.contract_number}» `
+      + `(${contract.client_name})? Вместе с договором будут удалены его счета и все проводки. `
+      + 'Это действие нельзя отменить.';
+    elements.contractDeleteConfirmInput.value = '';
+    elements.btnContractDeleteConfirm.disabled = true;
+    elements.contractDeleteModal.classList.remove('hidden');
+    elements.contractDeleteConfirmInput.focus();
+  }
+
+  function closeContractDeleteModal() {
+    elements.contractDeleteModal.classList.add('hidden');
+    elements.contractDeleteConfirmInput.value = '';
+    elements.btnContractDeleteConfirm.disabled = true;
+    state.pendingDeleteId = null;
+  }
+
+  /** Кнопка удаления активна только при точном вводе контрольного слова. */
+  function checkDeleteConfirmWord() {
+    const typed = elements.contractDeleteConfirmInput.value.trim().toUpperCase();
+    elements.btnContractDeleteConfirm.disabled = typed !== DELETE_CONFIRM_WORD;
+  }
+
+  async function confirmContractDelete() {
+    const id = state.pendingDeleteId;
+    if (id === null) return;
+    if (elements.contractDeleteConfirmInput.value.trim().toUpperCase() !== DELETE_CONFIRM_WORD) {
+      showToast(`Введите слово ${DELETE_CONFIRM_WORD} для подтверждения`, 'error');
+      return;
+    }
+
+    elements.btnContractDeleteConfirm.disabled = true;
+    try {
+      const result = await api.deleteContract(id);
+      closeContractDeleteModal();
+      await Promise.all([loadContracts(), loadAccounts()]);
+      showToast(
+        `Договор ${result.contract_number} удалён (счетов: ${result.deleted_accounts}, `
+        + `проводок: ${result.deleted_entries})`,
+        'success'
+      );
+    } catch (err) {
+      closeContractDeleteModal();
+      handleRequestError(err);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Роль администратора: сброс банковских данных
+  // ---------------------------------------------------------------------------
+
+  function openResetBankModal() {
+    elements.resetBankConfirmInput.value = '';
+    elements.btnResetBankConfirm.disabled = true;
+    elements.resetBankModal.classList.remove('hidden');
+    elements.resetBankConfirmInput.focus();
+  }
+
+  function closeResetBankModal() {
+    elements.resetBankModal.classList.add('hidden');
+    elements.resetBankConfirmInput.value = '';
+    elements.btnResetBankConfirm.disabled = true;
+  }
+
+  /** Кнопка сброса активна только при точном вводе контрольного слова. */
+  function checkResetConfirmWord() {
+    const typed = elements.resetBankConfirmInput.value.trim().toUpperCase();
+    elements.btnResetBankConfirm.disabled = typed !== RESET_CONFIRM_WORD;
+  }
+
+  async function confirmResetBank() {
+    if (elements.resetBankConfirmInput.value.trim().toUpperCase() !== RESET_CONFIRM_WORD) {
+      showToast(`Введите слово ${RESET_CONFIRM_WORD} для подтверждения`, 'error');
+      return;
+    }
+
+    elements.btnResetBankConfirm.disabled = true;
+    try {
+      const result = await api.resetBank();
+      closeResetBankModal();
+      await Promise.all([loadContracts(), loadAccounts(), loadBankState()]);
+      elements.bankDate.textContent = formatDate(result.bank_date);
+      // Модуль кредитов и модуль банкомата тоже должны перечитать данные
+      window.dispatchEvent(new CustomEvent('app:month-closed'));
+      window.dispatchEvent(new CustomEvent('app:accounts-changed'));
+      const d = result.deleted;
+      showToast(
+        `База сброшена. Клиентов сохранено: ${result.kept_clients}. Удалено договоров: `
+        + `${d.deposit_contracts + d.credit_contracts}, карт: ${d.credit_cards}, `
+        + `счетов: ${d.client_accounts}, проводок: ${d.journal_entries}`,
+        'success'
+      );
+    } catch (err) {
+      closeResetBankModal();
+      handleRequestError(err);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Инициализация
   // ---------------------------------------------------------------------------
   function bindEvents() {
@@ -567,7 +764,23 @@
     elements.btnAddContract.addEventListener('click', openContractModal);
     elements.contractProgram.addEventListener('change', selectProgramTerms);
     elements.contractTerm.addEventListener('change', onTermChange);
+    elements.contractStartDate.addEventListener('input', updateMaturityDate);
+    elements.contractCurrency.addEventListener('change', updateCurrencyHint);
+    elements.contractAmount.addEventListener('input', updateCurrencyHint);
     elements.contractForm.addEventListener('submit', submitContract);
+
+    elements.contractsTbody.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-action="delete-contract"]');
+      if (!button) return;
+      openContractDeleteModal(Number(button.dataset.id));
+    });
+
+    elements.contractDeleteConfirmInput.addEventListener('input', checkDeleteConfirmWord);
+    elements.btnContractDeleteConfirm.addEventListener('click', confirmContractDelete);
+    elements.btnContractDeleteCancel.addEventListener('click', closeContractDeleteModal);
+    elements.contractDeleteModal.addEventListener('click', (event) => {
+      if (event.target === elements.contractDeleteModal) closeContractDeleteModal();
+    });
 
     elements.btnCloseContractModal.addEventListener('click', () => {
       elements.contractModal.classList.add('hidden');
@@ -578,6 +791,20 @@
 
     elements.btnCloseMonth.addEventListener('click', closeMonth);
     elements.btnSetBankDate.addEventListener('click', setBankDate);
+
+    // --- Сброс банковских данных (Admin-режим) ---
+    elements.btnResetBank.addEventListener('click', openResetBankModal);
+    elements.btnResetBankCancel.addEventListener('click', closeResetBankModal);
+    elements.resetBankConfirmInput.addEventListener('input', checkResetConfirmWord);
+    elements.btnResetBankConfirm.addEventListener('click', confirmResetBank);
+    elements.resetBankModal.addEventListener('click', (event) => {
+      if (event.target === elements.resetBankModal) closeResetBankModal();
+    });
+
+    // Модуль кредитов удалил договор — обороты счетов изменились
+    window.addEventListener('app:accounts-changed', () => {
+      loadAccounts().catch(handleRequestError);
+    });
 
     elements.btnCloseLedgerModal.addEventListener('click', () => {
       elements.ledgerModal.classList.add('hidden');
@@ -598,6 +825,8 @@
       if (event.key === 'Escape') {
         elements.contractModal.classList.add('hidden');
         elements.ledgerModal.classList.add('hidden');
+        closeContractDeleteModal();
+        closeResetBankModal();
       }
     });
   }

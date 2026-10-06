@@ -26,8 +26,10 @@ const LIST_CREDIT_CONTRACTS_SQL = `
     cp.repayment_type,
     ca.account_number AS credit_account_number,
     ca.status AS credit_account_status,
+    ca.currency AS credit_account_currency,
     ia.account_number AS interest_account_number,
-    ia.status AS interest_account_status
+    ia.status AS interest_account_status,
+    ia.currency AS interest_account_currency
   FROM credit_contracts cc
   JOIN clients c           ON c.id = cc.client_id
   JOIN credit_programs cp  ON cp.id = cc.program_id
@@ -53,8 +55,12 @@ function mapContract(row) {
     status: row.status,
     credit_account_number: row.credit_account_number,
     credit_account_status: row.credit_account_status,
+    // Счета договора открываются в валюте договора; если по счёту валюта
+    // почему-то не проставлена, показываем валюту самого договора.
+    credit_account_currency: (row.credit_account_currency || row.currency || '').trim(),
     interest_account_number: row.interest_account_number,
     interest_account_status: row.interest_account_status,
+    interest_account_currency: (row.interest_account_currency || row.currency || '').trim(),
   };
   contract.schedule = computeSchedule({
     amount: contract.amount,
@@ -75,6 +81,7 @@ function mapAccount(row) {
     holder_type: row.holder_type,
     client_id: row.client_id,
     contract_id: row.contract_id,
+    currency: (row.currency || '').trim(),
   };
 }
 
@@ -166,24 +173,26 @@ async function createCreditContract(req, res, next) {
 
     const creditAccRes = await db.query(
       `INSERT INTO bank_accounts
-         (account_number, chart_account_id, holder_type, client_id, credit_contract_id, name, status)
-       VALUES ($1, (SELECT id FROM chart_of_accounts WHERE code = '2400'), 'CLIENT', $2, $3, $4, 'OPEN')
+         (account_number, chart_account_id, holder_type, client_id, credit_contract_id, name, currency, status)
+       VALUES ($1, (SELECT id FROM chart_of_accounts WHERE code = '2400'), 'CLIENT', $2, $3, $4, $5, 'OPEN')
        RETURNING id`,
       [
         creditAccountNumber, b.client_id, contractId,
         `Кредитный (основной) счёт: ${clientName}, договор ${b.contract_number}`,
+        b.currency,
       ]
     );
     const creditAccountId = Number(creditAccRes.rows[0].id);
 
     const interestAccRes = await db.query(
       `INSERT INTO bank_accounts
-         (account_number, chart_account_id, holder_type, client_id, credit_contract_id, name, status)
-       VALUES ($1, (SELECT id FROM chart_of_accounts WHERE code = '2470'), 'CLIENT', $2, $3, $4, 'OPEN')
+         (account_number, chart_account_id, holder_type, client_id, credit_contract_id, name, currency, status)
+       VALUES ($1, (SELECT id FROM chart_of_accounts WHERE code = '2470'), 'CLIENT', $2, $3, $4, $5, 'OPEN')
        RETURNING id`,
       [
         interestAccountNumber, b.client_id, contractId,
         `Процентный счёт по кредитному договору ${b.contract_number}`,
+        b.currency,
       ]
     );
     const interestAccountId = Number(interestAccRes.rows[0].id);
@@ -204,6 +213,7 @@ async function createCreditContract(req, res, next) {
     const allocationEntry = await ledger.postEntry(db, {
       entryDate: b.start_date,
       creditContractId: contractId,
+      currency: b.currency,
       kind: 'CREDIT_ISSUE_ALLOCATION',
       comment: `Выделение кредита банком по договору ${b.contract_number} (Дт 7327 СФРБ, Дт 2400)`,
       lines: [
@@ -217,6 +227,7 @@ async function createCreditContract(req, res, next) {
     const toCashEntry = await ledger.postEntry(db, {
       entryDate: b.start_date,
       creditContractId: contractId,
+      currency: b.currency,
       kind: 'CREDIT_ISSUE_TO_CASH',
       comment: `Перевод кредита в кассу по договору ${b.contract_number}`,
       lines: [
@@ -229,6 +240,7 @@ async function createCreditContract(req, res, next) {
     const cashOutEntry = await ledger.postEntry(db, {
       entryDate: b.start_date,
       creditContractId: contractId,
+      currency: b.currency,
       kind: 'CREDIT_CASH_OUT',
       comment: `Выдача кредита клиенту через кассу по договору ${b.contract_number}`,
       lines: [
@@ -245,7 +257,7 @@ async function createCreditContract(req, res, next) {
 
     const contract = await loadContract(db, contractId);
     const accountsRes = await db.query(
-      'SELECT id, account_number, name, status, holder_type, client_id, contract_id FROM bank_accounts WHERE id = ANY($1::int[])',
+      'SELECT id, account_number, name, status, holder_type, client_id, contract_id, currency FROM bank_accounts WHERE id = ANY($1::int[])',
       [[creditAccountId, interestAccountId]]
     );
 
@@ -269,7 +281,154 @@ async function createCreditContract(req, res, next) {
   }
 }
 
+// ============================================================================
+// Удаление кредитного договора (роль администратора)
+// ============================================================================
+// Кредитный договор тянет за собой больше сущностей, чем депозитный:
+//   * две карты банка (credit_cards) и операции по ним (atm_transactions);
+//   * собственные проводки в journal_entries по credit_contract_id;
+//   * два счёта договора, к которым в том числе привязаны карты.
+//
+// Порядок удаления подобран так, чтобы не упереться во внешние ключи:
+// сначала atm_transactions (ссылается на journal_entries), затем карты
+// (ссылаются на bank_accounts), потом строки и сами проводки, затем счета.
+// Как и в deleteContract, обороты сохраняемых системных счетов сторноятся —
+// иначе оборотная ведомость разошлась бы с журналом проводок.
+
+/**
+ * DELETE /api/credit-contracts/:id
+ * Удаляет кредитный договор вместе с картами, операциями банкомата,
+ * счетами и проводками.
+ */
+async function deleteCreditContract(req, res, next) {
+  const db = await pool.connect();
+  try {
+    await db.query('BEGIN');
+
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      await db.query('ROLLBACK');
+      return res.status(400).json({ message: 'Некорректный идентификатор договора' });
+    }
+
+    const contractRes = await db.query(
+      `SELECT id, contract_number, credit_account_id, interest_account_id
+         FROM credit_contracts WHERE id = $1`,
+      [id]
+    );
+    if (contractRes.rows.length === 0) {
+      await db.query('ROLLBACK');
+      return res.status(404).json({ message: 'Кредитный договор не найден' });
+    }
+
+    const contract = contractRes.rows[0];
+    const accountIds = [contract.credit_account_id, contract.interest_account_id]
+      .filter((value) => value !== null && value !== undefined)
+      .map(Number);
+
+    // 1. Обороты к сторно: строки по проводкам договора и по его счетам
+    const linesRes = await db.query(
+      `SELECT jel.account_id, jel.side, SUM(jel.amount) AS amount
+         FROM journal_entry_lines jel
+         JOIN journal_entries je ON je.id = jel.entry_id
+        WHERE je.credit_contract_id = $1 OR jel.account_id = ANY($2::int[])
+        GROUP BY jel.account_id, jel.side`,
+      [id, accountIds]
+    );
+
+    // 2. Сторно оборотов на счетах, которые сохраняются (системные 1010/7327).
+    //    Счета самого договора удаляются ниже — их обороты не сторноим.
+    const surviving = linesRes.rows.filter((row) => !accountIds.includes(Number(row.account_id)));
+    for (const line of surviving) {
+      const column = line.side === 'D' ? 'debit_turnover' : 'credit_turnover';
+      await db.query(
+        `UPDATE bank_accounts
+            SET ${column} = GREATEST(${column} - $1, 0)
+          WHERE id = $2`,
+        [line.amount, line.account_id]
+      );
+    }
+
+    // 3. Операции банкомата: они ссылаются на journal_entries, поэтому идут первыми
+    const atmRes = await db.query(
+      'DELETE FROM atm_transactions WHERE contract_id = $1 OR card_id IN (SELECT id FROM credit_cards WHERE contract_id = $1)',
+      [id]
+    );
+
+    // 4. Карты договора (ссылаются на счета)
+    const cardsRes = await db.query(
+      'DELETE FROM credit_cards WHERE contract_id = $1 OR account_id = ANY($2::int[])',
+      [id, accountIds]
+    );
+
+    // 5. Строки проводок: и по проводкам договора, и по его счетам
+    const deletedLines = await db.query(
+      `DELETE FROM journal_entry_lines
+        WHERE entry_id IN (SELECT id FROM journal_entries WHERE credit_contract_id = $1)
+           OR account_id = ANY($2::int[])`,
+      [id, accountIds]
+    );
+
+    // 6. Проводки договора
+    const entriesRes = await db.query(
+      'DELETE FROM journal_entries WHERE credit_contract_id = $1',
+      [id]
+    );
+
+    // 7. Отвязываем договор от счетов, чтобы счета можно было удалить
+    await db.query(
+      'UPDATE credit_contracts SET credit_account_id = NULL, interest_account_id = NULL WHERE id = $1',
+      [id]
+    );
+
+    // 8. Счета договора. Параметры разведены: $1 — массив id, $2 — id договора
+    //    (один параметр нельзя использовать и как int[], и как integer).
+    let accountsRemoved = 0;
+    if (accountIds.length > 0) {
+      const accRes = await db.query(
+        `DELETE FROM bank_accounts
+          WHERE credit_contract_id = $2 OR id = ANY($1::int[])`,
+        [accountIds, id]
+      );
+      accountsRemoved = accRes.rowCount;
+    } else {
+      const accRes = await db.query(
+        'DELETE FROM bank_accounts WHERE credit_contract_id = $1',
+        [id]
+      );
+      accountsRemoved = accRes.rowCount;
+    }
+
+    // 9. Договор
+    await db.query('DELETE FROM credit_contracts WHERE id = $1', [id]);
+
+    await db.query('COMMIT');
+
+    return res.json({
+      message: 'Кредитный договор удалён',
+      contract_number: contract.contract_number,
+      deleted_accounts: accountsRemoved,
+      deleted_entries: entriesRes.rowCount,
+      deleted_entry_lines: deletedLines.rowCount,
+      deleted_cards: cardsRes.rowCount,
+      deleted_atm_transactions: atmRes.rowCount,
+      reversed_lines: surviving.length,
+    });
+  } catch (err) {
+    await db.query('ROLLBACK');
+    if (err.code === '23503') {
+      return res.status(409).json({
+        message: 'Нельзя удалить договор: на него ссылаются другие записи банка',
+      });
+    }
+    return handleDbError(err, res, next);
+  } finally {
+    db.release();
+  }
+}
+
 module.exports = {
   listCreditContracts,
   createCreditContract,
+  deleteCreditContract,
 };

@@ -6,7 +6,10 @@
 (function () {
   'use strict';
 
-  const { api, showToast, escapeHtml, formatDate, formatMoney } = Common;
+  const {
+    api, showToast, escapeHtml, formatDate, formatMoney, formatMoneyWithCurrency,
+    ADMIN_CONFIRM_WORD, CURRENCY_RATES, addMonths,
+  } = Common;
 
   // ---------------------------------------------------------------------------
   // Состояние
@@ -18,12 +21,18 @@
     contracts: [],
     cards: {}, // contract_id -> { card_number, pin_code, is_blocked, ... }
     flatTerms: [],
+    pendingDeleteId: null,
   };
 
   const elements = {
     btnAddCredit: document.getElementById('btn-add-credit'),
     creditsTbody: document.getElementById('credits-tbody'),
     creditsEmpty: document.getElementById('credits-empty'),
+    creditDeleteModal: document.getElementById('credit-delete-modal'),
+    creditDeleteMessage: document.getElementById('credit-delete-message'),
+    creditDeleteConfirmInput: document.getElementById('credit-delete-confirm-input'),
+    btnCreditDeleteConfirm: document.getElementById('btn-credit-delete-confirm'),
+    btnCreditDeleteCancel: document.getElementById('btn-credit-delete-cancel'),
     creditModal: document.getElementById('credit-modal'),
     creditForm: document.getElementById('credit-form'),
     creditClient: document.getElementById('credit_client_id'),
@@ -32,6 +41,10 @@
     creditStartDate: document.getElementById('credit_start_date'),
     creditRateDisplay: document.getElementById('credit-rate-display'),
     creditAnnualRate: document.getElementById('credit_annual_rate'),
+    creditAmount: document.getElementById('credit_amount'),
+    creditCurrency: document.getElementById('credit_currency'),
+    creditCurrencyHint: document.getElementById('credit-currency-hint'),
+    creditMaturityDisplay: document.getElementById('credit_maturity_date_display'),
     programHint: document.getElementById('credit-program-hint'),
     btnCloseCreditModal: document.getElementById('btn-close-credit-modal'),
     btnCreditCancel: document.getElementById('btn-credit-cancel'),
@@ -173,7 +186,7 @@
         </td>
         <td class="num">${escapeHtml(String(contract.term_months))}</td>
         <td class="num">${escapeHtml(contract.annual_rate.toFixed(2))}%</td>
-        <td class="num">${formatMoney(contract.amount)}</td>
+        <td class="num">${formatMoneyWithCurrency(contract.amount, contract.currency)}</td>
         <td class="num">${formatDate(contract.start_date)}</td>
         <td class="num">${formatDate(contract.maturity_date)}</td>
         <td>${badge(contract.status)}</td>
@@ -192,6 +205,8 @@
         </td>
         <td class="col-actions">
           <button type="button" class="btn btn-small btn-edit" data-action="schedule" data-id="${contract.id}" title="График погашения кредита">График погашения</button>
+          <button type="button" class="btn btn-small btn-danger admin-only"
+                  data-action="delete-credit" data-id="${contract.id}" title="Удалить кредитный договор">Удалить</button>
         </td>
       `;
       elements.creditsTbody.appendChild(tr);
@@ -223,6 +238,8 @@
     elements.creditRateDisplay.textContent = '—';
     elements.creditAnnualRate.value = '';
     elements.programHint.textContent = '';
+    updateMaturityDate();
+    updateCurrencyHint();
 
     elements.creditClient.innerHTML = '<option value="">— Выберите клиента —</option>';
     state.clients
@@ -280,6 +297,39 @@
       });
   }
 
+  /**
+   * Пересчитывает дату окончания кредита по сроку и дате заключения.
+   * Если данных не хватает (нет срока или дата введена частично) — показывает «—».
+   */
+  function updateMaturityDate() {
+    const termMonths = Number(elements.creditTerm.value);
+    const startIso = DateMask.get(elements.creditStartDate);
+    if (!termMonths || termMonths <= 0 || !/^\d{4}-\d{2}-\d{2}$/.test(startIso)) {
+      elements.creditMaturityDisplay.textContent = '—';
+      return;
+    }
+    elements.creditMaturityDisplay.textContent = formatDate(addMonths(startIso, termMonths));
+  }
+
+  /** Подсказка под выбором валюты: курс к BYN и эквивалент суммы договора. */
+  function updateCurrencyHint() {
+    const code = elements.creditCurrency.value;
+    const amount = Number(elements.creditAmount.value);
+    const rate = CURRENCY_RATES[code];
+    if (code === 'BYN') {
+      elements.creditCurrencyHint.textContent = 'Базовая валюта банка — конвертация не требуется.';
+      return;
+    }
+    // Курс показываем из исходного числа, а не через formatMoney: у RUB он 0.035,
+    // и денежное округление превратило бы его в «0.04» — 1000 RUB выглядели бы
+    // как 40 BYN вместо 35. Лишние нули в конце отбрасываем.
+    const rateText = String(Number(rate.toFixed(4)));
+    const equivalent = amount > 0
+      ? ` Сумма ${formatMoney(amount)} ${code} \u2248 ${formatMoney(amount * rate)} BYN.`
+      : '';
+    elements.creditCurrencyHint.textContent = `Курс: 1 ${code} = ${rateText} BYN.${equivalent}`;
+  }
+
   function onTermChange() {
     const programId = Number(elements.creditProgram.value);
     const termMonths = Number(elements.creditTerm.value);
@@ -287,6 +337,7 @@
     if (!program || !termMonths) {
       elements.creditRateDisplay.textContent = '—';
       elements.creditAnnualRate.value = '';
+      updateMaturityDate();
       return;
     }
     const term = (program.terms || []).find((t) => Number(t.term_months) === termMonths);
@@ -294,6 +345,7 @@
       elements.creditRateDisplay.textContent = `${term.annual_rate.toFixed(2)}% годовых`;
       elements.creditAnnualRate.value = String(term.annual_rate);
     }
+    updateMaturityDate();
   }
 
   async function submitCredit(event) {
@@ -306,7 +358,7 @@
       contract_number: elements.creditForm.elements.contract_number.value,
       start_date: DateMask.get(elements.creditStartDate),
       amount: elements.creditForm.elements.amount.value,
-      currency: 'BYN',
+      currency: elements.creditCurrency.value,
       annual_rate: elements.creditAnnualRate.value,
     };
 
@@ -326,7 +378,7 @@
         contract_number: data.contract_number,
         start_date: data.start_date,
         amount: Number(data.amount),
-        currency: 'BYN',
+        currency: data.currency,
       });
 
       elements.creditModal.classList.add('hidden');
@@ -447,6 +499,66 @@
   }
 
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // Роль администратора: удаление кредитного договора
+  // ---------------------------------------------------------------------------
+
+  /** Открывает модальное окно подтверждения удаления кредитного договора. */
+  function openCreditDeleteModal(id) {
+    const contract = state.contracts.find((item) => Number(item.id) === Number(id));
+    if (!contract) return;
+
+    state.pendingDeleteId = Number(id);
+    elements.creditDeleteMessage.textContent =
+      `Вы уверены, что хотите удалить кредитный договор «${contract.contract_number}» `
+      + `(${contract.client_name})? Вместе с договором будут удалены его счета, `
+      + 'банковская карта, операции банкомата и все бухгалтерские проводки. '
+      + 'Это действие нельзя отменить.';
+    elements.creditDeleteConfirmInput.value = '';
+    elements.btnCreditDeleteConfirm.disabled = true;
+    elements.creditDeleteModal.classList.remove('hidden');
+    elements.creditDeleteConfirmInput.focus();
+  }
+
+  function closeCreditDeleteModal() {
+    elements.creditDeleteModal.classList.add('hidden');
+    elements.creditDeleteConfirmInput.value = '';
+    elements.btnCreditDeleteConfirm.disabled = true;
+    state.pendingDeleteId = null;
+  }
+
+  /** Кнопка удаления активна только при точном вводе контрольного слова. */
+  function checkCreditDeleteConfirmWord() {
+    const typed = elements.creditDeleteConfirmInput.value.trim().toUpperCase();
+    elements.btnCreditDeleteConfirm.disabled = typed !== ADMIN_CONFIRM_WORD;
+  }
+
+  async function confirmCreditDelete() {
+    const id = state.pendingDeleteId;
+    if (id === null) return;
+    if (elements.creditDeleteConfirmInput.value.trim().toUpperCase() !== ADMIN_CONFIRM_WORD) {
+      showToast(`Введите слово ${ADMIN_CONFIRM_WORD} для подтверждения`, 'error');
+      return;
+    }
+
+    elements.btnCreditDeleteConfirm.disabled = true;
+    try {
+      const result = await api.deleteCreditContract(id);
+      closeCreditDeleteModal();
+      await Promise.all([loadCreditContracts(), loadBankState()]);
+      // Обороты счетов изменились — обновляем ведомость в модуле депозитов
+      window.dispatchEvent(new CustomEvent('app:accounts-changed'));
+      showToast(
+        `Кредитный договор ${result.contract_number} удалён (счетов: ${result.deleted_accounts}, `
+        + `карт: ${result.deleted_cards}, проводок: ${result.deleted_entries})`,
+        'success'
+      );
+    } catch (err) {
+      closeCreditDeleteModal();
+      handleRequestError(err);
+    }
+  }
+
   // События
   // ---------------------------------------------------------------------------
   function bindEvents() {
@@ -459,6 +571,9 @@
     elements.btnAddCredit.addEventListener('click', openCreditModal);
     elements.creditProgram.addEventListener('change', selectProgramTerms);
     elements.creditTerm.addEventListener('change', onTermChange);
+    elements.creditStartDate.addEventListener('input', updateMaturityDate);
+    elements.creditCurrency.addEventListener('change', updateCurrencyHint);
+    elements.creditAmount.addEventListener('input', updateCurrencyHint);
     elements.creditForm.addEventListener('submit', submitCredit);
 
     elements.btnCloseCreditModal.addEventListener('click', () => {
@@ -469,10 +584,23 @@
     });
 
     elements.creditsTbody.addEventListener('click', (event) => {
-      const btn = event.target.closest('button[data-action="schedule"]');
-      if (!btn) return;
-      const contract = state.contracts.find((c) => Number(c.id) === Number(btn.dataset.id));
-      if (contract) openScheduleModal(contract);
+      const scheduleBtn = event.target.closest('button[data-action="schedule"]');
+      if (scheduleBtn) {
+        const contract = state.contracts.find((c) => Number(c.id) === Number(scheduleBtn.dataset.id));
+        if (contract) openScheduleModal(contract);
+        return;
+      }
+
+      const deleteBtn = event.target.closest('button[data-action="delete-credit"]');
+      if (deleteBtn) openCreditDeleteModal(deleteBtn.dataset.id);
+    });
+
+    // --- Удаление кредитного договора (Admin-режим) ---
+    elements.btnCreditDeleteCancel.addEventListener('click', closeCreditDeleteModal);
+    elements.creditDeleteConfirmInput.addEventListener('input', checkCreditDeleteConfirmWord);
+    elements.btnCreditDeleteConfirm.addEventListener('click', confirmCreditDelete);
+    elements.creditDeleteModal.addEventListener('click', (event) => {
+      if (event.target === elements.creditDeleteModal) closeCreditDeleteModal();
     });
 
     elements.btnCloseScheduleModal.addEventListener('click', () => {
@@ -494,7 +622,7 @@
     });
 
     // Закрытие модалок по клику на подложку
-    [elements.creditModal, elements.scheduleModal].forEach((overlay) => {
+    [elements.creditModal, elements.scheduleModal, elements.creditDeleteModal].forEach((overlay) => {
       overlay.addEventListener('click', (event) => {
         if (event.target === overlay) overlay.classList.add('hidden');
       });
@@ -505,6 +633,7 @@
       if (event.key === 'Escape') {
         elements.creditModal.classList.add('hidden');
         elements.scheduleModal.classList.add('hidden');
+        elements.creditDeleteModal.classList.add('hidden');
       }
     });
   }

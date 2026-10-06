@@ -46,6 +46,7 @@ async function closeMonth(req, res, next) {
          dc.id,
          dc.contract_number,
          dc.amount,
+         dc.currency,
          dc.annual_rate,
          dc.accrued_interest,
          dc.deposit_account_id,
@@ -64,6 +65,9 @@ async function closeMonth(req, res, next) {
     for (const contract of contractsRes.rows) {
       const contractId = Number(contract.id);
       const amount = Number(contract.amount);
+      // Валюта договора: клиентские счета ведутся в ней, системные (Касса, СФРБ) — в BYN.
+      // postEntry конвертирует каждую сторону проводки в родную валюту её счёта.
+      const contractCurrency = contract.currency || ledger.currency.BASE_CURRENCY;
       const monthly = ledger.monthlyInterest(amount, contract.annual_rate);
       const clientName = `${contract.last_name} ${contract.first_name} ${contract.middle_name}`;
 
@@ -73,6 +77,7 @@ async function closeMonth(req, res, next) {
         client_name: clientName,
         program_name: contract.program_name,
         amount,
+        currency: contractCurrency,
         monthly_interest: monthly,
         status: 'ACTIVE',
         entries: [],
@@ -92,6 +97,7 @@ async function closeMonth(req, res, next) {
           contractId,
           kind: 'INTEREST_ACCRUAL',
           comment: `Начисление процентов за месяц ${bankDate} по договору ${contract.contract_number}`,
+          currency: contractCurrency,
           lines: [
             { accountId: sfrb.id, side: 'D', amount: monthly },
             { accountId: contract.interest_account_id, side: 'C', amount: monthly },
@@ -108,6 +114,7 @@ async function closeMonth(req, res, next) {
             contractId,
             kind: 'INTEREST_PAYMENT',
             comment: `Выплата процентов по отзывному вкладу ${contract.contract_number} (перевод в кассу)`,
+            currency: contractCurrency,
             lines: [
               { accountId: contract.interest_account_id, side: 'D', amount: monthly },
               { accountId: cash.id, side: 'C', amount: monthly },
@@ -119,6 +126,7 @@ async function closeMonth(req, res, next) {
             contractId,
             kind: 'INTEREST_CASH_IN',
             comment: `Поступление процентов в кассу для выдачи клиенту (договор ${contract.contract_number})`,
+            currency: contractCurrency,
             lines: [
               { accountId: cash.id, side: 'D', amount: monthly },
             ],
@@ -137,6 +145,7 @@ async function closeMonth(req, res, next) {
             contractId,
             kind: 'INTEREST_FINAL_PAYMENT',
             comment: `Выплата процентов за весь срок по безотзывному вкладу ${contract.contract_number} (перевод в кассу)`,
+            currency: contractCurrency,
             lines: [
               { accountId: contract.interest_account_id, side: 'D', amount: accrued },
               { accountId: cash.id, side: 'C', amount: accrued },
@@ -147,6 +156,7 @@ async function closeMonth(req, res, next) {
             contractId,
             kind: 'INTEREST_FINAL_CASH_IN',
             comment: `Поступление процентов в кассу для выдачи клиенту (договор ${contract.contract_number})`,
+            currency: contractCurrency,
             lines: [
               { accountId: cash.id, side: 'D', amount: accrued },
             ],
@@ -162,6 +172,7 @@ async function closeMonth(req, res, next) {
           contractId,
           kind: 'DEPOSIT_RETURN_SFRB',
           comment: `Окончание депозита ${contract.contract_number}: возврат основного вклада из СФРБ на текущий счёт`,
+          currency: contractCurrency,
           lines: [
             { accountId: sfrb.id, side: 'D', amount },
             { accountId: contract.deposit_account_id, side: 'C', amount },
@@ -173,6 +184,7 @@ async function closeMonth(req, res, next) {
           contractId,
           kind: 'DEPOSIT_RETURN_CASH',
           comment: `Перевод депозита ${contract.contract_number} на выплату (закрытие текущего счёта)`,
+          currency: contractCurrency,
           lines: [
             { accountId: contract.deposit_account_id, side: 'D', amount },
             { accountId: cash.id, side: 'C', amount },
@@ -184,6 +196,7 @@ async function closeMonth(req, res, next) {
           contractId,
           kind: 'DEPOSIT_CASH_IN',
           comment: `Поступление депозита ${contract.contract_number} в кассу для выдачи клиенту`,
+          currency: contractCurrency,
           lines: [
             { accountId: cash.id, side: 'D', amount },
           ],
@@ -227,6 +240,7 @@ async function closeMonth(req, res, next) {
          cc.amount,
          cc.annual_rate,
          cc.term_months,
+         cc.currency,
          cc.credit_account_id,
          cc.interest_account_id,
          cc.start_date::text AS start_date,
@@ -243,6 +257,9 @@ async function closeMonth(req, res, next) {
     for (const credit of creditsRes.rows) {
       const contractId = Number(credit.id);
       const amount = Number(credit.amount);
+      // Валюта договора: суммы графика приходят в ней, а postEntry переводит
+      // стороны к родной валюте счёта (системные счета — строго BYN).
+      const creditCurrency = credit.currency || 'BYN';
       const clientName = `${credit.last_name} ${credit.first_name} ${credit.middle_name}`;
 
       // Номер месяца по графику погашения: 1 = месяц начала договора
@@ -279,6 +296,7 @@ async function closeMonth(req, res, next) {
       contractLog.entries.push(await ledger.postEntry(db, {
         entryDate: bankDate,
         creditContractId: contractId,
+        currency: creditCurrency,
         kind: 'CREDIT_INTEREST_ACCRUAL',
         comment: `Начисление процентов за месяц ${bankDate} по кредитному договору ${credit.contract_number}`,
         lines: [
@@ -293,6 +311,7 @@ async function closeMonth(req, res, next) {
       contractLog.entries.push(await ledger.postEntry(db, {
         entryDate: bankDate,
         creditContractId: contractId,
+        currency: creditCurrency,
         kind: 'CREDIT_INTEREST_CASH_IN',
         comment: `Внесение процентов в кассу (кредитный договор ${credit.contract_number})`,
         lines: [
@@ -302,6 +321,7 @@ async function closeMonth(req, res, next) {
       contractLog.entries.push(await ledger.postEntry(db, {
         entryDate: bankDate,
         creditContractId: contractId,
+        currency: creditCurrency,
         kind: 'CREDIT_INTEREST_PAYMENT',
         comment: `Погашение процентов из кассы: Кт 1010, Дт 2470 (кредитный договор ${credit.contract_number})`,
         lines: [
@@ -317,6 +337,7 @@ async function closeMonth(req, res, next) {
         contractLog.entries.push(await ledger.postEntry(db, {
           entryDate: bankDate,
           creditContractId: contractId,
+        currency: creditCurrency,
           kind: 'CREDIT_PRINCIPAL_CASH_IN',
           comment: `Внесение денег в кассу в счёт погашения основного долга (кредитный договор ${credit.contract_number})`,
           lines: [
@@ -326,6 +347,7 @@ async function closeMonth(req, res, next) {
         contractLog.entries.push(await ledger.postEntry(db, {
           entryDate: bankDate,
           creditContractId: contractId,
+        currency: creditCurrency,
           kind: 'CREDIT_PRINCIPAL_PAYMENT',
           comment: `Погашение основного долга из кассы: Кт 1010, Дт 2400 (кредитный договор ${credit.contract_number})`,
           lines: [
@@ -342,6 +364,7 @@ async function closeMonth(req, res, next) {
         contractLog.entries.push(await ledger.postEntry(db, {
           entryDate: bankDate,
           creditContractId: contractId,
+        currency: creditCurrency,
           kind: 'CREDIT_COMPLETION',
           comment: `Окончание кредита ${credit.contract_number}: Кт 7327 СФРБ, Кт 2400`,
           lines: [
@@ -465,8 +488,141 @@ async function setBankDate(req, res, next) {
   }
 }
 
+// ============================================================================
+// Полный сброс банковских данных (роль администратора)
+// ============================================================================
+// Удаляет всё, кроме клиентов, справочников и программ депозитов/кредитов:
+//   договоры (депозитные и кредитные), карты, операции банкомата, проводки,
+//   клиентские счета.
+//
+// Сохраняются и восстанавливаются:
+//   * клиенты и все справочники (города, семейные положения и т.д.);
+//   * программы депозитов и кредитов со сроками и ставками;
+//   * два системных счёта банка — с начальными оборотами
+//     (1010 «Касса банка»: дебет 10 000, кредит 0;
+//      7327 «СФРБ»: дебет 0, кредит 100 000 000);
+//   * банковская дата — первое число текущего месяца;
+//   * последовательность номеров счетов bank_account_seq — на 2,
+//     чтобы новые клиентские счета продолжили нумерацию с третьего.
+//
+// Порядок удаления — от зависимых таблиц к зависимым (atm_transactions →
+// credit_cards → journal_entry_lines → journal_entries → bank_accounts →
+// договоры), иначе сработает ограничение внешнего ключа.
+
+// Системные счета опознаём по коду из chart_of_accounts, а не по внутреннему
+// id: идентификаторы задаются сид-скриптом и могут сдвинуться, а коды — нет.
+const RESET_SYSTEM_ACCOUNT_TURNOVERS = `
+  UPDATE bank_accounts ba
+     SET debit_turnover  = CASE WHEN ca.code = '1010' THEN 10000.00 ELSE 0 END,
+         credit_turnover = CASE WHEN ca.code = '7327' THEN 100000000.00 ELSE 0 END
+    FROM chart_of_accounts ca
+   WHERE ca.id = ba.chart_account_id
+     AND ca.code IN ('1010', '7327')
+`;
+
+/**
+ * POST /api/bank/reset
+ * Полный сбоз банковских данных с сохранением клиентов.
+ */
+async function resetBankData(req, res, next) {
+  const db = await pool.connect();
+  try {
+    await db.query('BEGIN');
+
+    // Количество клиентов фиксируем до очистки — это же будет результат проверки,
+    // что клиенты действительно сохранились.
+    const clientsRes = await db.query('SELECT count(*)::int AS n FROM clients');
+
+    // 1. Операции банкомата (ссылаются на journal_entries)
+    const atmRes = await db.query('DELETE FROM atm_transactions');
+
+    // 2. Банковские карты (ссылаются на счета и договоры)
+    const cardsRes = await db.query('DELETE FROM credit_cards');
+
+    // 3. Строки проводок (ссылаются на проводки и счета)
+    const linesRes = await db.query('DELETE FROM journal_entry_lines');
+
+    // 4. Проводки (ссылаются на договоры)
+    const entriesRes = await db.query('DELETE FROM journal_entries');
+
+    // 5. Разрываем взаимные ссылки договоров и счетов:
+    //    bank_accounts.contract_id / credit_contract_id ссылаются на договоры,
+    //    а deposit_contracts / credit_contracts — на счета. Пока ссылки живые,
+    //    нельзя удалить ни одну из сторон, поэтому обнуляем их у счетов
+    //    (у системных счетов 1010/7327 они и так NULL).
+    await db.query(
+      'UPDATE bank_accounts SET contract_id = NULL, credit_contract_id = NULL'
+    );
+
+    // 6. Договоры обоих видов
+    const creditsRes = await db.query('DELETE FROM credit_contracts');
+    const depositsRes = await db.query('DELETE FROM deposit_contracts');
+
+    // 7. Клиентские счета (системные 1010/7327 остаются)
+    const accountsRes = await db.query(
+      `DELETE FROM bank_accounts ba
+        USING chart_of_accounts ca
+       WHERE ca.id = ba.chart_account_id
+         AND ca.code NOT IN ('1010', '7327')`
+    );
+
+    // 8. Начальные обороты системных счетов
+    await db.query(RESET_SYSTEM_ACCOUNT_TURNOVERS);
+
+    // 9. Банковская дата — первое число текущего месяца
+    const dateRes = await db.query(
+      `UPDATE bank_settings
+          SET value = TO_CHAR(DATE_TRUNC('month', CURRENT_DATE)::date, 'YYYY-MM-DD')
+        WHERE key = 'bank_date'
+        RETURNING value`
+    );
+
+    // 10. Счётчики: номера счетов продолжаются с третьего, идентификаторы —
+    //     перезапускаются с единицы, чтобы счета не получили id выше текущих.
+    await db.query("SELECT setval('bank_account_seq', 2)");
+    for (const table of [
+      'deposit_contracts',
+      'credit_contracts',
+      'credit_cards',
+      'atm_transactions',
+      'journal_entries',
+      'journal_entry_lines',
+      'bank_accounts',
+    ]) {
+      await db.query(
+        `SELECT setval(pg_get_serial_sequence('${table}', 'id'),
+                       COALESCE((SELECT MAX(id) FROM ${table}), 0) + 1,
+                       false)`
+      );
+    }
+
+    await db.query('COMMIT');
+
+    return res.json({
+      message: 'Банковские данные сброшены. Клиенты сохранены.',
+      kept_clients: clientsRes.rows[0].n,
+      bank_date: dateRes.rows[0] ? dateRes.rows[0].value : null,
+      deleted: {
+        deposit_contracts: depositsRes.rowCount,
+        credit_contracts: creditsRes.rowCount,
+        credit_cards: cardsRes.rowCount,
+        atm_transactions: atmRes.rowCount,
+        journal_entries: entriesRes.rowCount,
+        journal_entry_lines: linesRes.rowCount,
+        client_accounts: accountsRes.rowCount,
+      },
+    });
+  } catch (err) {
+    await db.query('ROLLBACK');
+    next(err);
+  } finally {
+    db.release();
+  }
+}
+
 module.exports = {
   getBankState,
   setBankDate,
   closeMonth,
+  resetBankData,
 };

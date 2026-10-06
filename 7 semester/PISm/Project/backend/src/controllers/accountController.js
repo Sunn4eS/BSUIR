@@ -1,6 +1,7 @@
 'use strict';
 
 const pool = require('../config/db');
+const currency = require('../config/currency');
 
 const LIST_ACCOUNTS_SQL = `
   SELECT
@@ -14,6 +15,7 @@ const LIST_ACCOUNTS_SQL = `
     coa.code AS chart_code,
     coa.name AS chart_name,
     coa.type AS chart_type,
+    a.currency,
     a.debit_turnover,
     a.credit_turnover,
     CASE WHEN coa.type = 'A'
@@ -40,9 +42,15 @@ function mapAccount(row) {
     chart_code: row.chart_code,
     chart_name: row.chart_name,
     chart_type: row.chart_type,
+    // Валюта счёта: клиентские — валюта договора, системные (1010, 7327) — BYN.
+    currency: row.currency || currency.BASE_CURRENCY,
     debit_turnover: Number(row.debit_turnover),
     credit_turnover: Number(row.credit_turnover),
     balance: Number(row.balance),
+    // Эквиваленты в базовой валюте банка для сведения баланса
+    debit_turnover_byn: currency.toByn(row.debit_turnover, row.currency || currency.BASE_CURRENCY),
+    credit_turnover_byn: currency.toByn(row.credit_turnover, row.currency || currency.BASE_CURRENCY),
+    balance_byn: currency.toByn(row.balance, row.currency || currency.BASE_CURRENCY),
     client_name: row.client_name,
   };
 }
