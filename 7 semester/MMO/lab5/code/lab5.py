@@ -1,26 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-ЛР 05. Деревья решений.
-
-Реализация по заданному шаблону:
-    1) критерий Джини (gini);
-    2) прирост информации (gain);
-    3) критерии останова (не менее двух): max_depth, min_samples_leaf,
-       чистота узла (gini == 0), отсутствие допустимого разбиения;
-    4) метрика качества (accuracy_metric);
-    5) проверка самописного дерева на задаче классификации и сравнение
-       с sklearn.tree.DecisionTreeClassifier — результаты совпадают
-       полностью (предсказания на train и test идентичны побайтно).
-
-Для полного совпадения воспроизведена арифметика scikit-learn:
-    - данные приводятся к float32, как это делает sklearn;
-    - порог разбиения — середина между соседними уникальными значениями
-      признака (после склейки значений, отличающихся менее чем на 1e-7);
-    - прирост сравнивается через «прокси» -nL*G(L) - nR*G(R) (без деления);
-    - признаки узла перебираются в том же случайном порядке (генератор
-      our_rand_r из sklearn), поэтому при равных приростах выбирается
-      то же разбиение, что и у sklearn.
-"""
 import os
 import sys
 import time
@@ -41,24 +18,20 @@ from sklearn.tree import DecisionTreeClassifier
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Порог «постоянства» признака и машинный эпсилон — как в sklearn/tree/_partitioner
+
 FT = np.float32(1e-7)
 EPS = np.finfo('double').eps
 RAND_R_MAX = 2147483647
 
 
-# =====================================================================
-#  Реализуем класс узла
-# =====================================================================
 class Node:
     def __init__(self, index, t, true_branch, false_branch):
-        self.index = index  # индекс признака, по которому ведется сравнение с порогом в этом узле
-        self.t = t  # значение порога
-        self.true_branch = true_branch  # поддерево, удовлетворяющее условию в узле
-        self.false_branch = false_branch  # поддерево, не удовлетворяющее условию в узле
+        self.index = index
+        self.t = t
+        self.true_branch = true_branch
+        self.false_branch = false_branch
 
 
-# И класс терминального узла (листа)
 class Leaf:
     def __init__(self, data, labels):
         self.data = data
@@ -66,28 +39,19 @@ class Leaf:
         self.prediction = self.predict()
 
     def predict(self):
-        # подсчет количества объектов разных классов
-        classes = {}  # сформируем словарь "класс: количество объектов"
+
+        classes = {}
         for label in self.labels:
             if label not in classes:
                 classes[label] = 0
             classes[label] += 1
 
-        # найдем класс, количество объектов которого будет максимальным в этом листе
-        # (при равенстве голосов выбирается меньший индекс класса — как в sklearn)
+
         prediction = max(classes, key=lambda k: (classes[k], -int(k)))
         return prediction
 
 
-# =====================================================================
-#  1) Расчет критерия Джини
-# =====================================================================
 def gini(labels):
-    """Критерий Джини для узла: G = 1 - Σ_k (n_k / n)^2.
-
-    Вычисляется той же арифметикой, что и GiniCriterion в sklearn:
-    G = 1.0 - Σ_k n_k^2 / (n * n).
-    """
     n = len(labels)
     if n == 0:
         return 0.0
@@ -100,17 +64,7 @@ def gini(labels):
     return 1.0 - sq / (float(n) * float(n))
 
 
-# =====================================================================
-#  2) Расчет прироста информации
-# =====================================================================
 def gain(left_labels, right_labels, root_gini):
-    """Прирост информации при разбиении узла на левое и правое поддеревья:
-
-        Q = G(Xm) - |Xl|/|Xm| * G(Xl) - |Xr|/|Xm| * G(Xr),
-
-    где G — критерий Джини, Xm — множество объектов узла,
-    Xl, Xr — множества объектов левого и правого поддерева.
-    """
     n = len(left_labels) + len(right_labels)
     if n == 0:
         return 0.0
@@ -119,7 +73,6 @@ def gain(left_labels, right_labels, root_gini):
             - (len(right_labels) / n) * gini(right_labels))
 
 
-# Разбиение датасета в узле
 def split(data, labels, column_index, t):
     left = np.where(data[:, column_index] <= np.float64(t))
     right = np.where(data[:, column_index] > np.float64(t))
@@ -133,13 +86,7 @@ def split(data, labels, column_index, t):
     return true_data, false_data, true_labels, false_labels
 
 
-# ---------------------------------------------------------------------
-#  Вспомогательные механизмы для полного совпадения со sklearn:
-#  генератор псевдослучайного порядка перебора признаков в узле
-#  (xorshift-генератор our_rand_r из sklearn.utils._random).
-# ---------------------------------------------------------------------
 class _SklearnRNG:
-    """our_rand_r из sklearn (xorshift32)."""
 
     def __init__(self, random_state):
         self.s = int(np.random.RandomState(random_state)
@@ -160,7 +107,6 @@ class _SklearnRNG:
 
 
 class _SplitterState:
-    """Состояние BestSplitter из sklearn: массивы features/constant_features."""
 
     def __init__(self, n_features, random_state):
         self.rng = _SklearnRNG(random_state)
@@ -168,11 +114,6 @@ class _SplitterState:
         self.constants = [0] * n_features
 
     def draw_order(self, data, n_known):
-        """Порядок перебора признаков в текущем узле (как в node_split_best).
-
-        Возвращает (order, n_total) — список признаков и число признаков,
-        признанных постоянными на пути к дочерним узлам.
-        """
         n_features = data.shape[1]
         f_i = n_features
         n_found = n_drawn = 0
@@ -191,7 +132,7 @@ class _SplitterState:
             f_j += n_found
             feat = self.features[f_j]
             col = data[:, feat]
-            # признак постоянен в узле (max - min <= 1e-7) — разбивать нечего
+
             if col.max() <= col.min() + FT:
                 self.features[f_j], self.features[n_total] = \
                     self.features[n_total], feat
@@ -207,13 +148,10 @@ class _SplitterState:
         return order, n_total
 
 
-# текущее состояние «сплиттера» (обновляется на каждое построение дерева)
 _SPLITTER = _SplitterState(1, 42)
 
 
 def _candidate_thresholds(col):
-    """Пороги-кандидаты признака: середины между соседними уникальными
-    значениями (значения, отличающиеся менее чем на 1e-7, склеиваются)."""
     vals = np.sort(col)
     n = len(vals)
     i = 1
@@ -225,16 +163,7 @@ def _candidate_thresholds(col):
         i += 1
 
 
-# =====================================================================
-#  3) Нахождение наилучшего разбиения
-# =====================================================================
 def find_best_split(data, labels, min_samples_leaf=3, n_known=0):
-    """Поиск наилучшего разбиения узла.
-
-    Признаки перебираются в порядке, который использует sklearn
-    (случайный порядок с фиксированным random_state), поэтому при
-    равном приросте выбирается точно то же разбиение, что и у sklearn.
-    """
     n = len(labels)
     best_proxy = -np.inf
     best = None
@@ -248,7 +177,7 @@ def find_best_split(data, labels, min_samples_leaf=3, n_known=0):
             mask = col <= np.float64(t)
             gl = gini(labels[mask])
             gr = gini(labels[~mask])
-            # «прокси» прирост информации sklearn (без деления на n)
+
             proxy = -n_right * gr - n_left * gl
             if proxy > best_proxy:
                 best_proxy = proxy
@@ -256,20 +185,8 @@ def find_best_split(data, labels, min_samples_leaf=3, n_known=0):
     return best, n_total
 
 
-# =====================================================================
-#  Построение дерева с помощью рекурсивной функции
-# =====================================================================
 def build_tree(data, labels, depth=0, max_depth=None, min_samples_leaf=1,
                min_samples_split=2, n_known=0):
-    """Рекурсивное построение дерева решений.
-
-    Критерии останова (реализовано 4):
-      1) достигнута максимальная глубина max_depth (если задана);
-      2) в узле меньше min_samples_split объектов либо разбиение
-         невозможно дать потомков, не меньших min_samples_leaf;
-      3) узел чистый — критерий Джини равен 0;
-      4) не найдено ни одного допустимого разбиения.
-    """
     n = len(labels)
     root_gini = gini(labels)
 
@@ -283,7 +200,7 @@ def build_tree(data, labels, depth=0, max_depth=None, min_samples_leaf=1,
         best, n_known_child = find_best_split(data, labels, min_samples_leaf,
                                               n_known)
         if best is None:
-            # нет ни одного допустимого разбиения
+
             is_leaf = True
         else:
             index, t = best
@@ -298,7 +215,7 @@ def build_tree(data, labels, depth=0, max_depth=None, min_samples_leaf=1,
     true_data, false_data, true_labels, false_labels = \
         split(data, labels, index, t)
 
-    # Рекурсивно строим два поддерева
+
     true_branch = build_tree(true_data, true_labels, depth + 1,
                              max_depth, min_samples_leaf, min_samples_split,
                              n_known_child)
@@ -306,12 +223,12 @@ def build_tree(data, labels, depth=0, max_depth=None, min_samples_leaf=1,
                               max_depth, min_samples_leaf, min_samples_split,
                               n_known_child)
 
-    # Возвращаем класс узла со всеми поддеревьями, то есть целого дерева
+
     return Node(index, t, true_branch, false_branch)
 
 
 def classify_object(obj, node):
-    # Останавливаем рекурсию, если достигли листа
+
     if isinstance(node, Leaf):
         answer = node.prediction
         return answer
@@ -330,40 +247,31 @@ def predict(data, tree):
     return classes
 
 
-# Напечатаем ход нашего дерева
 def print_tree(node, spacing=""):
-    # Если лист, то выводим его прогноз
+
     if isinstance(node, Leaf):
         print(spacing + "Прогноз:", node.prediction)
         return
 
-    # Выведем значение индекса и порога на этом узле
+
     print(spacing + 'Индекс', str(node.index), '<=', str(node.t))
 
-    # Рекурсионный вызов функции на положительном поддереве
+
     print(spacing + '--> True:')
     print_tree(node.true_branch, spacing + "  ")
 
-    # Рекурсионный вызов функции на отрицательном поддереве
+
     print(spacing + '--> False:')
     print_tree(node.false_branch, spacing + "  ")
 
 
-# =====================================================================
-#  4) Введем функцию подсчета точности как доли правильных ответов
-# =====================================================================
 def accuracy_metric(actual, predicted):
-    """Метрика качества модели: доля правильных ответов (accuracy)."""
     assert len(actual) == len(predicted)
     correct = sum(1 for a, p in zip(actual, predicted) if int(a) == int(p))
     return correct / len(actual)
 
 
-# =====================================================================
-#  Вспомогательные средства приложения
-# =====================================================================
 def _specs(tree, out=None, path=""):
-    """Структура дерева: (признак, порог) в порядке обхода в глубину."""
     if out is None:
         out = {}
     if isinstance(tree, Leaf):
@@ -376,7 +284,6 @@ def _specs(tree, out=None, path=""):
 
 
 def sk_specs(clf):
-    """Структура sklearn-дерева (обход в глубину от корня)."""
     st = clf.tree_
     out = {}
 
@@ -407,14 +314,10 @@ def fig_to_tab(fig, parent):
     return canvas
 
 
-# =====================================================================
-#  Графическая визуализация дерева
-# =====================================================================
 class _Layout:
-    """Простой раскладчик дерева для отрисовки."""
 
     def __init__(self, root):
-        self.nodes = []  # (node_or_Leaf, depth, x)
+        self.nodes = []
 
         def place(node, depth, x0):
             if isinstance(node, Leaf):
@@ -431,7 +334,6 @@ class _Layout:
 
 
 def draw_tree(fig, tree, title="Дерево решений (реализация ЛР5)"):
-    """Отрисовка дерева на заданной фигуре matplotlib."""
     fig.clear()
     ax = fig.add_subplot(111)
     ax.axis('off')
@@ -468,9 +370,6 @@ def draw_tree(fig, tree, title="Дерево решений (реализаци�
     fig.subplots_adjust(left=0.02, right=0.98, top=0.94, bottom=0.02)
 
 
-# =====================================================================
-#  Приложение Tkinter
-# =====================================================================
 class Lab5App:
     DATASETS = {
         'synth': 'Синтетический (make_classification)',
@@ -498,15 +397,12 @@ class Lab5App:
         if shots_dir is not None:
             self.root.after(600, self._run_shots)
 
-    # -- данные ------------------------------------------------------
+
     def _reset_splitter(self):
-        """Сбросить состояние генератора порядка признаков перед
-        построением нового дерева (как при новом Splitter в sklearn)."""
         global _SPLITTER
         _SPLITTER = _SplitterState(self.Xtr.shape[1], self.random_state)
 
     def _bind_dataset(self):
-        """Подготовка выбранного датасета (X, y) с разбиением train/test."""
         if self.ds_name == 'bank':
             path = os.path.join(SCRIPT_DIR, 'Bankloan.csv')
             df = pd.read_csv(path)
@@ -546,7 +442,7 @@ class Lab5App:
         nb.add(self.tab_tree, text="Дерево решений")
         nb.add(self.tab_compare, text="Сравнение со sklearn")
 
-    # -- вкладка «Данные» -------------------------------------------
+
     def _draw_data_tab(self):
         row = ttk.Frame(self.tab_data)
         row.pack(fill='x')
@@ -620,7 +516,7 @@ class Lab5App:
         self._bind_dataset()
         self._refresh_data_tab()
 
-    # -- вкладка «Критерии информативности» --------------------------
+
     def _draw_criteria_tab(self):
         frm = ttk.LabelFrame(self.tab_criteria, text="Критерии информативности",
                              padding=6)
@@ -674,7 +570,6 @@ class Lab5App:
         self._draw_example()
 
     def _draw_example(self):
-        """Считаем gini/прирост на лучшем разбиении корня дерева."""
         self._reset_splitter()
         tree = build_tree(self.Xtr, self.ytr, max_depth=self.max_depth,
                           min_samples_leaf=self.min_samples_leaf)
@@ -705,7 +600,7 @@ class Lab5App:
         self.fig_ex.tight_layout()
         self.fig_ex.canvas.draw_idle()
 
-    # -- вкладка «Дерево решений» ------------------------------------
+
     def _draw_tree_tab(self):
         row = ttk.Frame(self.tab_tree)
         row.pack(fill='x')
@@ -775,7 +670,7 @@ class Lab5App:
     def _print_to_console(self):
         print_tree(getattr(self, '_current_tree', None))
 
-    # -- вкладка «Сравнение со sklearn» ------------------------------
+
     def _draw_compare_tab(self):
         row = ttk.Frame(self.tab_compare)
         row.pack(fill='x')
@@ -900,7 +795,7 @@ class Lab5App:
         self.fig_cmp.tight_layout()
         self.fig_cmp.canvas.draw_idle()
 
-    # -- автоматические скриншоты ------------------------------------
+
     def _capture(self, name):
         try:
             out = os.path.join(self.shots_dir, name)
