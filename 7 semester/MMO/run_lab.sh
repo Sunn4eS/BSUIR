@@ -15,7 +15,8 @@ case "$LAB_ID" in
   lab2|2)    FILE="lab2/code/lab2.py" ;;
   lab3|3)    FILE="lab3/code/lab3.py" ;;
   lab4|4)    FILE="lab4/code/lab4.py" ;;
-  lab5|lab6|lab7|lab8|lab9|lab10|5|6|7|8|9|10)
+  lab5|5)    FILE="lab5/code/lab5.py" ;;
+  lab6|lab7|lab8|lab9|lab10|6|7|8|9|10)
     echo "Для lab${LAB_ID#lab} пока нет кода (папка lab${LAB_ID#lab}/code пустая)."
     exit 1 ;;
   lab*)
