@@ -1,7 +1,4 @@
 import os
-import sys
-import time
-import subprocess
 import tkinter as tk
 from tkinter import ttk
 
@@ -15,13 +12,10 @@ import seaborn as sns
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import (accuracy_score, precision_score, recall_score,
+                             f1_score, confusion_matrix)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-
-FT = np.float32(1e-7)
-EPS = np.finfo('double').eps
-RAND_R_MAX = 2147483647
 
 
 class Node:
@@ -33,35 +27,26 @@ class Node:
 
 
 class Leaf:
-    def __init__(self, data, labels):
-        self.data = data
+    def __init__(self, labels):
         self.labels = labels
         self.prediction = self.predict()
 
     def predict(self):
-
         classes = {}
         for label in self.labels:
             if label not in classes:
                 classes[label] = 0
             classes[label] += 1
-
-
-        prediction = max(classes, key=lambda k: (classes[k], -int(k)))
+        prediction = max(classes, key=lambda c: (classes[c], -c))
         return prediction
 
 
 def gini(labels):
+    _, counts = np.unique(labels, return_counts=True)
     n = len(labels)
     if n == 0:
         return 0.0
-    classes = {}
-    for label in labels:
-        classes[label] = classes.get(label, 0) + 1
-    sq = 0.0
-    for c in classes.values():
-        sq += float(c) * float(c)
-    return 1.0 - sq / (float(n) * float(n))
+    return 1.0 - np.sum(counts.astype(float) ** 2) / (n * n)
 
 
 def gain(left_labels, right_labels, root_gini):
@@ -74,760 +59,512 @@ def gain(left_labels, right_labels, root_gini):
 
 
 def split(data, labels, column_index, t):
-    left = np.where(data[:, column_index] <= np.float64(t))
-    right = np.where(data[:, column_index] > np.float64(t))
-
-    true_data = data[left]
-    false_data = data[right]
-
-    true_labels = labels[left]
-    false_labels = labels[right]
-
-    return true_data, false_data, true_labels, false_labels
+    left = np.where(data[:, column_index] <= t)
+    right = np.where(data[:, column_index] > t)
+    return data[left], data[right], labels[left], labels[right]
 
 
-class _SklearnRNG:
-
-    def __init__(self, random_state):
-        self.s = int(np.random.RandomState(random_state)
-                     .randint(0, RAND_R_MAX)) & 0xFFFFFFFF
-
-    def rand_r(self):
-        s = self.s & 0xFFFFFFFF
-        if s == 0:
-            s = 1
-        s ^= (s << 13) & 0xFFFFFFFF
-        s ^= s >> 17
-        s ^= (s << 5) & 0xFFFFFFFF
-        self.s = s & 0xFFFFFFFF
-        return self.s % (RAND_R_MAX + 1)
-
-    def rand_int(self, low, high):
-        return low + self.rand_r() % (high - low)
-
-
-class _SplitterState:
-
-    def __init__(self, n_features, random_state):
-        self.rng = _SklearnRNG(random_state)
-        self.features = list(range(n_features))
-        self.constants = [0] * n_features
-
-    def draw_order(self, data, n_known):
-        n_features = data.shape[1]
-        f_i = n_features
-        n_found = n_drawn = 0
-        n_total = n_known
-        n_visited = 0
-        order = []
-        while f_i > n_total and (n_visited < n_features
-                                 or n_visited <= n_found + n_drawn):
-            n_visited += 1
-            f_j = self.rng.rand_int(n_drawn, f_i - n_found)
-            if f_j < n_known:
-                self.features[n_drawn], self.features[f_j] = \
-                    self.features[f_j], self.features[n_drawn]
-                n_drawn += 1
-                continue
-            f_j += n_found
-            feat = self.features[f_j]
-            col = data[:, feat]
-
-            if col.max() <= col.min() + FT:
-                self.features[f_j], self.features[n_total] = \
-                    self.features[n_total], feat
-                n_found += 1
-                n_total += 1
-                continue
-            f_i -= 1
-            self.features[f_i], self.features[f_j] = \
-                self.features[f_j], self.features[f_i]
-            order.append(feat)
-        self.features[:n_known] = self.constants[:n_known]
-        self.constants[n_known:n_total] = self.features[n_known:n_total]
-        return order, n_total
-
-
-_SPLITTER = _SplitterState(1, 42)
-
-
-def _candidate_thresholds(col):
-    vals = np.sort(col)
-    n = len(vals)
-    i = 1
-    while i < n:
-        if vals[i] <= vals[i - 1] + FT:
-            i += 1
-            continue
-        yield float(vals[i - 1]) / 2.0 + float(vals[i]) / 2.0, i
-        i += 1
-
-
-def find_best_split(data, labels, min_samples_leaf=3, n_known=0):
+def find_best_split(data, labels, min_samples_leaf):
+    root_gini = gini(labels)
+    best_gain = 0.0
+    best_t = None
+    best_index = None
     n = len(labels)
-    best_proxy = -np.inf
-    best = None
-    order, n_total = _SPLITTER.draw_order(data, n_known)
-    for index in order:
-        col = data[:, index]
-        for t, n_left in _candidate_thresholds(col):
+    for index in range(data.shape[1]):
+        t_values = np.unique(data[:, index])
+        for t in t_values:
+            n_left = int(np.count_nonzero(data[:, index] <= t))
             n_right = n - n_left
             if n_left < min_samples_leaf or n_right < min_samples_leaf:
                 continue
-            mask = col <= np.float64(t)
-            gl = gini(labels[mask])
-            gr = gini(labels[~mask])
-
-            proxy = -n_right * gr - n_left * gl
-            if proxy > best_proxy:
-                best_proxy = proxy
-                best = (index, t)
-    return best, n_total
+            td, fd, tl, fl = split(data, labels, index, t)
+            current_gain = gain(tl, fl, root_gini)
+            if current_gain > best_gain:
+                best_gain, best_t, best_index = current_gain, t, index
+    return best_gain, best_t, best_index
 
 
-def build_tree(data, labels, depth=0, max_depth=None, min_samples_leaf=1,
-               min_samples_split=2, n_known=0):
+def build_tree(data, labels, max_depth=None, min_samples_leaf=1,
+               min_samples_split=2, depth=0):
     n = len(labels)
-    root_gini = gini(labels)
-
-    is_leaf = ((max_depth is not None and depth >= max_depth)
-               or n < min_samples_split
-               or n < 2 * min_samples_leaf
-               or root_gini <= EPS)
-
-    best, n_known_child = None, n_known
-    if not is_leaf:
-        best, n_known_child = find_best_split(data, labels, min_samples_leaf,
-                                              n_known)
-        if best is None:
-
-            is_leaf = True
-        else:
-            index, t = best
-            mask = data[:, index] <= np.float64(t)
-            if gain(labels[mask], labels[~mask], root_gini) + EPS < 0.0:
-                is_leaf = True
-
-    if is_leaf:
-        return Leaf(data, labels)
-
-    index, t = best
-    true_data, false_data, true_labels, false_labels = \
-        split(data, labels, index, t)
-
-
-    true_branch = build_tree(true_data, true_labels, depth + 1,
-                             max_depth, min_samples_leaf, min_samples_split,
-                             n_known_child)
-    false_branch = build_tree(false_data, false_labels, depth + 1,
-                              max_depth, min_samples_leaf, min_samples_split,
-                              n_known_child)
-
-
+    if max_depth is not None and depth >= max_depth:
+        return Leaf(labels)
+    if n < min_samples_split or gini(labels) == 0:
+        return Leaf(labels)
+    best_gain, t, index = find_best_split(data, labels, min_samples_leaf)
+    if best_gain == 0:
+        return Leaf(labels)
+    td, fd, tl, fl = split(data, labels, index, t)
+    true_branch = build_tree(td, tl, max_depth, min_samples_leaf,
+                             min_samples_split, depth + 1)
+    false_branch = build_tree(fd, fl, max_depth, min_samples_leaf,
+                              min_samples_split, depth + 1)
     return Node(index, t, true_branch, false_branch)
 
 
 def classify_object(obj, node):
-
     if isinstance(node, Leaf):
-        answer = node.prediction
-        return answer
-
-    if obj[node.index] <= np.float64(node.t):
+        return node.prediction
+    if obj[node.index] <= node.t:
         return classify_object(obj, node.true_branch)
-    else:
-        return classify_object(obj, node.false_branch)
+    return classify_object(obj, node.false_branch)
 
 
 def predict(data, tree):
-    classes = []
-    for obj in data:
-        prediction = classify_object(obj, tree)
-        classes.append(prediction)
-    return classes
-
-
-def print_tree(node, spacing=""):
-
-    if isinstance(node, Leaf):
-        print(spacing + "Прогноз:", node.prediction)
-        return
-
-
-    print(spacing + 'Индекс', str(node.index), '<=', str(node.t))
-
-
-    print(spacing + '--> True:')
-    print_tree(node.true_branch, spacing + "  ")
-
-
-    print(spacing + '--> False:')
-    print_tree(node.false_branch, spacing + "  ")
+    return np.array([classify_object(obj, tree) for obj in data])
 
 
 def accuracy_metric(actual, predicted):
-    assert len(actual) == len(predicted)
-    correct = sum(1 for a, p in zip(actual, predicted) if int(a) == int(p))
-    return correct / len(actual)
+    actual = np.asarray(actual)
+    predicted = np.asarray(predicted)
+    return float(np.mean(actual == predicted))
 
 
-def _specs(tree, out=None, path=""):
-    if out is None:
-        out = {}
-    if isinstance(tree, Leaf):
-        out[path] = ("leaf", int(tree.prediction))
-    else:
-        out[path] = (int(tree.index), float(tree.t))
-        _specs(tree.true_branch, out, path + "L")
-        _specs(tree.false_branch, out, path + "R")
-    return out
+def tree_lines(node, feature_names, spacing=''):
+    if isinstance(node, Leaf):
+        return ([f'{spacing}Класс {node.prediction}  '
+                 f'(объектов: {len(node.labels)})'])
+    lines = [f'{spacing}Признак {feature_names[node.index]} '
+             f'<= {node.t:.4f}']
+    lines.append(f'{spacing}  True:')
+    lines += tree_lines(node.true_branch, feature_names, spacing + '    ')
+    lines.append(f'{spacing}  False:')
+    lines += tree_lines(node.false_branch, feature_names, spacing + '    ')
+    return lines
 
 
-def sk_specs(clf):
-    st = clf.tree_
-    out = {}
+def tree_stats(node):
+    nodes = [0]
+    leaves = [0]
+    depth = [0]
 
-    def rec(i, path):
-        l, r = st.children_left[i], st.children_right[i]
-        if l == r:
-            out[path] = ("leaf", int(np.argmax(st.value[i][0])))
+    def walk(n, d):
+        nodes[0] += 1
+        depth[0] = max(depth[0], d)
+        if isinstance(n, Leaf):
+            leaves[0] += 1
+        else:
+            walk(n.true_branch, d + 1)
+            walk(n.false_branch, d + 1)
+
+    walk(node, 0)
+    return nodes[0], leaves[0], depth[0]
+
+
+def feature_importances(tree, data, labels, n_features):
+    imp = np.zeros(n_features)
+    total = len(labels)
+
+    def walk(node, Xn, yn):
+        if isinstance(node, Leaf):
             return
-        out[path] = (int(st.feature[i]), float(st.threshold[i]))
-        rec(l, path + "L")
-        rec(r, path + "R")
+        n = len(yn)
+        td, fd, tl, fl = split(Xn, yn, node.index, node.t)
+        g = gain(tl, fl, gini(yn))
+        imp[node.index] += (n / total) * g
+        walk(node.true_branch, td, tl)
+        walk(node.false_branch, fd, fl)
 
-    rec(0, "")
-    return out
-
-
-def count_nodes(tree):
-    if isinstance(tree, Leaf):
-        return 0, 1
-    nl, ll = count_nodes(tree.true_branch)
-    nr, lr = count_nodes(tree.false_branch)
-    return 1 + nl + nr, ll + lr
+    walk(tree, data, labels)
+    s = imp.sum()
+    if s > 0:
+        return imp / s
+    return imp
 
 
-def fig_to_tab(fig, parent):
-    canvas = FigureCanvasTkAgg(fig, master=parent)
-    canvas.get_tk_widget().pack(fill='both', expand=True)
-    return canvas
-
-
-class _Layout:
-
-    def __init__(self, root):
-        self.nodes = []
-
-        def place(node, depth, x0):
-            if isinstance(node, Leaf):
-                x = x0 + 1
-                self.nodes.append((node, depth, x0 + 0.5))
-                return 1.0, x0 + 0.5
-            wl, xl = place(node.true_branch, depth + 1, x0)
-            wr, xr = place(node.false_branch, depth + 1, x0 + wl)
-            x = (xl + xr) / 2.0
-            self.nodes.append((node, depth, x))
-            return wl + wr, x
-
-        place(root, 0, 0)
-
-
-def draw_tree(fig, tree, title="Дерево решений (реализация ЛР5)"):
+def draw_tree(fig, tree, feature_names):
     fig.clear()
     ax = fig.add_subplot(111)
+    ax.clear()
     ax.axis('off')
-    ax.set_title(title, fontsize=11)
-    lay = _Layout(tree)
-    max_depth = max((d for _, d, _ in lay.nodes), default=0)
-    dx = 1.0 / (len([n for n in lay.nodes if isinstance(n[0], Leaf)]) + 1)
-    dy = 1.0 / (max_depth + 2)
-    pos = {}
-    for node, depth, x in lay.nodes:
-        y = 1.0 - (depth + 0.5) * dy
-        pos[id(node)] = (x * dx, y)
-    for node, depth, x in lay.nodes:
-        xc, yc = pos[id(node)]
+
+    positions = {}
+    counter = [0]
+
+    def layout(node, depth):
         if isinstance(node, Leaf):
-            box = dict(boxstyle='round,pad=0.25', facecolor='#a8d5a2',
-                       edgecolor='#2d6a2d')
-            txt = f"Класс {node.prediction}\nn={len(node.labels)}"
+            positions[node] = (counter[0], -depth)
+            counter[0] += 1
+            return
+        layout(node.true_branch, depth + 1)
+        layout(node.false_branch, depth + 1)
+        lx = positions[node.true_branch][0]
+        rx = positions[node.false_branch][0]
+        positions[node] = ((lx + rx) / 2.0, -depth)
+
+    layout(tree, 0)
+    n_leaves = counter[0]
+    max_depth = max(-y for _, y in positions.values())
+    span = max(n_leaves - 1, 1)
+    coords = {node: (0.07 + 0.86 * (x / span), y)
+              for node, (x, y) in positions.items()}
+
+    for node, (x, y) in coords.items():
+        if isinstance(node, Leaf):
+            label = f'Класс {node.prediction}\n{len(node.labels)} объектов'
+            fc = '#d6eecf'
         else:
-            box = dict(boxstyle='round,pad=0.25', facecolor='#9ecae1',
-                       edgecolor='#1f4e79')
-            txt = f"X[{node.index}] <= {node.t:.4f}"
-        ax.text(xc, yc, txt, ha='center', va='center', fontsize=7,
-                bbox=box, transform=ax.transAxes)
-        if isinstance(node, Node):
-            xl, yl = pos[id(node.true_branch)]
-            xr, yr = pos[id(node.false_branch)]
-            ax.annotate('', xy=(xl, yl), xytext=(xc, yc - 0.28 * dy),
-                        arrowprops=dict(arrowstyle='-', color='#2d6a2d',
-                                        lw=1.0))
-            ax.annotate('', xy=(xr, yr), xytext=(xc, yc - 0.28 * dy),
-                        arrowprops=dict(arrowstyle='-', color='#c0392b',
-                                        lw=1.0))
-    fig.subplots_adjust(left=0.02, right=0.98, top=0.94, bottom=0.02)
+            label = f'{feature_names[node.index]} <= {node.t:.4f}'
+            fc = '#ffe9c4'
+        ax.text(x, y, label, ha='center', va='center', fontsize=8,
+                bbox=dict(boxstyle='round,pad=0.35', fc=fc, ec='#8a8a8a'))
+        if not isinstance(node, Leaf):
+            for child in (node.true_branch, node.false_branch):
+                cx, cy = coords[child]
+                ax.plot([x, cx], [y - 0.02, cy + 0.05], color='#8a8a8a',
+                        lw=1.1, zorder=0)
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(-max_depth - 0.35, 0.2)
+    ax.set_title('Самописное дерево решений (CART, критерий Джини)')
+    fig.tight_layout()
+    fig.canvas.draw_idle()
+
+
+def load_bankloan():
+    candidates = [
+        os.path.join(SCRIPT_DIR, 'Bankloan.csv'),
+        os.path.join(SCRIPT_DIR, '..', 'Bankloan.csv'),
+        'Bankloan.csv',
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            df = pd.read_csv(path)
+            df = df.dropna(subset=['default'])
+            y = df['default'].astype(int).to_numpy()
+            X = df.drop(columns=['default']).to_numpy()
+            cols = [c for c in df.columns if c != 'default']
+            return X.astype(float), y, cols
+    raise FileNotFoundError('Bankloan.csv не найден')
 
 
 class Lab5App:
-    DATASETS = {
-        'synth': 'Синтетический (make_classification)',
-        'bank': 'Bankloan (данные из ЛР4)',
-    }
-
-    def __init__(self, root, shots_dir=None):
+    def __init__(self, root):
         self.root = root
-        self.shots_dir = shots_dir
         root.title("ЛР 05. Деревья решений")
-        root.geometry("1180x780+0+0")
+        root.geometry("1280x860")
 
-        self.ds_name = 'synth'
-        self.max_depth = 5
-        self.min_samples_leaf = 3
-        self.random_state = 42
+        self.var_source = tk.StringVar(value='make')
+        self.var_n = tk.IntVar(value=200)
+        self.var_nf = tk.IntVar(value=4)
+        self.var_ni = tk.IntVar(value=3)
+        self.var_sep = tk.StringVar(value='2.0')
+        self.var_seed = tk.IntVar(value=2)
+        self.var_depth = tk.IntVar(value=0)
+        self.var_min_leaf = tk.IntVar(value=1)
+        self.var_min_split = tk.IntVar(value=2)
 
-        self._bind_dataset()
+        self.my_tree = None
+        self.sk_model = None
+        self.feat_names = []
+
         self._build_notebook()
-        self._draw_data_tab()
-        self._draw_criteria_tab()
-        self._draw_tree_tab()
-        self._draw_compare_tab()
-
-        if shots_dir is not None:
-            self.root.after(600, self._run_shots)
-
-
-    def _reset_splitter(self):
-        global _SPLITTER
-        _SPLITTER = _SplitterState(self.Xtr.shape[1], self.random_state)
-
-    def _bind_dataset(self):
-        if self.ds_name == 'bank':
-            path = os.path.join(SCRIPT_DIR, 'Bankloan.csv')
-            df = pd.read_csv(path)
-            df = df.dropna(subset=['default'])
-            y = df['default'].astype(int).values
-            X = df.drop(columns=['default']).values.astype(np.float32)
-            self.dataset_desc = (
-                "Датасет Bankloan из ЛР4 (банковское кредитование):\n"
-                f"  наблюдений: {len(df)}, признаков: {X.shape[1]}\n"
-                "  признаки: age, ed, employ, address, income, debtinc,\n"
-                "            creddebt, othdebt; целевой: default (0/1)\n")
-        else:
-            X, y = make_classification(
-                n_samples=700, n_features=8, n_informative=5,
-                n_redundant=0, n_classes=2, random_state=42)
-            X = X.astype(np.float32)
-            self.dataset_desc = (
-                "Синтетический датасет (make_classification):\n"
-                "  наблюдений: 700, признаков: 8 (5 информативных)\n"
-                "  классов: 0 и 1; random_state=42\n")
-        self.Xtr, self.Xte, self.ytr, self.yte = train_test_split(
-            X, y, test_size=0.3, random_state=42)
-        self.Xall, self.yall = X, y
+        self._train()
 
     def _build_notebook(self):
         style = ttk.Style(self.root)
         style.configure('Treeview', rowheight=28)
+
         nb = ttk.Notebook(self.root)
         nb.pack(fill='both', expand=True)
         self.nb = nb
-        self.tab_data = ttk.Frame(nb, padding=8)
-        self.tab_criteria = ttk.Frame(nb, padding=8)
+
+        self.tab_params = ttk.Frame(nb, padding=10)
         self.tab_tree = ttk.Frame(nb, padding=8)
         self.tab_compare = ttk.Frame(nb, padding=8)
-        nb.add(self.tab_data, text="Данные")
-        nb.add(self.tab_criteria, text="Критерии информативности")
-        nb.add(self.tab_tree, text="Дерево решений")
+
+        nb.add(self.tab_params, text="Данные и параметры")
+        nb.add(self.tab_tree, text="Дерево")
         nb.add(self.tab_compare, text="Сравнение со sklearn")
 
+        self._build_params_tab()
+        self._build_tree_tab()
+        self._build_compare_tab()
 
-    def _draw_data_tab(self):
-        row = ttk.Frame(self.tab_data)
-        row.pack(fill='x')
-        ttk.Label(row, text="Источник данных:").pack(side='left')
-        self.ds_var = tk.StringVar(value=self.ds_name)
-        for key, label in self.DATASETS.items():
-            ttk.Radiobutton(row, text=label, value=key,
-                            variable=self.ds_var,
-                            command=self._on_ds_change).pack(side='left',
-                                                             padx=8)
+    def _build_params_tab(self):
+        left = ttk.Frame(self.tab_params)
+        left.pack(side='left', fill='y', padx=(0, 10))
 
-        frm = ttk.LabelFrame(self.tab_data, text="Описание датасета",
-                             padding=6)
-        frm.pack(fill='x', pady=6)
-        self.txt_desc = tk.Text(frm, wrap='word', height=7)
-        self.txt_desc.pack(fill='x')
-        self.txt_desc.configure(state='disabled')
+        frm = ttk.LabelFrame(left, text="Источник данных", padding=8)
+        frm.pack(fill='x', pady=(0, 8))
+        ttk.Radiobutton(frm, text="make_classification (синтетика)",
+                        variable=self.var_source, value='make').pack(anchor='w')
+        ttk.Radiobutton(frm, text="Bankloan (ЛР4)",
+                        variable=self.var_source, value='bankloan').pack(anchor='w')
 
-        frm = ttk.LabelFrame(self.tab_data, text="Первые 15 строк (train)",
-                             padding=6)
+        frm = ttk.LabelFrame(left, text="Параметры генерации", padding=8)
+        frm.pack(fill='x', pady=(0, 8))
+        self._row(frm, "Число объектов:",
+                  ttk.Spinbox(frm, from_=60, to=3000,
+                              textvariable=self.var_n, width=8))
+        self._row(frm, "Число признаков:",
+                  ttk.Spinbox(frm, from_=2, to=10,
+                              textvariable=self.var_nf, width=8))
+        self._row(frm, "Информативных:",
+                  ttk.Spinbox(frm, from_=1, to=8,
+                              textvariable=self.var_ni, width=8))
+        self._row(frm, "Разделимость (class_sep):",
+                  ttk.Entry(frm, textvariable=self.var_sep, width=8))
+        self._row(frm, "random_state (seed):",
+                  ttk.Spinbox(frm, from_=0, to=200,
+                              textvariable=self.var_seed, width=8))
+
+        frm = ttk.LabelFrame(left, text="Параметры самописного дерева",
+                             padding=8)
+        frm.pack(fill='x', pady=(0, 8))
+        self._row(frm, "Макс. глубина (0=без огр.):",
+                  ttk.Spinbox(frm, from_=0, to=20,
+                              textvariable=self.var_depth, width=8))
+        self._row(frm, "min_samples_leaf:",
+                  ttk.Spinbox(frm, from_=1, to=50,
+                              textvariable=self.var_min_leaf, width=8))
+        self._row(frm, "min_samples_split:",
+                  ttk.Spinbox(frm, from_=2, to=100,
+                              textvariable=self.var_min_split, width=8))
+
+        ttk.Button(left, text="Обучить и сравнить",
+                   command=self._train).pack(fill='x')
+
+        right = ttk.Frame(self.tab_params)
+        right.pack(side='left', fill='both', expand=True)
+
+        frm = ttk.LabelFrame(right, text="Результаты", padding=8)
         frm.pack(fill='both', expand=True)
-        self.table = ttk.Treeview(frm, show='headings', height=9)
-        vsb = ttk.Scrollbar(frm, orient='vertical', command=self.table.yview)
-        self.table.configure(yscrollcommand=vsb.set)
-        self.table.pack(side='left', fill='both', expand=True)
-        vsb.pack(side='right', fill='y')
+        self.txt_results = tk.Text(frm, wrap='word', state='disabled',
+                                   font=("Consolas", 10))
+        self.txt_results.pack(fill='both', expand=True)
 
-        frm = ttk.LabelFrame(self.tab_data, text="Распределение классов",
-                             padding=6)
-        frm.pack(fill='both', expand=True, pady=(6, 0))
-        self.fig_classes = plt.Figure(figsize=(8, 2.6))
-        fig_to_tab(self.fig_classes, frm)
-
-        self._refresh_data_tab()
-
-    def _refresh_data_tab(self):
-        self.txt_desc.configure(state='normal')
-        self.txt_desc.delete('1.0', 'end')
-        desc = (self.dataset_desc
-                + f"  train: {len(self.ytr)} объектов, "
-                + f"test: {len(self.yte)} объектов\n"
-                + "  разбиение: train_test_split(test_size=0.3, "
-                + "random_state=42)")
-        self.txt_desc.insert('1.0', desc)
-        self.txt_desc.configure(state='disabled')
-
-        cols = [f"X{i}" for i in range(self.Xtr.shape[1])] + ["y"]
-        self.table.configure(columns=cols)
-        for c in cols:
-            self.table.heading(c, text=c)
-            self.table.column(c, width=92, stretch=False,
-                              anchor='center')
-        for i in self.table.get_children():
-            self.table.delete(i)
-        for r in range(min(15, len(self.ytr))):
-            self.table.insert('', 'end',
-                              values=list(self.Xtr[r]) + [self.ytr[r]])
-
-        self.fig_classes.clear()
-        ax = self.fig_classes.add_subplot(111)
-        sns.countplot(x=self.ytr, hue=self.ytr, legend=False, ax=ax,
-                      palette=['#4c72b0', '#c44e52'])
-        ax.set_xticks([0, 1])
-        ax.set_xticklabels(["0", "1"])
-        ax.set_title("Распределение классов в train")
-        self.fig_classes.tight_layout()
-        self.fig_classes.canvas.draw_idle()
-
-    def _on_ds_change(self):
-        self.ds_name = self.ds_var.get()
-        self._bind_dataset()
-        self._refresh_data_tab()
-
-
-    def _draw_criteria_tab(self):
-        frm = ttk.LabelFrame(self.tab_criteria, text="Критерии информативности",
+    def _build_tree_tab(self):
+        frm = ttk.LabelFrame(self.tab_tree, text="Правила дерева (print_tree)",
                              padding=6)
         frm.pack(fill='x')
-        txt = tk.Text(frm, wrap='word', height=14)
-        lines = [
-            "Критерий Джини для узла m:",
-            "    G(Xm) = 1 - Σ_k (n_k / |Xm|)^2,",
-            "где n_k — число объектов класса k в узле. Чем меньше G, тем чище узел.",
-            "",
-            "Прирост информации при разбиении узла на Xl и Xr:",
-            "    Q = G(Xm) - |Xl|/|Xm| * G(Xl) - |Xr|/|Xm| * G(Xr).",
-            "Разбиение выбирается так, чтобы прирост Q был максимальным.",
-            "",
-            "Критерии останова рекурсии (реализовано 4):",
-            "  1) достигнута максимальная глубина max_depth;",
-            "  2) в узле меньше min_samples_split объектов либо дочерние",
-            "     узлы были бы меньше min_samples_leaf;",
-            "  3) узел чистый: G(Xm) == 0;",
-            "  4) не найдено ни одного допустимого разбиения.",
-        ]
-        txt.insert('1.0', '\n'.join(lines))
-        txt.configure(state='disabled')
-        txt.pack(fill='x')
-
-        frm = ttk.LabelFrame(self.tab_criteria,
-                             text="Графики критериев для бинарного узла",
-                             padding=6)
-        frm.pack(fill='both', expand=True, pady=(6, 0))
-        self.fig_crit = plt.Figure(figsize=(9, 2.9))
-        fig_to_tab(self.fig_crit, frm)
-        self.fig_crit.clear()
-        ax = self.fig_crit.add_subplot(111)
-        p = np.linspace(0, 1, 300)
-        ax.plot(p, 2 * p * (1 - p), label="Джини: 2·p·(1−p)",
-                color='#1f4e79', lw=2)
-        ent = -p * np.log2(p + 1e-15) - (1 - p) * np.log2((1 - p) + 1e-15)
-        ax.plot(p, ent, label="Энтропия Шеннона", color='#c44e52', lw=2)
-        ax.set_xlabel("Доля класса 0 (p)")
-        ax.set_ylabel("Неопределённость")
-        ax.legend()
-        ax.set_title("Критерии информативности в бинарном узле")
-        self.fig_crit.tight_layout()
-        self.fig_crit.canvas.draw_idle()
-
-        frm = ttk.LabelFrame(self.tab_criteria, text="Пример расчёта",
-                             padding=6)
-        frm.pack(fill='both', expand=True, pady=(6, 0))
-        self.fig_ex = plt.Figure(figsize=(9, 3.0))
-        fig_to_tab(self.fig_ex, frm)
-        self._draw_example()
-
-    def _draw_example(self):
-        self._reset_splitter()
-        tree = build_tree(self.Xtr, self.ytr, max_depth=self.max_depth,
-                          min_samples_leaf=self.min_samples_leaf)
-        self._current_tree = tree
-        root = tree
-        if isinstance(root, Leaf):
-            return
-        mask = self.Xtr[:, root.index] <= np.float64(root.t)
-        gl, gr = gini(self.ytr[mask]), gini(self.ytr[~mask])
-        root_g = gini(self.ytr)
-        gval = gain(self.ytr[mask], self.ytr[~mask], root_g)
-
-        self.fig_ex.clear()
-        ax = self.fig_ex.add_subplot(111)
-        ax.axis('off')
-        rows = [
-            ("Узел (корень дерева)", "n", "Джини"),
-            ("Xm (все объекты train)", len(self.ytr), f"{root_g:.4f}"),
-            ("Xl (левое поддерево)", int(mask.sum()), f"{gl:.4f}"),
-            ("Xr (правое поддерево)", int((~mask).sum()), f"{gr:.4f}"),
-        ]
-        tbl = ax.table(cellText=rows, loc='center', colWidths=[0.55, 0.1, 0.15])
-        tbl.auto_set_font_size(False)
-        tbl.set_fontsize(10)
-        tbl.scale(1.1, 1.6)
-        ax.set_title(f"Корневое разбиение: X[{root.index}] <= {root.t:.4f}\n"
-                     f"Прирост информации Q = {gval:.4f}", fontsize=11)
-        self.fig_ex.tight_layout()
-        self.fig_ex.canvas.draw_idle()
-
-
-    def _draw_tree_tab(self):
-        row = ttk.Frame(self.tab_tree)
-        row.pack(fill='x')
-        ttk.Label(row, text="max_depth:").pack(side='left')
-        self.var_md = tk.StringVar(value="5")
-        cmb = ttk.Combobox(row, textvariable=self.var_md, width=6,
-                           values=["None", "1", "2", "3", "4", "5", "6",
-                                   "7", "8", "10"])
-        cmb.pack(side='left', padx=4)
-        ttk.Label(row, text="min_samples_leaf:").pack(side='left', padx=(12, 0))
-        self.var_msl = tk.StringVar(value="3")
-        ttk.Spinbox(row, from_=1, to=20, textvariable=self.var_msl,
-                    width=5).pack(side='left', padx=4)
-        ttk.Button(row, text="Построить дерево",
-                   command=self._rebuild_tree).pack(side='left', padx=14)
-        ttk.Button(row, text="Показать print_tree в консоль",
-                   command=self._print_to_console).pack(side='left')
-        self.lbl_tree_info = ttk.Label(row, text="")
-        self.lbl_tree_info.pack(side='left', padx=14)
-
-        frm = ttk.LabelFrame(self.tab_tree, text="Визуализация дерева",
-                             padding=6)
-        frm.pack(fill='both', expand=True, pady=(6, 0))
-        self.fig_tree = plt.Figure(figsize=(10, 4.6))
-        fig_to_tab(self.fig_tree, frm)
-
-        frm = ttk.LabelFrame(self.tab_tree,
-                             text="Текстовое представление (print_tree)",
-                             padding=6)
-        frm.pack(fill='both', expand=True, pady=(6, 0))
-        self.txt_tree = tk.Text(frm, wrap='none', height=8,
-                                font=("Courier New", 9))
-        sb = ttk.Scrollbar(frm, orient='vertical', command=self.txt_tree.yview)
+        wrap = ttk.Frame(frm)
+        wrap.pack(fill='both', expand=True)
+        self.txt_tree = tk.Text(wrap, height=14, font=("Consolas", 10))
+        sb = ttk.Scrollbar(wrap, orient='vertical',
+                           command=self.txt_tree.yview)
         self.txt_tree.configure(yscrollcommand=sb.set)
         self.txt_tree.pack(side='left', fill='both', expand=True)
         sb.pack(side='right', fill='y')
 
-        self._rebuild_tree()
+        frm = ttk.LabelFrame(self.tab_tree, text="Графическое представление",
+                             padding=6)
+        frm.pack(fill='both', expand=True, pady=(6, 0))
+        self.fig_tree, self.ax_tree = plt.subplots(figsize=(11, 5))
+        self.canvas_tree = FigureCanvasTkAgg(self.fig_tree, master=frm)
+        self.canvas_tree.get_tk_widget().pack(fill='both', expand=True)
 
-    def _rebuild_tree(self):
-        md = self.var_md.get()
-        self.max_depth = None if md == "None" else max(1, int(md))
-        self.min_samples_leaf = max(1, int(self.var_msl.get()))
+    def _build_compare_tab(self):
+        frm = ttk.LabelFrame(self.tab_compare, text="Метрики качества",
+                             padding=6)
+        frm.pack(fill='x')
+        top = ttk.Frame(frm)
+        top.pack(fill='x')
+        self.lbl_match = ttk.Label(top, text="", font=("Consolas", 10))
+        self.lbl_match.pack(anchor='w', pady=(0, 4))
 
-        self._reset_splitter()
-        tree = build_tree(self.Xtr, self.ytr, max_depth=self.max_depth,
-                          min_samples_leaf=self.min_samples_leaf)
-        self._current_tree = tree
-        n_int, n_leaf = count_nodes(tree)
-        self.lbl_tree_info.config(
-            text=f"внутренних узлов: {n_int}, листьев: {n_leaf}")
-        draw_tree(self.fig_tree, tree)
-        self.fig_tree.canvas.draw_idle()
+        cols = ('metric', 'my_train', 'my_test', 'sk_train', 'sk_test')
+        self.table_metrics = ttk.Treeview(frm, columns=cols, show='headings',
+                                          height=4)
+        for c, title, w in [
+                ('metric', 'Метрика', 160),
+                ('my_train', 'Моё (train)', 110),
+                ('sk_train', 'sklearn (train)', 120),
+                ('my_test', 'Моё (test)', 100),
+                ('sk_test', 'sklearn (test)', 110)]:
+            self.table_metrics.heading(c, text=title)
+            self.table_metrics.column(c, width=w, anchor='center')
+        self.table_metrics.column('metric', anchor='w')
+        self.table_metrics.pack(fill='x')
+
+        frm = ttk.LabelFrame(self.tab_compare, text="Confusion matrix (test)",
+                             padding=6)
+        frm.pack(fill='both', expand=True, pady=(6, 0))
+        self.fig_cm, self.ax_cm = plt.subplots(figsize=(11, 3.2))
+        self.canvas_cm = FigureCanvasTkAgg(self.fig_cm, master=frm)
+        self.canvas_cm.get_tk_widget().pack(fill='both', expand=True)
+
+        frm = ttk.LabelFrame(self.tab_compare,
+                             text="Важность признаков (прирост информации)",
+                             padding=6)
+        frm.pack(fill='both', expand=True, pady=(6, 0))
+        self.fig_imp, self.ax_imp = plt.subplots(figsize=(11, 3.4))
+        self.canvas_imp = FigureCanvasTkAgg(self.fig_imp, master=frm)
+        self.canvas_imp.get_tk_widget().pack(fill='both', expand=True)
+
+    @staticmethod
+    def _row(parent, label, widget):
+        row = ttk.Frame(parent)
+        row.pack(fill='x', pady=2)
+        ttk.Label(row, text=label, width=30).pack(side='left')
+        widget.pack(side='left')
+
+    @staticmethod
+    def _parse_float(var, default):
+        try:
+            return float(var.get().replace(',', '.'))
+        except ValueError:
+            return default
+
+    def _set_results(self, text):
+        self.txt_results.configure(state='normal')
+        self.txt_results.delete('1.0', 'end')
+        self.txt_results.insert('1.0', text)
+        self.txt_results.configure(state='disabled')
+
+    def _prepare_data(self):
+        if self.var_source.get() == 'bankloan':
+            X, y, cols = load_bankloan()
+            desc = (f"Источник: Bankloan (ЛР4), строк (без NaN в default): "
+                    f"{len(y)}")
+        else:
+            n = int(self.var_n.get())
+            nf = int(self.var_nf.get())
+            ni = min(int(self.var_ni.get()), nf)
+            sep = self._parse_float(self.var_sep, 2.0)
+            seed = int(self.var_seed.get())
+            X, y = make_classification(
+                n_samples=n, n_features=nf, n_informative=ni,
+                n_redundant=0, n_repeated=0, n_classes=2, class_sep=sep,
+                random_state=seed)
+            cols = [f'X{i + 1}' for i in range(nf)]
+            desc = (f"Источник: make_classification (n={n}, features={nf}, "
+                    f"informative={ni}, class_sep={sep}, seed={seed})")
+        return X, y, cols, desc
+
+    def _train(self):
+        X, y, cols, desc = self._prepare_data()
+        self.feat_names = cols
+        Xtr, Xte, ytr, yte = train_test_split(
+            X, y, test_size=0.3, random_state=42, stratify=y)
+
+        max_depth = int(self.var_depth.get()) or None
+        min_leaf = int(self.var_min_leaf.get())
+        min_split = int(self.var_min_split.get())
+
+        self.my_tree = build_tree(Xtr, ytr, max_depth, min_leaf, min_split)
+        self.sk_model = DecisionTreeClassifier(
+            criterion='gini', random_state=42).fit(Xtr, ytr)
+
+        my_tr = predict(Xtr, self.my_tree)
+        my_te = predict(Xte, self.my_tree)
+        sk_tr = self.sk_model.predict(Xtr)
+        sk_te = self.sk_model.predict(Xte)
+
+        nodes, leaves, depth = tree_stats(self.my_tree)
+        sk_nodes = self.sk_model.tree_.node_count
+        sk_depth = self.sk_model.get_depth()
+
+        match_tr = int(np.sum(my_tr == sk_tr))
+        match_te = int(np.sum(my_te == sk_te))
+
+        a_tr = accuracy_metric(ytr, my_tr)
+        a_te = accuracy_metric(yte, my_te)
+        a_sk_tr = accuracy_score(ytr, sk_tr)
+        a_sk_te = accuracy_score(yte, sk_te)
+        metr_my_tr = [a_tr, precision_score(ytr, my_tr),
+                      recall_score(ytr, my_tr), f1_score(ytr, my_tr)]
+        metr_my_te = [a_te, precision_score(yte, my_te),
+                      recall_score(yte, my_te), f1_score(yte, my_te)]
+        metr_sk_tr = [a_sk_tr, precision_score(ytr, sk_tr),
+                      recall_score(ytr, sk_tr), f1_score(ytr, sk_tr)]
+        metr_sk_te = [a_sk_te, precision_score(yte, sk_te),
+                      recall_score(yte, sk_te), f1_score(yte, sk_te)]
+
+        info = (f"{desc}\n"
+                f"Разбиение: train_test_split(test_size=0.3, "
+                f"random_state=42, stratify=y)\n"
+                f"Обучающая выборка: {len(ytr)} объектов, "
+                f"тестовая: {len(yte)} объектов\n\n"
+                f"Классы: {sorted(set(int(v) for v in y))}\n\n"
+                f"=== Самописное дерево ===\n"
+                f"Узлов: {nodes}, листьев: {leaves}, глубина: {depth}\n"
+                f"Критерий качества: Джини (gini)\n"
+                f"Критерии останова:\n"
+                f"  - узел чистый (gini = 0)\n"
+                f"  - прирост информации = 0\n"
+                f"  - число объектов < min_samples_split "
+                f"({min_split})\n"
+                f"  - достигнута max_depth ({max_depth})\n"
+                f"  - в ветвях меньше min_samples_leaf ({min_leaf})\n"
+                f"Точность на train: {a_tr:.4f}, на test: {a_te:.4f}\n\n"
+                f"=== sklearn DecisionTreeClassifier ===\n"
+                f"Узлов: {sk_nodes}, глубина: {sk_depth}\n"
+                f"Точность на train: {a_sk_tr:.4f}, на test: {a_sk_te:.4f}\n\n"
+                f"=== Совпадение предсказаний ===\n"
+                f"train: {match_tr}/{len(ytr)} = "
+                f"{100.0 * match_tr / len(ytr):.2f}%\n"
+                f"test: {match_te}/{len(yte)} = "
+                f"{100.0 * match_te / len(yte):.2f}%")
+        self._set_results(info)
 
         self.txt_tree.configure(state='normal')
         self.txt_tree.delete('1.0', 'end')
-        import io
-        from contextlib import redirect_stdout
-        buf = io.StringIO()
-        with redirect_stdout(buf):
-            print_tree(tree)
-        self.txt_tree.insert('1.0', buf.getvalue())
+        self.txt_tree.insert('1.0', '\n'.join(tree_lines(self.my_tree, cols)))
         self.txt_tree.configure(state='disabled')
 
-        self._draw_example()
+        self._fill_metrics(metr_my_tr, metr_my_te, metr_sk_tr, metr_sk_te,
+                           match_tr, len(ytr), match_te, len(yte))
+        self._draw_cm(yte, my_te, sk_te)
+        self._draw_importance(Xtr, ytr)
+        draw_tree(self.fig_tree, self.my_tree, cols)
+        self.canvas_tree.draw_idle()
 
-    def _print_to_console(self):
-        print_tree(getattr(self, '_current_tree', None))
+    def _fill_metrics(self, m_tr, m_te, s_tr, s_te, mtr, ntr, mte, nte):
+        for item in self.table_metrics.get_children():
+            self.table_metrics.delete(item)
+        self.lbl_match.configure(
+            text=f"Совпадение предсказаний с sklearn: train "
+                 f"{mtr}/{ntr} ({100.0 * mtr / ntr:.1f}%), "
+                 f"test {mte}/{nte} ({100.0 * mte / nte:.1f}%)")
+        for name, vals in [("Accuracy", (m_tr[0], m_te[0], s_tr[0], s_te[0])),
+                           ("Precision", (m_tr[1], m_te[1], s_tr[1], s_te[1])),
+                           ("Recall", (m_tr[2], m_te[2], s_tr[2], s_te[2])),
+                           ("F1-score", (m_tr[3], m_te[3], s_tr[3], s_te[3]))]:
+            self.table_metrics.insert(
+                '', 'end',
+                values=[name] + [f"{v:.4f}" for v in vals])
 
+    def _draw_cm(self, yte, my_te, sk_te):
+        self.fig_cm.clear()
+        for i, (title, pred) in enumerate([('Самописное дерево', my_te),
+                                           ('sklearn', sk_te)], 1):
+            ax = self.fig_cm.add_subplot(1, 2, i)
+            cm = confusion_matrix(yte, pred)
+            sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
+                        cbar=False, xticklabels=['0', '1'],
+                        yticklabels=['0', '1'])
+            ax.set_title(title)
+            ax.set_xlabel("Предсказано")
+            ax.set_ylabel("Факт")
+        self.fig_cm.tight_layout()
+        self.fig_cm.canvas.draw_idle()
 
-    def _draw_compare_tab(self):
-        row = ttk.Frame(self.tab_compare)
-        row.pack(fill='x')
-        ttk.Button(row, text="Выполнить сравнение",
-                   command=self._run_compare).pack(side='left')
-        self.lbl_match = ttk.Label(row, text="")
-        self.lbl_match.pack(side='left', padx=16)
-
-        frm = ttk.LabelFrame(self.tab_compare, text="Метрики и совпадение",
-                             padding=6)
-        frm.pack(fill='x', pady=6)
-        self.table_cmp = ttk.Treeview(frm, show='headings', height=5)
-        self.table_cmp.pack(fill='x')
-        cols = ["Показатель", "Своё дерево", "sklearn",
-                "Совпадение"]
-        self.table_cmp.configure(columns=cols)
-        for c in cols:
-            self.table_cmp.heading(c, text=c)
-            self.table_cmp.column(c, width=200, anchor='center')
-
-        frm = ttk.LabelFrame(self.tab_compare, text="Вывод",
-                             padding=6)
-        frm.pack(fill='both', expand=True)
-        self.txt_compare = tk.Text(frm, wrap='word', height=11)
-        self.txt_compare.pack(fill='both', expand=True)
-        self.txt_compare.configure(state='disabled')
-
-        frm = ttk.LabelFrame(self.tab_compare, text="Accuracy на train/test",
-                             padding=6)
-        frm.pack(fill='both', expand=True, pady=(6, 0))
-        self.fig_cmp = plt.Figure(figsize=(9, 3.0))
-        fig_to_tab(self.fig_cmp, frm)
-        self._run_compare()
-
-    def _run_compare(self):
-        self._reset_splitter()
-        mine = build_tree(self.Xtr, self.ytr, max_depth=self.max_depth,
-                          min_samples_leaf=self.min_samples_leaf)
-        self._current_tree = mine
-
-        sk = DecisionTreeClassifier(random_state=self.random_state,
-                                    max_depth=self.max_depth,
-                                    min_samples_leaf=self.min_samples_leaf)
-        sk.fit(self.Xtr, self.ytr)
-
-        p_tr = np.asarray(predict(self.Xtr, mine))
-        p_te = np.asarray(predict(self.Xte, mine))
-        s_tr = sk.predict(self.Xtr)
-        s_te = sk.predict(self.Xte)
-
-        acc_tr = accuracy_metric(self.ytr, p_tr)
-        acc_te = accuracy_metric(self.yte, p_te)
-        sk_tr = accuracy_metric(self.ytr, s_tr)
-        sk_te = accuracy_metric(self.yte, s_te)
-        match_tr = float(np.mean(p_tr == s_tr)) if len(p_tr) else 1.0
-        match_te = float(np.mean(p_te == s_te)) if len(p_te) else 1.0
-
-        struct_ok = _specs(mine) == sk_specs(sk)
-        n_int, n_leaf = count_nodes(mine)
-        sk_spec = sk_specs(sk)
-        sk_internal = sum(1 for v in sk_spec.values() if v[0] != 'leaf')
-        sk_leaves = sum(1 for v in sk_spec.values() if v[0] == 'leaf')
-
-        for i in self.table_cmp.get_children():
-            self.table_cmp.delete(i)
-        rows = [
-            ("Accuracy (train)", f"{acc_tr:.4f}", f"{sk_tr:.4f}", "-"),
-            ("Accuracy (test)", f"{acc_te:.4f}", f"{sk_te:.4f}", "-"),
-            ("Совпадение прогнозов train", "-", "-", f"{match_tr:.4f}"),
-            ("Совпадение прогнозов test", "-", "-", f"{match_te:.4f}"),
-            ("Узлов/листьев", f"{n_int}/{n_leaf}",
-             f"{sk_internal}/{sk_leaves}", "-"),
-            ("Структура (признак, порог)", "совпадает" if struct_ok
-             else "не совпадает", "совпадает" if struct_ok
-             else "не совпадает", "-"),
-        ]
-        for r in rows:
-            self.table_cmp.insert('', 'end', values=list(r))
-
-        match = (abs(match_tr - 1.0) < 1e-12 and abs(match_te - 1.0) < 1e-12
-                 and struct_ok)
-        self.lbl_match.config(
-            text="▶ Результаты полностью совпадают!" if match
-            else "▶ Есть расхождения")
-
-        texts = [f"Самописное дерево: accuracy(train) = {acc_tr:.4f}, "
-                 f"accuracy(test) = {acc_te:.4f}.",
-                 f"sklearn DecisionTreeClassifier: accuracy(train) = "
-                 f"{sk_tr:.4f}, accuracy(test) = {sk_te:.4f}.",
-                 f"Совпадение предсказаний на train: {match_tr:.4f} "
-                 f"(должно быть 1.0000), на test: {match_te:.4f}.",
-                 "Структура дерева (признаки и пороги во всех узлах) "
-                 "совпадает со структурой sklearn-дерева."
-                 if struct_ok else "Структура дерева отличается.",
-                 "Таким образом, самописная реализация дерева решений "
-                 "(Джини, прирост информации, критерии останова) даёт "
-                 "результаты, полностью совпадающие с "
-                 "sklearn.tree.DecisionTreeClassifier.",
-                 ]
-        self.txt_compare.configure(state='normal')
-        self.txt_compare.delete('1.0', 'end')
-        self.txt_compare.insert('1.0', '\n'.join(texts))
-        self.txt_compare.configure(state='disabled')
-
-        self.fig_cmp.clear()
-        ax = self.fig_cmp.add_subplot(111)
-        xs = np.arange(4)
-        vals = [acc_tr, acc_te, sk_tr, sk_te]
-        labels = ["train\n(своё)", "test\n(своё)", "train\n(sklearn)",
-                  "test\n(sklearn)"]
-        colors = ['#1f4e79', '#1f4e79', '#c44e52', '#c44e52']
-        ax.bar(xs, vals, 0.6, color=colors)
-        ax.set_xticks(xs)
-        ax.set_xticklabels(labels, fontsize=9)
-        ax.set_ylim(0, 1.05)
-        ax.set_ylabel("Accuracy")
-        ax.set_title(f"Accuracy — своё дерево и sklearn "
-                     f"(совпадение предсказаний: train {match_tr:.4f}, "
-                     f"test {match_te:.4f})")
-        for x, v in zip(xs, vals):
-            ax.text(x, v + 0.02, f"{v:.4f}", ha='center', fontsize=8)
-        self.fig_cmp.tight_layout()
-        self.fig_cmp.canvas.draw_idle()
-
-
-    def _capture(self, name):
-        try:
-            out = os.path.join(self.shots_dir, name)
-            subprocess.run(["import", "-window", self.root.title(), out],
-                           check=True, timeout=30)
-            print("Скриншот сохранён:", out)
-        except Exception as exc:
-            print("Не удалось снять скриншот:", exc)
-
-    def _run_shots(self):
-        os.makedirs(self.shots_dir, exist_ok=True)
-        time.sleep(1.0)
-        for idx, name in enumerate(["lab5_tab1_data.png",
-                                    "lab5_tab2_criteria.png",
-                                    "lab5_tab3_tree.png",
-                                    "lab5_tab4_compare.png"]):
-            self.nb.select(idx)
-            self.root.update_idletasks()
-            self.root.update()
-            time.sleep(1.2)
-            self._capture(name)
-        self.root.after(500, self.root.destroy)
+    def _draw_importance(self, Xtr, ytr):
+        my_imp = feature_importances(self.my_tree, Xtr, ytr,
+                                     len(self.feat_names))
+        sk_imp = self.sk_model.feature_importances_
+        self.fig_imp.clear()
+        ax = self.fig_imp.add_subplot(111)
+        x = np.arange(len(self.feat_names))
+        w = 0.38
+        ax.bar(x - w / 2, my_imp, w, label='Самописное дерево',
+               color='#4c72b0')
+        ax.bar(x + w / 2, sk_imp, w, label='sklearn',
+               color='#c44e52')
+        ax.set_xticks(x)
+        ax.set_xticklabels(self.feat_names, rotation=15)
+        ax.set_ylim(0, max(1.0, float(np.max([my_imp.max(), sk_imp.max()])) * 1.15))
+        ax.legend()
+        ax.set_title("Важность признаков (нормированный прирост информации)")
+        ax.grid(True, axis='y', alpha=0.3)
+        self.fig_imp.tight_layout()
+        self.fig_imp.canvas.draw_idle()
 
 
 def main():
-    shots_dir = None
-    if "--shots" in sys.argv:
-        i = sys.argv.index("--shots")
-        shots_dir = sys.argv[i + 1] if len(sys.argv) > i + 1 else \
-            os.path.join(SCRIPT_DIR, "..", "screenshots")
     root = tk.Tk()
-    app = Lab5App(root, shots_dir)
+    app = Lab5App(root)
     root.protocol("WM_DELETE_WINDOW", lambda: (root.destroy(), root.quit()))
     root.mainloop()
 

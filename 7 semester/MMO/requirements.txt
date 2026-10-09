@@ -4,4 +4,7 @@ matplotlib
 seaborn
 scikit-learn
 sklearn.datasets
-sklearn.preprocessing 
+sklearn.preprocessing
+tensorflow
+keras
+torch
