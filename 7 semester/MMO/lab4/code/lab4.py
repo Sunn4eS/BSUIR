@@ -32,7 +32,7 @@ RUS_COLS = {
 }
 MODELS = [
     ('Логистическая регрессия', LogisticRegression(max_iter=1000)),
-    ('SVM', CalibratedClassifierCV(SVC(random_state=42), ensemble=False)),
+    ('SVM', CalibratedClassifierCV(SVC(random_state=35), ensemble=False)),
     ('CART (дерево решений)', DecisionTreeClassifier(
         random_state=42, max_depth=5)),
 ]

@@ -17,7 +17,6 @@ from sklearn.metrics import (accuracy_score, precision_score, recall_score,
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-
 class Node:
     def __init__(self, index, t, true_branch, false_branch):
         self.index = index
