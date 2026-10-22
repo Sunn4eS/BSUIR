@@ -9,7 +9,6 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import seaborn as sns
-from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
@@ -243,12 +242,6 @@ class Lab5App:
         root.title("ЛР 05. Деревья решений")
         root.geometry("1280x860")
 
-        self.var_source = tk.StringVar(value='make')
-        self.var_n = tk.IntVar(value=200)
-        self.var_nf = tk.IntVar(value=4)
-        self.var_ni = tk.IntVar(value=3)
-        self.var_sep = tk.StringVar(value='2.0')
-        self.var_seed = tk.IntVar(value=2)
         self.var_depth = tk.IntVar(value=0)
         self.var_min_leaf = tk.IntVar(value=1)
         self.var_min_split = tk.IntVar(value=2)
@@ -262,7 +255,9 @@ class Lab5App:
 
     def _build_notebook(self):
         style = ttk.Style(self.root)
-        style.configure('Treeview', rowheight=28)
+        style.configure('Treeview', rowheight=32)
+        style.configure('Treeview.Heading',
+                        font=('TkDefaultFont', 9, 'bold'))
 
         nb = ttk.Notebook(self.root)
         nb.pack(fill='both', expand=True)
@@ -286,27 +281,7 @@ class Lab5App:
 
         frm = ttk.LabelFrame(left, text="Источник данных", padding=8)
         frm.pack(fill='x', pady=(0, 8))
-        ttk.Radiobutton(frm, text="make_classification (синтетика)",
-                        variable=self.var_source, value='make').pack(anchor='w')
-        ttk.Radiobutton(frm, text="Bankloan (ЛР4)",
-                        variable=self.var_source, value='bankloan').pack(anchor='w')
-
-        frm = ttk.LabelFrame(left, text="Параметры генерации", padding=8)
-        frm.pack(fill='x', pady=(0, 8))
-        self._row(frm, "Число объектов:",
-                  ttk.Spinbox(frm, from_=60, to=3000,
-                              textvariable=self.var_n, width=8))
-        self._row(frm, "Число признаков:",
-                  ttk.Spinbox(frm, from_=2, to=10,
-                              textvariable=self.var_nf, width=8))
-        self._row(frm, "Информативных:",
-                  ttk.Spinbox(frm, from_=1, to=8,
-                              textvariable=self.var_ni, width=8))
-        self._row(frm, "Разделимость (class_sep):",
-                  ttk.Entry(frm, textvariable=self.var_sep, width=8))
-        self._row(frm, "random_state (seed):",
-                  ttk.Spinbox(frm, from_=0, to=200,
-                              textvariable=self.var_seed, width=8))
+        ttk.Label(frm, text="Bankloan (ЛР4)").pack(anchor='w')
 
         frm = ttk.LabelFrame(left, text="Параметры самописного дерева",
                              padding=8)
@@ -361,19 +336,25 @@ class Lab5App:
         top.pack(fill='x')
         self.lbl_match = ttk.Label(top, text="", font=("Consolas", 10))
         self.lbl_match.pack(anchor='w', pady=(0, 4))
+        ttk.Label(top, text="TP — true positive, TN — true negative, "
+                            "FP — false positive, FN — false negative",
+                  font=("Consolas", 9)).pack(anchor='w', pady=(0, 4))
 
-        cols = ('metric', 'my_train', 'my_test', 'sk_train', 'sk_test')
+        cols = ('metric', 'formula', 'my_train', 'my_test',
+                'sk_train', 'sk_test')
         self.table_metrics = ttk.Treeview(frm, columns=cols, show='headings',
                                           height=4)
         for c, title, w in [
-                ('metric', 'Метрика', 160),
-                ('my_train', 'Моё (train)', 110),
-                ('sk_train', 'sklearn (train)', 120),
-                ('my_test', 'Моё (test)', 100),
-                ('sk_test', 'sklearn (test)', 110)]:
+                ('metric', 'Метрика', 100),
+                ('formula', 'Формула', 390),
+                ('my_train', 'Моё (train)', 95),
+                ('sk_train', 'sklearn (train)', 145),
+                ('my_test', 'Моё (test)', 95),
+                ('sk_test', 'sklearn (test)', 145)]:
             self.table_metrics.heading(c, text=title)
             self.table_metrics.column(c, width=w, anchor='center')
         self.table_metrics.column('metric', anchor='w')
+        self.table_metrics.column('formula', anchor='w')
         self.table_metrics.pack(fill='x')
 
         frm = ttk.LabelFrame(self.tab_compare, text="Confusion matrix (test)",
@@ -398,13 +379,6 @@ class Lab5App:
         ttk.Label(row, text=label, width=30).pack(side='left')
         widget.pack(side='left')
 
-    @staticmethod
-    def _parse_float(var, default):
-        try:
-            return float(var.get().replace(',', '.'))
-        except ValueError:
-            return default
-
     def _set_results(self, text):
         self.txt_results.configure(state='normal')
         self.txt_results.delete('1.0', 'end')
@@ -412,23 +386,9 @@ class Lab5App:
         self.txt_results.configure(state='disabled')
 
     def _prepare_data(self):
-        if self.var_source.get() == 'bankloan':
-            X, y, cols = load_bankloan()
-            desc = (f"Источник: Bankloan (ЛР4), строк (без NaN в default): "
-                    f"{len(y)}")
-        else:
-            n = int(self.var_n.get())
-            nf = int(self.var_nf.get())
-            ni = min(int(self.var_ni.get()), nf)
-            sep = self._parse_float(self.var_sep, 2.0)
-            seed = int(self.var_seed.get())
-            X, y = make_classification(
-                n_samples=n, n_features=nf, n_informative=ni,
-                n_redundant=0, n_repeated=0, n_classes=2, class_sep=sep,
-                random_state=seed)
-            cols = [f'X{i + 1}' for i in range(nf)]
-            desc = (f"Источник: make_classification (n={n}, features={nf}, "
-                    f"informative={ni}, class_sep={sep}, seed={seed})")
+        X, y, cols = load_bankloan()
+        desc = (f"Источник: Bankloan (ЛР4), строк (без NaN в default): "
+                f"{len(y)}")
         return X, y, cols, desc
 
     def _train(self):
@@ -516,13 +476,20 @@ class Lab5App:
             text=f"Совпадение предсказаний с sklearn: train "
                  f"{mtr}/{ntr} ({100.0 * mtr / ntr:.1f}%), "
                  f"test {mte}/{nte} ({100.0 * mte / nte:.1f}%)")
-        for name, vals in [("Accuracy", (m_tr[0], m_te[0], s_tr[0], s_te[0])),
-                           ("Precision", (m_tr[1], m_te[1], s_tr[1], s_te[1])),
-                           ("Recall", (m_tr[2], m_te[2], s_tr[2], s_te[2])),
-                           ("F1-score", (m_tr[3], m_te[3], s_tr[3], s_te[3]))]:
+        rows = [
+            ("Accuracy", "(TP + TN) / (TP + TN + FP + FN)",
+             (m_tr[0], m_te[0], s_tr[0], s_te[0])),
+            ("Precision", "TP / (TP + FP)",
+             (m_tr[1], m_te[1], s_tr[1], s_te[1])),
+            ("Recall", "TP / (TP + FN)",
+             (m_tr[2], m_te[2], s_tr[2], s_te[2])),
+            ("F1-score", "2 * TP / (2 * TP + FP + FN)",
+             (m_tr[3], m_te[3], s_tr[3], s_te[3])),
+        ]
+        for name, formula, vals in rows:
             self.table_metrics.insert(
                 '', 'end',
-                values=[name] + [f"{v:.4f}" for v in vals])
+                values=[name, formula] + [f"{v:.4f}" for v in vals])
 
     def _draw_cm(self, yte, my_te, sk_te):
         self.fig_cm.clear()
