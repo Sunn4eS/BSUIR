@@ -1,0 +1,32 @@
+{
+  "model": {
+    "num_body_places": 3,
+    "num_paint_booths": 1,
+    "mean_arrival_m1": 4.8,
+    "mean_arrival_m2": 8.0,
+    "body_repair_mu": 20.0,
+    "body_repair_sigma": 12.0,
+    "paint_ratio": 0.5,
+    "paint_sigma": 2.0,
+    "sim_time": 60.0,
+    "seed": 42,
+    "trace": false,
+    "drain": true
+  },
+  "experiment": {
+    "mode": "run",
+    "replications": 10,
+    "seed_stride": 1,
+    "output_dir": null,
+    "output_root": "results",
+    "time_step": 0.5,
+    "confidence": 0.95,
+    "sweep": {
+      "parameter": "mean_arrival_m1",
+      "start": 5.0,
+      "stop": 25.0,
+      "step": 5.0,
+      "seeds_per_point": 10
+    }
+  }
+}

@@ -1,0 +1,5 @@
+simpy>=4.1,<5
+pandas>=2.0
+matplotlib>=3.7
+seaborn>=0.13
+pytest>=8.0

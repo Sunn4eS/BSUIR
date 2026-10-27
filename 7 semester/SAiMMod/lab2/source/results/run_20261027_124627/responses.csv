@@ -1,0 +1,2 @@
+avg_body_queue_length,avg_busy_body_places,avg_busy_paint_booths,avg_car_system_time,serviced_model_1,serviced_model_2,preemptions_model_2,total_run_time,arrived_count,std_car_system_time,censored_cars,censored_model_1,censored_model_2,drain_enabled
+0.0,1.8940670517834335,0.0,0.0,0,0,0,10.0,3,0.0,6,4,2,0

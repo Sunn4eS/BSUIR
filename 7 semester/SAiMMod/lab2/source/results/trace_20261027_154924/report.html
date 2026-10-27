@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Отчёт по модели СТО</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 40px; background: #fafafa; }
+h1 { color: #333; }
+h2 { color: #444; margin-top: 40px; }
+table { border-collapse: collapse; width: 100%; max-width: 900px; margin: 20px 0; }
+th, td { border: 1px solid #ddd; padding: 8px; }
+th { background: #f4f4f4; text-align: left; }
+tr:nth-child(even) { background: #f9f9f9; }
+img { border: 1px solid #ccc; margin: 10px 0; }
+</style>
+</head>
+<body>
+<h1>Отчёт по имитационной модели участка СТО</h1>
+<h2>Основные метрики</h2>
+<table><thead><tr><th>Параметр</th><th>Значение</th></tr></thead><tbody><tr><td>Режим drain</td><td>Да (дообслуживание)</td></tr><tr><td>T_final, мин</td><td>338.1593</td></tr><tr><td>Прибыло</td><td>31</td></tr><tr><td>Обслужено всего</td><td>31</td></tr><tr><td>Цензурировано</td><td>0</td></tr><tr><td>Цензурировано М1</td><td>0</td></tr><tr><td>Цензурировано М2</td><td>0</td></tr><tr><td>Прерываний М2</td><td>0</td></tr></tbody></table>
+<h2>Отклики по каждому пункту</h2>
+<table><thead><tr><th>Отклик</th><th>Значение</th><th>Ед.</th></tr></thead><tbody><tr><td>Средняя длина очереди на кузов</td><td>5.9333979803651395</td><td>авт.</td></tr><tr><td>Среднее число занятых кузовных мест</td><td>1.8485518849020839</td><td>мест</td></tr><tr><td>Среднее число занятых покрасочных камер</td><td>0.9443627800037131</td><td>камер</td></tr><tr><td>Среднее время автомобиля в системе</td><td>144.5030296351468</td><td>мин</td></tr><tr><td>Обслужено автомобилей Модели 1</td><td>18</td><td>шт.</td></tr><tr><td>Обслужено автомобилей Модели 2</td><td>13</td><td>шт.</td></tr><tr><td>Прерываний обслуживания Модели 2</td><td>0</td><td>шт.</td></tr><tr><td>Длина прогона T_final</td><td>338.1593306209655</td><td>мин</td></tr></tbody></table>
+<h2>Параметры модели</h2>
+<table><thead><tr><th>Параметр</th><th>Значение</th></tr></thead><tbody><tr><td>num_body_places</td><td>3</td></tr><tr><td>num_paint_booths</td><td>1</td></tr><tr><td>mean_arrival_m1</td><td>4.8</td></tr><tr><td>mean_arrival_m2</td><td>8.0</td></tr><tr><td>body_repair_mu</td><td>20.0</td></tr><tr><td>body_repair_sigma</td><td>12.0</td></tr><tr><td>paint_ratio</td><td>0.5</td></tr><tr><td>paint_sigma</td><td>2.0</td></tr><tr><td>sim_time</td><td>60.0</td></tr><tr><td>seed</td><td>42</td></tr><tr><td>trace</td><td>False</td></tr><tr><td>drain</td><td>True</td></tr></tbody></table>
+<h2>Графики по каждому отклику</h2>
+<h3>Средняя длина очереди на кузов</h3><img src="plots/avg_body_queue_length.png" style="max-width:1000px;width:100%;"><h3>Среднее число занятых кузовных мест</h3><img src="plots/avg_busy_body_places.png" style="max-width:1000px;width:100%;"><h3>Среднее число занятых покрасочных камер</h3><img src="plots/avg_busy_paint_booths.png" style="max-width:1000px;width:100%;"><h3>Среднее время автомобиля в системе</h3><img src="plots/avg_car_system_time.png" style="max-width:1000px;width:100%;"><h3>Обслужено автомобилей Модели 1</h3><img src="plots/serviced_model_1.png" style="max-width:1000px;width:100%;"><h3>Обслужено автомобилей Модели 2</h3><img src="plots/serviced_model_2.png" style="max-width:1000px;width:100%;"><h3>Прерываний обслуживания Модели 2</h3><img src="plots/preemptions_model_2.png" style="max-width:1000px;width:100%;"><h3>Длина прогона T_final</h3><img src="plots/total_run_time.png" style="max-width:1000px;width:100%;">
+<h2>Файлы</h2>
+<ul>
+<li><a href="config.json">config.json</a></li>
+<li><a href="responses.csv">responses.csv</a></li>
+<li><a href="responses.json">responses.json</a></li>
+<li><a href="timeseries.csv">timeseries.csv</a></li>
+<li><a href="cars.csv">cars.csv</a></li>
+<li><a href="preemptions.csv">preemptions.csv</a></li>
+</ul>
+</body>
+</html>

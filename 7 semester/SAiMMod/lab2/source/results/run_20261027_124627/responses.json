@@ -1,0 +1,27 @@
+{
+  "responses": {
+    "avg_body_queue_length": 0.0,
+    "avg_busy_body_places": 1.8940670517834335,
+    "avg_busy_paint_booths": 0.0,
+    "avg_car_system_time": 0.0,
+    "serviced_model_1": 0,
+    "serviced_model_2": 0,
+    "preemptions_model_2": 0,
+    "total_run_time": 10.0,
+    "arrived_count": 3,
+    "std_car_system_time": 0.0,
+    "censored_cars": 6,
+    "censored_model_1": 4,
+    "censored_model_2": 2,
+    "drain_enabled": 0
+  },
+  "meta": {
+    "drain_enabled": false,
+    "censored_cars": 6,
+    "censored_model_1": 4,
+    "censored_model_2": 2,
+    "arrived_count": 3,
+    "finished_count": 0,
+    "mode": "run"
+  }
+}

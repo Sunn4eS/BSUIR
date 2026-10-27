@@ -1,0 +1,10 @@
+time,response,value
+0.0,avg_body_queue_length,0.0
+0.0,avg_busy_body_places,0.0
+0.20263071234191113,avg_busy_body_places,1.0
+4.896289378919045,avg_busy_body_places,2.0
+5.960409390904711,avg_busy_body_places,3.0
+10.0,avg_busy_body_places,2.0
+10.0,avg_busy_body_places,1.0
+10.0,avg_busy_body_places,0.0
+0.0,avg_busy_paint_booths,0.0

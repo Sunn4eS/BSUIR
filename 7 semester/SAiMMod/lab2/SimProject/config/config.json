@@ -1,0 +1,33 @@
+{
+  "simulation": {
+    "sim_time": 180.0,
+    "drain_mode": true,
+    "seed": 42
+  },
+  "logging": {
+    "trace_enabled": true,
+    "log_to_file": true
+  },
+  "resources": {
+    "body_workstations": 3,
+    "paint_chambers": 1
+  },
+  "arrival_rates": {
+    "model_1_mean_interval": 10.0,
+    "model_2_mean_interval": 5.0
+  },
+  "service_times": {
+    "body_repair": {
+      "mean": 10.0,
+      "std": 3.0
+    },
+    "paint": {
+      "mean_ratio": 0.5,
+      "std": 2.0
+    }
+  },
+  "plotting": {
+    "enabled": true,
+    "mavg_window": 5
+  }
+}

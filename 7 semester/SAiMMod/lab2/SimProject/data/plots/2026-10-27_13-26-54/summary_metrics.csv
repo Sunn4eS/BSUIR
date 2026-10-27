@@ -1,0 +1,2 @@
+run_duration, finished_model_1, finished_model_2, total_serviced, preemptions_model_2, drain_mode_applied
+    990.6118,               31,               44,             75,                  25, True
