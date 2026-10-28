@@ -24,8 +24,6 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CSV_CANDIDATES = [
     os.path.join(SCRIPT_DIR, 'Bankloan.csv'),
-    os.path.join(SCRIPT_DIR, '..', '..', 'lab4', 'code', 'Bankloan.csv'),
-    os.path.join(SCRIPT_DIR, '..', '..', 'lab5', 'Bankloan.csv'),
 ]
 
 TARGET = 'default'

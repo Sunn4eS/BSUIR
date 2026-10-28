@@ -90,7 +90,17 @@ class Lab7App:
     def __init__(self, root):
         self.root = root
         root.title("ЛР 07. Кластеризация данных: Penguins")
-        root.geometry("1180x780")
+        root.geometry("1400x900")
+        
+        self.font = ("Arial", 12)
+        self.header_font = ("Arial", 14, "bold")
+        
+        style = ttk.Style(self.root)
+        style.configure('.', font=self.font)
+        style.configure('Treeview', rowheight=35, font=self.font)
+        style.configure('Treeview.Heading', font=self.header_font)
+        style.configure('TNotebook.Tab', font=self.header_font, padding=[10, 5])
+        style.configure('TLabelFrame', font=self.header_font)
 
         self.raw = load_data()
         if self.raw is None:
@@ -132,9 +142,6 @@ class Lab7App:
         self.sex_codes = np.where(sex == 'MALE', 1, 0)
 
     def _build_notebook(self):
-        style = ttk.Style(self.root)
-        style.configure('Treeview', rowheight=26)
-
         self.nb = ttk.Notebook(self.root)
         self.nb.pack(fill='both', expand=True)
 
@@ -181,7 +188,7 @@ class Lab7App:
 
         frm = ttk.LabelFrame(row, text="Сводка по данным", padding=6)
         frm.pack(side='left', fill='x', expand=True)
-        self.txt_info = tk.Text(frm, wrap='word', height=14)
+        self.txt_info = tk.Text(frm, wrap='word', height=14, font=self.font)
         self.txt_info.pack(fill='both', expand=True)
 
     def _draw_missing(self):
@@ -195,8 +202,8 @@ class Lab7App:
 
     def _draw_info(self):
         lines = [
-            f"Размер исходного датасета: {self.raw.shape}",
-            f"Размер после очистки: {self.df.shape}",
+            f"Размер исходного датасета: {self.raw.shape[0]} строк, {self.raw.shape[1]} столбцов",
+            f"Размер после очистки: {self.df.shape[0]} строк, {self.df.shape[1]} столбцов",
             f"Признаков для кластеризации: {len(FEATURES)}",
             "",
             "Описание признаков:",
@@ -248,7 +255,7 @@ class Lab7App:
             "дисперсия 1), иначе признак body_mass_g доминирует над "
             "остальными при расчёте расстояний."
         )
-        txt = tk.Text(frm, wrap='word', height=8)
+        txt = tk.Text(frm, wrap='word', height=8, font=self.font)
         txt.insert('1.0', text)
         txt.configure(state='disabled')
         txt.pack(fill='x', expand=True)
@@ -290,7 +297,7 @@ class Lab7App:
             "размерности. На обеих проекциях видны две хорошо разделимые "
             "группы, что связано с половым диморфизмом пингвинов."
         )
-        txt = tk.Text(frm, wrap='word', height=4)
+        txt = tk.Text(frm, wrap='word', height=4, font=self.font)
         txt.insert('1.0', text)
         txt.configure(state='disabled')
         txt.pack(fill='x', expand=True)
@@ -451,7 +458,7 @@ class Lab7App:
             "Две группы, которые выделяют алгоритмы, соответствуют самцам "
             "и самкам (половой диморфизм)."
         )
-        txt = tk.Text(frm, wrap='word', height=5)
+        txt = tk.Text(frm, wrap='word', height=5, font=self.font)
         txt.insert('1.0', text)
         txt.configure(state='disabled')
         txt.pack(fill='x', expand=True)

@@ -204,7 +204,7 @@ def draw_tree(fig, tree, feature_names):
         else:
             label = f'{feature_names[node.index]} <= {node.t:.4f}'
             fc = '#ffe9c4'
-        ax.text(x, y, label, ha='center', va='center', fontsize=8,
+        ax.text(x, y, label, ha='center', va='center', fontsize=10,
                 bbox=dict(boxstyle='round,pad=0.35', fc=fc, ec='#8a8a8a'))
         if not isinstance(node, Leaf):
             for child in (node.true_branch, node.false_branch):
@@ -240,7 +240,7 @@ class Lab5App:
     def __init__(self, root):
         self.root = root
         root.title("ЛР 05. Деревья решений")
-        root.geometry("1280x860")
+        root.geometry("1600x1000")
 
         self.var_depth = tk.IntVar(value=0)
         self.var_min_leaf = tk.IntVar(value=1)
@@ -255,9 +255,9 @@ class Lab5App:
 
     def _build_notebook(self):
         style = ttk.Style(self.root)
-        style.configure('Treeview', rowheight=32)
+        style.configure('Treeview', rowheight=40)
         style.configure('Treeview.Heading',
-                        font=('TkDefaultFont', 9, 'bold'))
+                        font=('TkDefaultFont', 12, 'bold'))
 
         nb = ttk.Notebook(self.root)
         nb.pack(fill='both', expand=True)
@@ -305,7 +305,7 @@ class Lab5App:
         frm = ttk.LabelFrame(right, text="Результаты", padding=8)
         frm.pack(fill='both', expand=True)
         self.txt_results = tk.Text(frm, wrap='word', state='disabled',
-                                   font=("Consolas", 10))
+                                   font=("Consolas", 12))
         self.txt_results.pack(fill='both', expand=True)
 
     def _build_tree_tab(self):
@@ -314,7 +314,7 @@ class Lab5App:
         frm.pack(fill='x')
         wrap = ttk.Frame(frm)
         wrap.pack(fill='both', expand=True)
-        self.txt_tree = tk.Text(wrap, height=14, font=("Consolas", 10))
+        self.txt_tree = tk.Text(wrap, height=14, font=("Consolas", 12))
         sb = ttk.Scrollbar(wrap, orient='vertical',
                            command=self.txt_tree.yview)
         self.txt_tree.configure(yscrollcommand=sb.set)
@@ -324,7 +324,7 @@ class Lab5App:
         frm = ttk.LabelFrame(self.tab_tree, text="Графическое представление",
                              padding=6)
         frm.pack(fill='both', expand=True, pady=(6, 0))
-        self.fig_tree, self.ax_tree = plt.subplots(figsize=(11, 5))
+        self.fig_tree, self.ax_tree = plt.subplots(figsize=(13, 6))
         self.canvas_tree = FigureCanvasTkAgg(self.fig_tree, master=frm)
         self.canvas_tree.get_tk_widget().pack(fill='both', expand=True)
 
@@ -334,11 +334,11 @@ class Lab5App:
         frm.pack(fill='x')
         top = ttk.Frame(frm)
         top.pack(fill='x')
-        self.lbl_match = ttk.Label(top, text="", font=("Consolas", 10))
+        self.lbl_match = ttk.Label(top, text="", font=("Consolas", 12))
         self.lbl_match.pack(anchor='w', pady=(0, 4))
         ttk.Label(top, text="TP — true positive, TN — true negative, "
                             "FP — false positive, FN — false negative",
-                  font=("Consolas", 9)).pack(anchor='w', pady=(0, 4))
+                  font=("Consolas", 11)).pack(anchor='w', pady=(0, 4))
 
         cols = ('metric', 'formula', 'my_train', 'my_test',
                 'sk_train', 'sk_test')
@@ -360,7 +360,7 @@ class Lab5App:
         frm = ttk.LabelFrame(self.tab_compare, text="Confusion matrix (test)",
                              padding=6)
         frm.pack(fill='both', expand=True, pady=(6, 0))
-        self.fig_cm, self.ax_cm = plt.subplots(figsize=(11, 3.2))
+        self.fig_cm, self.ax_cm = plt.subplots(figsize=(13, 4))
         self.canvas_cm = FigureCanvasTkAgg(self.fig_cm, master=frm)
         self.canvas_cm.get_tk_widget().pack(fill='both', expand=True)
 
@@ -368,7 +368,7 @@ class Lab5App:
                              text="Важность признаков (прирост информации)",
                              padding=6)
         frm.pack(fill='both', expand=True, pady=(6, 0))
-        self.fig_imp, self.ax_imp = plt.subplots(figsize=(11, 3.4))
+        self.fig_imp, self.ax_imp = plt.subplots(figsize=(13, 4))
         self.canvas_imp = FigureCanvasTkAgg(self.fig_imp, master=frm)
         self.canvas_imp.get_tk_widget().pack(fill='both', expand=True)
 

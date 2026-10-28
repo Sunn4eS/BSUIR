@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from sklearn.metrics import confusion_matrix
 
-import keras
+from tensorflow import keras
 from keras import layers
 
 CLASS_NAMES = ['самолет', 'автомобиль', 'птица', 'кошка', 'олень',
@@ -133,7 +133,10 @@ class Lab8App:
     def __init__(self, root):
         self.root = root
         root.title("ЛР 08. Сверточные нейронные сети (CNN), вариант 3")
-        root.geometry("1220x820+30+20")
+        
+        # Увеличение шрифта для всех ttk виджетов
+        style = ttk.Style()
+        style.configure('.', font=('Segoe UI', 16))
 
         self.var_n_train = tk.IntVar(value=10000)
         self.var_n_test = tk.IntVar(value=2000)
@@ -167,7 +170,7 @@ class Lab8App:
 
     def _build_notebook(self):
         style = ttk.Style(self.root)
-        style.configure('Treeview', rowheight=28)
+        style.configure('Treeview', rowheight=35)
 
         nb = ttk.Notebook(self.root)
         nb.pack(fill='both', expand=True)
