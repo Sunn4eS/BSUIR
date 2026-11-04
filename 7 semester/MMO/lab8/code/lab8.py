@@ -2,6 +2,7 @@ import os
 os.environ['KERAS_BACKEND'] = 'torch'
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+import contextlib
 import threading
 import tkinter as tk
 from tkinter import ttk
@@ -13,11 +14,37 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from sklearn.metrics import confusion_matrix
 
-from tensorflow import keras
+import torch
+
+import keras
 from keras import layers
+from keras.src.backend.common import global_state as _keras_global_state
+
 
 CLASS_NAMES = ['самолет', 'автомобиль', 'птица', 'кошка', 'олень',
                'собака', 'лягушка', 'лошадь', 'корабль', 'грузовик']
+
+
+def cuda_available():
+    return torch.cuda.is_available()
+
+
+def cuda_name():
+    return torch.cuda.get_device_name(0) if cuda_available() else ''
+
+
+@contextlib.contextmanager
+def device_scope(device):
+    """Выполнять операции Keras на выбранном устройстве ('cpu' / 'cuda')."""
+    if _keras_global_state is None:
+        yield
+        return
+    previous = _keras_global_state.get_global_attribute('torch_device', None)
+    _keras_global_state.set_global_attribute('torch_device', device)
+    try:
+        yield
+    finally:
+        _keras_global_state.set_global_attribute('torch_device', previous)
 
 
 def build_base_model(f1, f2, dense, dropout, lr):
@@ -150,6 +177,7 @@ class Lab8App:
         self.var_eval_model = tk.StringVar(value="Базовая")
         self.var_opt_iters = tk.IntVar(value=50)
         self.var_opt_lr = tk.StringVar(value="0.5")
+        self.var_use_gpu = tk.BooleanVar(value=cuda_available())
 
         self.x_train = None
         self.y_train = None
@@ -161,6 +189,9 @@ class Lab8App:
         self.total_epochs = 0
         self.model_base = None
         self.model_improved = None
+        self.model_base_device = 'cpu'
+        self.model_improved_device = 'cpu'
+        self.current_device = 'cpu'
         self.history_base = None
         self.history_improved = None
         self.train_buttons = []
@@ -227,6 +258,19 @@ class Lab8App:
             frm, from_=16, to=256, increment=16, textvariable=self.var_f2, width=8))
         self._row(frm, "Нейронов Dense:", ttk.Spinbox(
             frm, from_=32, to=512, increment=32, textvariable=self.var_dense, width=8))
+
+        frm = ttk.LabelFrame(left, text="Устройство", padding=8)
+        frm.pack(fill='x', pady=(0, 8))
+        self.chk_gpu = ttk.Checkbutton(
+            frm, text="Обучать на видеокарте (GPU)",
+            variable=self.var_use_gpu, command=self._on_device_toggle)
+        self.chk_gpu.pack(anchor='w')
+        self.lbl_device = ttk.Label(
+            frm, text=self._device_hint(), foreground='#555', wraplength=320)
+        self.lbl_device.pack(anchor='w', pady=(4, 0))
+        if not cuda_available():
+            self.var_use_gpu.set(False)
+            self.chk_gpu.state(['disabled'])
 
         b1 = ttk.Button(left, text="Обучить базовую модель",
                         command=lambda: self._start_train(False))
@@ -343,6 +387,26 @@ class Lab8App:
     def _set_status(self, text):
         self.status.set(text)
 
+    @staticmethod
+    def _device_hint():
+        if cuda_available():
+            return (f"Доступно: {cuda_name()} "
+                    f"(CUDA {torch.version.cuda})")
+        return ("CUDA не найдена — доступен только CPU. Для GPU установите "
+                "CUDA-сборку PyTorch: pip install torch --index-url "
+                "https://download.pytorch.org/whl/cu130")
+
+    @staticmethod
+    def _device_label(device):
+        if device == 'cuda':
+            name = cuda_name() or 'CUDA'
+            return f"GPU: {name}"
+        return "CPU"
+
+    def _on_device_toggle(self):
+        device = 'cuda' if self.var_use_gpu.get() else 'cpu'
+        self._set_status(f"Устройство обучения: {self._device_label(device)}")
+
     def _start_data_load(self):
         threading.Thread(target=self._load_data, daemon=True).start()
 
@@ -368,6 +432,8 @@ class Lab8App:
             'f1': int(self.var_f1.get()),
             'f2': int(self.var_f2.get()),
             'dense': int(self.var_dense.get()),
+            'device': ('cuda' if self.var_use_gpu.get() and cuda_available()
+                       else 'cpu'),
         }
 
     def _start_train(self, improved):
@@ -380,11 +446,14 @@ class Lab8App:
         params = self._read_params()
         self.training = True
         self.current_epoch = 0
+        self.current_device = params['device']
         self.total_epochs = params['epochs']
         for button in self.train_buttons:
             button.configure(state='disabled')
+        self.chk_gpu.state(['disabled'])
         name = "улучшенной" if improved else "базовой"
-        self._set_status(f"Обучение {name} модели...")
+        self._set_status(f"Обучение {name} модели на "
+                         f"{self._device_label(params['device'])}...")
         threading.Thread(target=self._train_worker,
                          args=(improved, params), daemon=True).start()
         self._poll_training()
@@ -392,64 +461,76 @@ class Lab8App:
     def _poll_training(self):
         if not self.training:
             return
-        self._set_status(f"Обучение... эпоха {self.current_epoch}/"
-                         f"{self.total_epochs}")
+        self._set_status(f"Обучение на {self._device_label(self.current_device)}... "
+                         f"эпоха {self.current_epoch}/{self.total_epochs}")
         self.root.after(500, self._poll_training)
 
     def _train_worker(self, improved, params):
         n = params['n_train']
         x = self.x_train[:n]
         y = self.y_train[:n]
-        if improved:
-            model = build_improved_model(params['f1'], params['f2'],
+        device = params['device']
+        with device_scope(device):
+            if improved:
+                model = build_improved_model(params['f1'], params['f2'],
+                                             params['dense'],
+                                             params['dropout'],
+                                             params['lr'])
+            else:
+                model = build_base_model(params['f1'], params['f2'],
                                          params['dense'], params['dropout'],
                                          params['lr'])
-        else:
-            model = build_base_model(params['f1'], params['f2'],
-                                     params['dense'], params['dropout'],
-                                     params['lr'])
-        callback = keras.callbacks.LambdaCallback(
-            on_epoch_end=lambda epoch, logs: setattr(
-                self, 'current_epoch', epoch + 1))
-        history = model.fit(x, y, epochs=params['epochs'],
-                            batch_size=params['batch'],
-                            validation_split=0.1, verbose=0,
-                            callbacks=[callback])
+            callback = keras.callbacks.LambdaCallback(
+                on_epoch_end=lambda epoch, logs: setattr(
+                    self, 'current_epoch', epoch + 1))
+            history = model.fit(x, y, epochs=params['epochs'],
+                                batch_size=params['batch'],
+                                validation_split=0.1, verbose=0,
+                                callbacks=[callback])
         self.root.after(0, lambda: self._train_done(improved, model,
-                                                    history.history))
+                                                    history.history,
+                                                    device))
 
-    def _train_done(self, improved, model, history):
+    def _train_done(self, improved, model, history, device):
         self.training = False
         for button in self.train_buttons:
             button.configure(state='normal')
+        if cuda_available():
+            self.chk_gpu.state(['!disabled'])
         if improved:
             self.model_improved = model
             self.history_improved = history
+            self.model_improved_device = device
         else:
             self.model_base = model
             self.history_base = history
+            self.model_base_device = device
         self._draw_curves()
-        self._show_architecture(model, improved)
-        self._show_training_results(improved, history)
+        self._show_architecture(model, improved, device)
+        self._show_training_results(improved, history, device)
         self._draw_filters()
         self._evaluate()
         name = "улучшенной" if improved else "базовой"
-        self._set_status(f"Обучение {name} модели завершено.")
+        self._set_status(f"Обучение {name} модели завершено "
+                         f"({self._device_label(device)}).")
 
-    def _show_architecture(self, model, improved):
+    def _show_architecture(self, model, improved, device='cpu'):
         lines = []
         model.summary(print_fn=lambda text: lines.append(text))
         title = "УЛУЧШЕННАЯ" if improved else "БАЗОВАЯ"
-        self._set_text(self.txt_arch, f"=== {title} МОДЕЛЬ ===\n" +
+        self._set_text(self.txt_arch,
+                       f"=== {title} МОДЕЛЬ ===\n"
+                       f"Устройство: {self._device_label(device)}\n" +
                        "\n".join(lines))
 
-    def _show_training_results(self, improved, history):
+    def _show_training_results(self, improved, history, device='cpu'):
         title = "Улучшенная" if improved else "Базовая"
         acc = history['accuracy']
         val = history['val_accuracy']
         loss = history['loss']
         val_loss = history['val_loss']
         text = (f"=== {title} модель ===\n"
+                f"Устройство: {self._device_label(device)}\n"
                 f"Эпох: {len(acc)}\n"
                 f"Точность на обучении (последняя эпоха): {acc[-1]:.4f}\n"
                 f"Точность на валидации (последняя эпоха): {val[-1]:.4f}\n"
@@ -496,16 +577,26 @@ class Lab8App:
             return self.model_improved
         return self.model_base
 
+    def _selected_model_device(self):
+        if self.var_eval_model.get() == "Улучшенная":
+            return self.model_improved_device
+        return self.model_base_device
+
     def _evaluate(self):
+        if self.training:
+            self._set_status("Дождитесь окончания обучения.")
+            return
         model = self._selected_model()
         if model is None or not self.data_ready:
             self._set_status("Сначала обучите выбранную модель.")
             return
+        device = self._selected_model_device()
         n = int(self.var_n_test.get())
         n = min(n, self.x_test.shape[0])
         x = self.x_test[:n]
         y = self.y_test[:n]
-        preds = model.predict(x, verbose=0)
+        with device_scope(device):
+            preds = model.predict(x, verbose=0)
         y_pred = np.argmax(preds, axis=1)
         y_true = np.argmax(y, axis=1)
         acc = float(np.mean(y_pred == y_true))
@@ -543,7 +634,8 @@ class Lab8App:
         self.canvas_samples.draw_idle()
 
         self._set_status(f"Точность выбранной модели на {n} тестовых "
-                         f"изображениях: {acc:.4f}")
+                         f"изображениях: {acc:.4f} "
+                         f"({self._device_label(device)})")
 
     def _first_conv_layer(self, model):
         for layer in model.layers:
@@ -597,7 +689,7 @@ class Lab8App:
                      f"MSE = {losses[-1]:.6f}\n")
         text += f"\nСкорость обучения: {lr}, итераций: {iters}"
         self.ax_traj.plot(w0, w1, 'k*', markersize=10, label='Старт')
-        self.ax_traj.plot(0.02 * 0, 0.02, 'r^', markersize=8,
+        self.ax_traj.plot(2.0, 0.02, 'r^', markersize=8,
                           label='Истинные веса')
         self.ax_traj.set_title("Траектории весов (w0, w1)")
         self.ax_traj.set_xlabel("w0")

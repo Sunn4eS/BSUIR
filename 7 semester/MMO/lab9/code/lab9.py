@@ -1,10 +1,10 @@
+import json
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
 import queue
 import threading
 import time
 import tkinter as tk
+import urllib.request
 from tkinter import ttk
 
 import numpy as np
@@ -13,49 +13,303 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from tensorflow import keras
-from tensorflow.keras.datasets import imdb
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import (Embedding, SimpleRNN, LSTM, GRU,
-                                     Dropout, Dense)
-from tensorflow.keras.optimizers import Adam
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader, TensorDataset
 
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                              f1_score, confusion_matrix, classification_report)
 
-CELLS = {'SimpleRNN': SimpleRNN, 'LSTM': LSTM, 'GRU': GRU}
+IMDB_URL = ('https://storage.googleapis.com/tensorflow/tf-keras-datasets/'
+            'imdb.npz')
+WORD_INDEX_URL = ('https://storage.googleapis.com/tensorflow/tf-keras-datasets/'
+                  'imdb_word_index.json')
+
+PAD_INDEX = 0       
+START_INDEX = 1     
+OOV_INDEX = 2       
+INDEX_OFFSET = 3    
+
+CELLS = {'SimpleRNN': nn.RNN, 'LSTM': nn.LSTM, 'GRU': nn.GRU}
 
 _cached_word_index = None
+_cached_data = {}
+
+def get_cache_dir():
+    base = os.environ.get('KERAS_HOME')
+    if not base:
+        base = os.path.join(os.path.expanduser('~'), '.keras')
+    path = os.path.join(base, 'datasets')
+    os.makedirs(path, exist_ok=True)
+    return path
 
 
-def get_word_index():
+def _download(url, dest, log=None):
+    if log:
+        log(f"Скачивание {url} ...")
+    tmp = dest + '.part'
+    urllib.request.urlretrieve(url, tmp)
+    os.replace(tmp, dest)
+    if log:
+        log(f"Файл сохранён: {dest}")
+
+
+def _ensure_file(name, url, log=None):
+    path = os.path.join(get_cache_dir(), name)
+    if not os.path.exists(path):
+        _download(url, path, log)
+    return path
+
+
+def get_word_index(log=None):
     global _cached_word_index
     if _cached_word_index is None:
-        _cached_word_index = imdb.get_word_index()
+        path = _ensure_file('imdb_word_index.json', WORD_INDEX_URL, log)
+        with open(path, encoding='utf-8') as f:
+            _cached_word_index = json.load(f)
     return _cached_word_index
 
 
 def decode_review(sequence):
-    reverse_index = dict((v + 3, k) for k, v in get_word_index().items())
-    words = []
-    for i in sequence:
-        if i > 2:
-            words.append(reverse_index.get(i - 3, '?'))
+    reverse_index = {v + INDEX_OFFSET: k
+                     for k, v in get_word_index().items()}
+    words = [reverse_index.get(i - INDEX_OFFSET, '?')
+             for i in sequence if i > OOV_INDEX]
     return ' '.join(words)
 
 
-def build_model(cell_name, vocab_size, max_len, embed_dim, units,
-                dropout, lr):
-    model = Sequential()
-    model.add(Embedding(vocab_size, embed_dim))
-    model.add(CELLS[cell_name](units))
-    model.add(Dropout(dropout))
-    model.add(Dense(1, activation='sigmoid'))
-    model.build((None, max_len))
-    model.compile(optimizer=Adam(learning_rate=lr),
-                  loss='binary_crossentropy', metrics=['accuracy'])
-    return model
+def load_imdb(num_words=10000, seed=113, log=None):
+    """Аналог keras.datasets.imdb.load_data(num_words).
+
+    Повторяет предобработку Keras: перемешивание с фиксированным seed,
+    добавление служебного токена начала отзыва, сдвиг индексов слов
+    на INDEX_OFFSET и замену редких слов на OOV_INDEX.
+    Возвращает (x_train, y_train, x_test, y_test).
+    """
+    key = (num_words, seed)
+    if key in _cached_data:
+        return _cached_data[key]
+    limit = num_words if num_words else 10 ** 9
+
+    path = _ensure_file('imdb.npz', IMDB_URL, log)
+    with np.load(path, allow_pickle=True) as data:
+        x_train = data['x_train']
+        y_train = data['y_train']
+        x_test = data['x_test']
+        y_test = data['y_test']
+
+    rng = np.random.RandomState(seed)
+    train_idx = rng.permutation(len(x_train))
+    test_idx = rng.permutation(len(x_test))
+    x_train, y_train = x_train[train_idx], y_train[train_idx]
+    x_test, y_test = x_test[test_idx], y_test[test_idx]
+
+    def prepare(sequences):
+        prepared = []
+        for seq in sequences:
+            seq = [START_INDEX] + [int(w) + INDEX_OFFSET for w in seq]
+            prepared.append(np.array(
+                [w if w < limit else OOV_INDEX for w in seq],
+                dtype=np.int32))
+        return prepared
+
+    result = (prepare(x_train), np.asarray(y_train, dtype=np.int64),
+              prepare(x_test), np.asarray(y_test, dtype=np.int64))
+    _cached_data[key] = result
+    return result
+
+
+def pad_sequences(sequences, maxlen, value=0):
+    """Аналог keras.preprocessing.sequence.pad_sequences.
+
+    Используется padding='pre' и truncating='pre' — как в Keras
+    по умолчанию: короткие отзывы дополняются нулями слева, длинные
+    обрезаются с начала.
+    """
+    result = np.full((len(sequences), maxlen), value, dtype=np.int64)
+    for i, seq in enumerate(sequences):
+        seq = np.asarray(seq, dtype=np.int64)
+        if len(seq) > maxlen:
+            seq = seq[-maxlen:]
+        if len(seq):
+            result[i, maxlen - len(seq):] = seq
+    return result
+
+
+
+class SentimentRNN(nn.Module):
+
+    def __init__(self, vocab_size, embed_dim, hidden_size,
+                 cell='LSTM', dropout=0.3):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, embed_dim,
+                                      padding_idx=PAD_INDEX)
+        nn.init.uniform_(self.embedding.weight, -0.05, 0.05)
+        with torch.no_grad():
+            self.embedding.weight[PAD_INDEX].fill_(0)
+
+        self.rnn = CELLS[cell](embed_dim, hidden_size, batch_first=True)
+        self._init_recurrent(self.rnn, cell)
+
+        self.dropout = nn.Dropout(dropout)
+        self.fc = nn.Linear(hidden_size, 1)
+        nn.init.xavier_uniform_(self.fc.weight)
+        nn.init.zeros_(self.fc.bias)
+
+    @staticmethod
+    def _init_recurrent(module, cell):
+        for name, param in module.named_parameters():
+            if 'weight_ih' in name:
+                nn.init.xavier_uniform_(param)
+            elif 'weight_hh' in name:
+                nn.init.orthogonal_(param)
+            elif 'bias' in name:
+                nn.init.zeros_(param)
+        if cell == 'LSTM':
+            hidden = module.hidden_size
+            with torch.no_grad():
+                for name, param in module.named_parameters():
+                    if name.startswith('bias_hh'):
+                        param[hidden:2 * hidden].fill_(1.0)
+
+    def forward(self, x):
+        emb = self.embedding(x)
+        out, _ = self.rnn(emb)
+        last = out[:, -1, :]
+        return self.fc(self.dropout(last)).squeeze(-1)
+
+
+def build_model(cell_name, vocab_size, embed_dim, units, dropout):
+    return SentimentRNN(vocab_size, embed_dim, units, cell_name, dropout)
+
+
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+
+def model_summary(model):
+    lines = [f"{'Layer (type)':<22}{'Params':>12}   Details",
+             '-' * 60]
+    for name, module in model.named_children():
+        params = sum(p.numel() for p in module.parameters())
+        if isinstance(module, nn.Embedding):
+            details = f"{module.num_embeddings} x {module.embedding_dim}"
+        elif isinstance(module, (nn.RNN, nn.LSTM, nn.GRU)):
+            details = f"{module.input_size} -> {module.hidden_size}"
+        elif isinstance(module, nn.Linear):
+            details = f"{module.in_features} -> {module.out_features}"
+        elif isinstance(module, nn.Dropout):
+            details = f"p = {module.p}"
+        else:
+            details = ''
+        lines.append(f"{name + ' (' + type(module).__name__ + ')':<22}"
+                     f"{params:>12,}   {details}")
+    lines.append('-' * 60)
+    lines.append(f"{'Total params':<22}{count_parameters(model):>12,}")
+    return lines
+
+
+def get_device():
+    return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+
+def device_label(device):
+    if device.type == 'cuda':
+        return f"cuda ({torch.cuda.get_device_name(0)})"
+    return 'cpu'
+
+
+def split_train_val(X, y, val_fraction=0.2, seed=42):
+    """Случайное разбиение на train/validation с фиксированным seed."""
+    n = len(X)
+    n_val = int(round(n * val_fraction))
+    indices = np.random.default_rng(seed).permutation(n)
+    val_idx = indices[:n_val]
+    train_idx = indices[n_val:]
+    return X[train_idx], y[train_idx], X[val_idx], y[val_idx]
+
+
+def _make_loader(X, y, batch_size, shuffle):
+    dataset = TensorDataset(torch.from_numpy(np.ascontiguousarray(X)).long(),
+                            torch.from_numpy(np.ascontiguousarray(y)).float())
+    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+
+
+def _run_epoch(model, loader, criterion, optimizer, device, clip):
+    model.train()
+    total_loss = 0.0
+    correct = 0
+    total = 0
+    for xb, yb in loader:
+        xb = xb.to(device)
+        yb = yb.to(device)
+        optimizer.zero_grad()
+        logits = model(xb)
+        loss = criterion(logits, yb)
+        loss.backward()
+        if clip:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=clip)
+        optimizer.step()
+
+        total_loss += loss.item() * len(yb)
+        pred = (torch.sigmoid(logits) > 0.5).long()
+        correct += (pred == yb.long()).sum().item()
+        total += len(yb)
+    return total_loss / total, correct / total
+
+
+@torch.no_grad()
+def _eval_epoch(model, loader, criterion, device):
+    model.eval()
+    total_loss = 0.0
+    correct = 0
+    total = 0
+    for xb, yb in loader:
+        xb = xb.to(device)
+        yb = yb.to(device)
+        logits = model(xb)
+        total_loss += criterion(logits, yb).item() * len(yb)
+        pred = (torch.sigmoid(logits) > 0.5).long()
+        correct += (pred == yb.long()).sum().item()
+        total += len(yb)
+    return total_loss / total, correct / total
+
+
+def train_model(model, X_train, y_train, X_val, y_val, epochs, batch_size,
+                lr, device, log=None, clip=1.0):
+    """Цикл обучения на PyTorch; возвращает историю метрик по эпохам."""
+    criterion = nn.BCEWithLogitsLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    train_loader = _make_loader(X_train, y_train, batch_size, shuffle=True)
+    val_loader = _make_loader(X_val, y_val, batch_size, shuffle=False)
+
+    history = {'loss': [], 'accuracy': [], 'val_loss': [], 'val_accuracy': []}
+    for epoch in range(1, epochs + 1):
+        train_loss, train_acc = _run_epoch(model, train_loader, criterion,
+                                           optimizer, device, clip)
+        val_loss, val_acc = _eval_epoch(model, val_loader, criterion, device)
+        history['loss'].append(train_loss)
+        history['accuracy'].append(train_acc)
+        history['val_loss'].append(val_loss)
+        history['val_accuracy'].append(val_acc)
+        if log:
+            log(f"Эпоха {epoch}: loss={train_loss:.4f}, acc={train_acc:.4f}, "
+                f"val_loss={val_loss:.4f}, val_acc={val_acc:.4f}")
+    return history
+
+
+@torch.no_grad()
+def predict_proba(model, X, batch_size=256, device=None):
+    """Вероятности класса «положительный отзыв»."""
+    if device is None:
+        device = get_device()
+    model.eval()
+    chunks = []
+    for start in range(0, len(X), batch_size):
+        xb = torch.from_numpy(np.ascontiguousarray(
+            X[start:start + batch_size])).long().to(device)
+        chunks.append(torch.sigmoid(model(xb)).cpu().numpy())
+    return np.concatenate(chunks) if chunks else np.empty(0)
 
 
 def compute_metrics(y_true, y_pred):
@@ -66,25 +320,10 @@ def compute_metrics(y_true, y_pred):
         'f1': f1_score(y_true, y_pred, zero_division=0),
     }
 
-
-class LogCallback(keras.callbacks.Callback):
-    def __init__(self, log):
-        super().__init__()
-        self.log = log
-
-    def on_epoch_end(self, epoch, logs=None):
-        logs = logs or {}
-        self.log.append(
-            f"Эпоха {epoch + 1}: loss={logs.get('loss', 0):.4f}, "
-            f"acc={logs.get('accuracy', 0):.4f}, "
-            f"val_loss={logs.get('val_loss', 0):.4f}, "
-            f"val_acc={logs.get('val_accuracy', 0):.4f}")
-
-
 class Lab9App:
     def __init__(self, root):
         self.root = root
-        root.title("ЛР 09. Рекуррентные нейронные сети (RNN)")
+        root.title("ЛР 09. Рекуррентные нейронные сети (RNN, PyTorch)")
         root.geometry("1250x820")
 
         self.var_vocab = tk.IntVar(value=10000)
@@ -111,10 +350,13 @@ class Lab9App:
 
         self.history = None
         self.model = None
+        self.device = get_device()
         self.train_seconds = 0
         self.test_info = ""
         self.metrics = {}
         self.cm = None
+        self.y_true = None
+        self.y_pred = None
         self.errors = []
         self.exp_results = []
 
@@ -150,39 +392,39 @@ class Lab9App:
         frm = ttk.LabelFrame(left, text="Датасет IMDB", padding=8)
         frm.pack(fill='x', pady=(0, 8))
         self._row(frm, "Словарь (num_words):",
-                  ttk.Spinbox(frm, from_=1000, to=50000, increment=1000,
-                              textvariable=self.var_vocab, width=9))
+                  lambda p: ttk.Spinbox(p, from_=1000, to=50000, increment=1000,
+                                        textvariable=self.var_vocab, width=9))
         self._row(frm, "Длина послед-ти (max_len):",
-                  ttk.Spinbox(frm, from_=20, to=500, increment=10,
-                              textvariable=self.var_max_len, width=9))
+                  lambda p: ttk.Spinbox(p, from_=20, to=500, increment=10,
+                                        textvariable=self.var_max_len, width=9))
         self._row(frm, "Обучающих отзывов:",
-                  ttk.Spinbox(frm, from_=1000, to=25000, increment=1000,
-                              textvariable=self.var_samples, width=9))
+                  lambda p: ttk.Spinbox(p, from_=1000, to=25000, increment=1000,
+                                        textvariable=self.var_samples, width=9))
 
         frm = ttk.LabelFrame(left, text="Модель RNN", padding=8)
         frm.pack(fill='x', pady=(0, 8))
         self._row(frm, "Тип слоя:",
-                  ttk.Combobox(frm, textvariable=self.var_cell,
-                               values=('SimpleRNN', 'LSTM', 'GRU'),
-                               state='readonly', width=9))
+                  lambda p: ttk.Combobox(p, textvariable=self.var_cell,
+                                         values=('SimpleRNN', 'LSTM', 'GRU'),
+                                         state='readonly', width=9))
         self._row(frm, "Размер эмбеддинга:",
-                  ttk.Spinbox(frm, from_=8, to=256, increment=8,
-                              textvariable=self.var_embed, width=9))
+                  lambda p: ttk.Spinbox(p, from_=8, to=256, increment=8,
+                                        textvariable=self.var_embed, width=9))
         self._row(frm, "Число нейронов:",
-                  ttk.Spinbox(frm, from_=8, to=256, increment=8,
-                              textvariable=self.var_units, width=9))
+                  lambda p: ttk.Spinbox(p, from_=8, to=256, increment=8,
+                                        textvariable=self.var_units, width=9))
         self._row(frm, "Dropout:",
-                  ttk.Spinbox(frm, from_=0.0, to=0.9, increment=0.05,
-                              textvariable=self.var_dropout, width=9))
+                  lambda p: ttk.Spinbox(p, from_=0.0, to=0.9, increment=0.05,
+                                        textvariable=self.var_dropout, width=9))
         self._row(frm, "Batch size:",
-                  ttk.Combobox(frm, textvariable=self.var_batch,
-                               values=('32', '64', '128', '256'),
-                               state='readonly', width=9))
+                  lambda p: ttk.Combobox(p, textvariable=self.var_batch,
+                                         values=('32', '64', '128', '256'),
+                                         state='readonly', width=9))
         self._row(frm, "Скорость обучения:",
-                  ttk.Entry(frm, textvariable=self.var_lr, width=11))
+                  lambda p: ttk.Entry(p, textvariable=self.var_lr, width=11))
         self._row(frm, "Эпох:",
-                  ttk.Spinbox(frm, from_=1, to=10,
-                              textvariable=self.var_epochs, width=9))
+                  lambda p: ttk.Spinbox(p, from_=1, to=10,
+                                        textvariable=self.var_epochs, width=9))
 
         ttk.Button(left, text="Загрузить данные",
                    command=self._load_data).pack(fill='x', pady=(0, 6))
@@ -318,11 +560,13 @@ class Lab9App:
             "   правильной инициализацией весов и отсечением градиента.")
 
     @staticmethod
-    def _row(parent, label, widget):
+    def _row(parent, label, factory):
         row = ttk.Frame(parent)
         row.pack(fill='x', pady=2)
-        ttk.Label(row, text=label, width=22).pack(side='left')
-        widget.pack(in_=row, side='left')
+        ttk.Label(row, text=label, width=26).pack(side='left')
+        widget = factory(row)
+        widget.pack(side='left')
+        return widget
 
     @staticmethod
     def _parse_float(var, default):
@@ -361,8 +605,8 @@ class Lab9App:
         if self.data_loaded and vocab == self.vocab_loaded:
             return
         self._log(f"Загрузка датасета IMDB (num_words={vocab})...")
-        (self.X_train_raw, self.y_train), \
-            (self.X_test_raw, self.y_test) = imdb.load_data(num_words=vocab)
+        (self.X_train_raw, self.y_train,
+         self.X_test_raw, self.y_test) = load_imdb(vocab, log=self._log)
         self.data_loaded = True
         self.vocab_loaded = vocab
         self._log(f"Данные загружены: train={len(self.X_train_raw)}, "
@@ -381,7 +625,7 @@ class Lab9App:
             self._ensure_data(vocab)
             max_len = int(self.var_max_len.get())
             self._pad_data(max_len)
-            n_pos = int(np.sum(np.array(self.y_train) == 1))
+            n_pos = int(np.sum(np.asarray(self.y_train) == 1))
             self._log(f"Предобработка: padding до длины {max_len}. "
                       f"Максимальное число слов в отзыве: "
                       f"{max(len(r) for r in self.X_train_raw)}")
@@ -458,46 +702,49 @@ class Lab9App:
             self._pad_data(max_len)
 
             n_train = min(samples, len(self.X_train))
-            X_train_part = self.X_train[:n_train]
-            y_train_part = np.array(self.y_train[:n_train])
+            X = self.X_train[:n_train]
+            y = np.asarray(self.y_train[:n_train], dtype=np.int64)
+            X_tr, y_tr, X_val, y_val = split_train_val(X, y, 0.2, seed=42)
 
             self._log(f"Модель: {cell}, эмбеддинг={embed}, "
                       f"нейронов={units}, max_len={max_len}, "
                       f"dropout={dropout}")
             self._log(f"Параметры: batch_size={batch}, lr={lr}, "
-                      f"epochs={epochs}, отзывов={n_train}, "
-                      f"валидация=20%")
+                      f"epochs={epochs}, отзывов={n_train} "
+                      f"(train={len(X_tr)}, val={len(X_val)})")
+            self.device = get_device()
+            self._log(f"PyTorch {torch.__version__}, "
+                      f"устройство: {device_label(self.device)}")
+            self._log("Отсечение градиентов: max_norm=1.0")
             self._log("Тренируем...")
 
-            model = build_model(cell, vocab, max_len, embed, units,
-                                dropout, lr)
+            torch.manual_seed(42)
+            model = build_model(cell, vocab, embed, units, dropout)
+            model = model.to(self.device)
 
-            log = []
             start = time.time()
-            history = model.fit(
-                X_train_part, y_train_part, batch_size=batch,
-                epochs=epochs, validation_split=0.2, verbose=0,
-                callbacks=[LogCallback(log)])
+            self.history = train_model(
+                model, X_tr, y_tr, X_val, y_val, epochs, batch, lr,
+                self.device, log=self._log)
             self.train_seconds = time.time() - start
-            for line in log:
-                self._log(line)
 
             self.model = model
-            self.history = history.history
 
             n_test = min(2500, len(self.X_test))
-            proba = model.predict(self.X_test[:n_test], verbose=0).ravel()
-            y_pred = (proba > 0.5).astype(int)
-            y_true = np.array(self.y_test[:n_test])
+            proba = predict_proba(model, self.X_test[:n_test],
+                                  device=self.device)
+            self.y_pred = (proba > 0.5).astype(int)
+            self.y_true = np.asarray(self.y_test[:n_test])
 
-            self.metrics = compute_metrics(y_true, y_pred)
-            self.cm = confusion_matrix(y_true, y_pred)
+            self.metrics = compute_metrics(self.y_true, self.y_pred)
+            self.cm = confusion_matrix(self.y_true, self.y_pred)
             self.test_info = (f"Тестовая выборка: {n_test} отзывов, "
                               f"порог = 0.5")
             self.errors = []
             for i in range(n_test):
-                if y_true[i] != y_pred[i]:
-                    self.errors.append((i, int(y_true[i]), int(y_pred[i]),
+                if self.y_true[i] != self.y_pred[i]:
+                    self.errors.append((i, int(self.y_true[i]),
+                                        int(self.y_pred[i]),
                                         self.X_test_raw[i]))
                     if len(self.errors) >= 15:
                         break
@@ -510,22 +757,33 @@ class Lab9App:
     def _after_train(self):
         self.busy = False
         p = self.train_params
-        text = (f"Архитектура: Embedding({p['embed']}) -> "
+        text = (f"Архитектура (PyTorch): Embedding({p['embed']}) -> "
                 f"{p['cell']}({p['units']}) -> Dropout({p['dropout']}) "
-                f"-> Dense(1, sigmoid)\n")
+                f"-> Linear(1)\n")
         if self.model is not None:
-            text += f"Всего параметров: {self.model.count_params():,}\n\n"
+            text += (f"Всего параметров: "
+                     f"{count_parameters(self.model):,}\n")
+            text += (f"Устройство: {device_label(self.device)}\n\n")
+            text += "=== Сводка модели ===\n"
+            text += "\n".join(model_summary(self.model)) + "\n\n"
         else:
             text += "(модель не построена)\n\n"
         text += "=== Метрики на тестовых данных ===\n"
-        text += f"Точность (accuracy):  {self.metrics['accuracy']:.4f}\n"
-        text += f"Точность (precision): {self.metrics['precision']:.4f}\n"
-        text += f"Полнота (recall):     {self.metrics['recall']:.4f}\n"
-        text += f"F1-score:             {self.metrics['f1']:.4f}\n"
-        text += f"Время обучения:       {self.train_seconds:.1f} с\n"
+        if self.metrics:
+            text += (f"Точность (accuracy):  "
+                     f"{self.metrics['accuracy']:.4f}\n")
+            text += (f"Точность (precision): "
+                     f"{self.metrics['precision']:.4f}\n")
+            text += (f"Полнота (recall):     "
+                     f"{self.metrics['recall']:.4f}\n")
+            text += f"F1-score:             {self.metrics['f1']:.4f}\n"
+            text += f"Время обучения:       {self.train_seconds:.1f} с\n"
+        else:
+            text += "Метрики не рассчитаны (см. журнал обучения).\n"
         self._set_text(self.txt_results, text)
         self._draw_curves()
-        self._draw_quality()
+        if self.metrics:
+            self._draw_quality()
 
     def _draw_curves(self):
         h = self.history
@@ -538,7 +796,7 @@ class Lab9App:
                  label='train_loss')
         ax1.plot(h['val_loss'], marker='o', color='#c44e52',
                  linestyle='--', label='val_loss')
-        ax1.set_title("Функция потерь (binary_crossentropy)")
+        ax1.set_title("Функция потерь (BCEWithLogitsLoss)")
         ax1.set_xlabel("Эпоха")
         ax1.set_ylabel("Loss")
         ax1.legend()
@@ -586,12 +844,9 @@ class Lab9App:
         self.fig_cm.tight_layout()
         self.canvas_cm.draw_idle()
 
-        y_true = np.array(self.y_test[:2500])
-        proba = self.model.predict(self.X_test[:2500], verbose=0).ravel()
-        y_pred = (proba > 0.5).astype(int)
         report = classification_report(
-            y_true, y_pred, target_names=['0 (негатив)', '1 (позитив)'],
-            zero_division=0)
+            self.y_true, self.y_pred,
+            target_names=['0 (негатив)', '1 (позитив)'], zero_division=0)
         self._set_text(self.txt_report, report)
 
         for item in self.tree_errors.get_children():
@@ -637,39 +892,38 @@ class Lab9App:
             batch = p['batch']
 
             self._ensure_data(vocab)
-            n_train = min(5000, len(self.X_train))
-            n_test = min(2000, len(self.X_test))
-            y_train_part = np.array(self.y_train[:n_train])
-            y_test_part = np.array(self.y_test[:n_test])
+            n_train = min(5000, len(self.X_train_raw))
+            n_test = min(2000, len(self.X_test_raw))
+            device = get_device()
+            self._log(f"Устройство: {device_label(device)}")
 
             configs = self._experiment_configs(kind)
             results = []
             for name, override in configs:
                 cur_len = override.get('max_len', max_len)
                 self._pad_data(cur_len)
-                X_train_part = self.X_train[:n_train]
-                if 'embed' in override:
-                    e_dim = override['embed']
-                else:
-                    e_dim = embed
-                if 'units' in override:
-                    u = override['units']
-                else:
-                    u = units
+                X = self.X_train[:n_train]
+                y = np.asarray(self.y_train[:n_train], dtype=np.int64)
+                X_tr, y_tr, X_val, y_val = split_train_val(X, y, 0.2, seed=42)
+                y_test_part = np.asarray(self.y_test[:n_test])
+
+                e_dim = override.get('embed', embed)
+                u = override.get('units', units)
                 c_cell = override.get('cell', cell)
                 c_batch = override.get('batch', batch)
                 c_lr = override.get('lr', lr)
 
                 self._log(f"Обучаю вариант '{name}' "
                           f"(max_len={cur_len})...")
-                model = build_model(c_cell, vocab, cur_len, e_dim, u,
-                                    dropout, c_lr)
+                torch.manual_seed(42)
+                model = build_model(c_cell, vocab, e_dim, u, dropout)
+                model = model.to(device)
                 start = time.time()
-                model.fit(X_train_part, y_train_part, batch_size=c_batch,
-                          epochs=2, validation_split=0.2, verbose=0)
+                train_model(model, X_tr, y_tr, X_val, y_val, 2, c_batch,
+                            c_lr, device, clip=1.0)
                 elapsed = time.time() - start
-                proba = model.predict(self.X_test[:n_test],
-                                      verbose=0).ravel()
+                proba = predict_proba(model, self.X_test[:n_test],
+                                      device=device)
                 y_pred = (proba > 0.5).astype(int)
                 met = compute_metrics(y_test_part, y_pred)
                 results.append((name, met, elapsed))
