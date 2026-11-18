@@ -1,0 +1,95 @@
+version: "3.9"
+
+# =============================================================
+# Guitar Trainer — Docker Compose
+# Сервисы: postgres, backend (Express), frontend (React/Vite)
+# =============================================================
+
+services:
+  # ─────────────────────────────────────────────────────────
+  # PostgreSQL — основная база данных
+  # ─────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: guitar_trainer_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-guitar_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-guitar_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-guitar_trainer}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Инициализационные SQL-скрипты (если нужны seed данные)
+      - ./database/init:/docker-entrypoint-initdb.d
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-guitar_user} -d ${POSTGRES_DB:-guitar_trainer}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - guitar_net
+
+  # ─────────────────────────────────────────────────────────
+  # Backend — Node.js + Express + Prisma + Socket.io
+  # ─────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development        # production — для прод-сборки
+    container_name: guitar_trainer_backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${BACKEND_PORT:-4000}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-guitar_user}:${POSTGRES_PASSWORD:-guitar_secret}@postgres:5432/${POSTGRES_DB:-guitar_trainer}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-supersecretjwtkey_change_me_in_prod}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+    volumes:
+      # Hot-reload в dev-режиме: монтируем исходники
+      - ./backend:/app
+      - /app/node_modules         # анонимный том — изолируем node_modules
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy  # ждём готовности БД
+    networks:
+      - guitar_net
+
+  # ─────────────────────────────────────────────────────────
+  # Frontend — React + Vite (dev server)
+  # ─────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: guitar_trainer_frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:4000}
+      VITE_WS_URL: ${VITE_WS_URL:-http://localhost:4000}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    depends_on:
+      - backend
+    networks:
+      - guitar_net
+
+# ─────────────────────────────────────────────────────────
+# Volumes & Networks
+# ─────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  guitar_net:
+    driver: bridge

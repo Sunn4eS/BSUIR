@@ -1,0 +1,269 @@
+// =============================================================
+// Prisma Schema — Guitar Trainer
+// ORM: Prisma  |  DB: PostgreSQL 16
+// =============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// ENUM: Роли пользователей
+// ─────────────────────────────────────────────────────────────
+enum Role {
+  TEACHER
+  STUDENT
+}
+
+// ─────────────────────────────────────────────────────────────
+// ENUM: Статусы заявок на курс (Enrollment)
+// ─────────────────────────────────────────────────────────────
+enum EnrollmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ─────────────────────────────────────────────────────────────
+// ENUM: Типы карточек-заданий
+// ─────────────────────────────────────────────────────────────
+enum TaskType {
+  EAR_TRAINING    // Тренировка слуха: угадать ноту/аккорд на слух
+  NOTE_GUESS      // Угадать ноту
+  PLAY_NOTE       // Сыграть ноту
+  PLAY_CHORD      // Сыграть аккорд
+  FRETBOARD_GUESS // Угадать позицию на грифе
+  FRETBOARD_PLAY  // Сыграть ноту/аккорд по грифу
+  PLAY_PRACTICE   // Практика игры
+  FINGERING_TEST  // Тест аппликатуры
+  PLAY_FINGERING  // Сыграть аппликатуру
+  COMBO_FINGERING // Собрать и сыграть аппликатуру
+}
+
+enum JoinRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CourseStatus {
+  DRAFT       // Черновик — виден только учителю
+  PUBLISHED   // Опубликован — доступен ученикам и Live-урокам
+}
+
+enum TaskResultStatus {
+  PENDING     // Задание назначено, но не начато
+  IN_PROGRESS // Студент в процессе выполнения
+  CORRECT     // Ответ верный
+  INCORRECT   // Ответ неверный
+  SKIPPED     // Пропущено
+}
+
+// ─────────────────────────────────────────────────────────────
+// TABLE: users — Пользователи (учителя и студенты)
+// ─────────────────────────────────────────────────────────────
+model User {
+  id               String              @id @default(uuid())
+  email            String              @unique
+  password         String              @default("")
+  passwordHash     String?             @map("password_hash")
+  name             String              @default("")
+  firstName        String?             @map("first_name")
+  lastName         String?             @map("last_name")
+  role             Role                @default(STUDENT)
+  avatarUrl        String?             @map("avatar_url")
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  createdCourses   Course[]            @relation("TeacherCourses")
+  enrollments      CourseEnrollment[]
+  studentCourses   StudentCourse[]
+  joinRequests     CourseJoinRequest[]
+  taskResults      TaskResult[]
+  teachers         TeacherStudent[]    @relation("StudentRelation")
+  students         TeacherStudent[]    @relation("TeacherRelation")
+  hostedSessions   LiveSession[]       @relation("HostedSessions")
+  attendedSessions LiveSession[]       @relation("AttendedSessions")
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TABLE: teacher_students — Связь учитель ↔ студент
+// ─────────────────────────────────────────────────────────────
+model TeacherStudent {
+  id        String   @id @default(uuid())
+  teacher   User     @relation("TeacherRelation", fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId String   @map("teacher_id")
+  student   User     @relation("StudentRelation", fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String   @map("student_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([teacherId, studentId])
+  @@map("teacher_students")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TABLE: courses — Курсы (наборы заданий)
+// ─────────────────────────────────────────────────────────────
+model Course {
+  id             String              @id @default(uuid())
+  title          String
+  description    String?
+  isPublished    Boolean             @default(false) @map("is_published")
+  status         CourseStatus        @default(DRAFT)
+  publishedAt    DateTime?           @map("published_at")
+  teacherId      String              @map("teacher_id")
+  teacher        User                @relation("TeacherCourses", fields: [teacherId], references: [id], onDelete: Cascade)
+  tasks          Task[]
+  enrollments    CourseEnrollment[]
+  studentCourses StudentCourse[]
+  joinRequests   CourseJoinRequest[]
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+
+  @@map("courses")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TABLE: course_enrollments — Заявки и зачисление учеников
+// ─────────────────────────────────────────────────────────────
+model CourseEnrollment {
+  id         String           @id @default(uuid())
+  courseId   String           @map("course_id")
+  studentId  String           @map("student_id")
+  status     EnrollmentStatus @default(PENDING)
+  course     Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student    User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  enrolledAt DateTime         @default(now()) @map("enrolled_at")
+
+  @@unique([courseId, studentId])
+  @@map("course_enrollments")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TABLE: tasks — Задания (карточки)
+// ─────────────────────────────────────────────────────────────
+model Task {
+  id             String         @id @default(uuid())
+  courseId       String         @map("course_id")
+  title          String
+  type           TaskType
+  content        Json?          // Содержит правильные ноты/аккорды, лады, аудиоссылки
+  orderIndex     Int            @default(0) @map("order_index")
+  course         Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  taskResults    TaskResult[]
+
+  instruction    String?
+  audioContent   String?        @map("audio_content")
+  answerOptions  Json?          @map("answer_options")
+  expectedNote   String?        @map("expected_note")
+  toleranceCents Int            @default(20) @map("tolerance_cents")
+  correctAnswer  String?        @map("correct_answer")
+  isTemplate     Boolean        @default(false) @map("is_template")
+  fingeringMode  String?        @map("fingering_mode")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  liveTaskCards  LiveTaskCard[]
+
+  @@map("tasks")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TABLE: student_courses — Запись студента на курс (Legacy M:N)
+// ─────────────────────────────────────────────────────────────
+model StudentCourse {
+  id          String    @id @default(uuid())
+  student     User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String    @map("student_id")
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    String    @map("course_id")
+  progress    Int       @default(0)
+  enrolledAt  DateTime  @default(now()) @map("enrolled_at")
+  completedAt DateTime? @map("completed_at")
+
+  @@unique([studentId, courseId])
+  @@map("student_courses")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TABLE: course_join_requests — Заявки студента на курс (Legacy)
+// ─────────────────────────────────────────────────────────────
+model CourseJoinRequest {
+  id         String            @id @default(uuid())
+  course     Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId   String            @map("course_id")
+  student    User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId  String            @map("student_id")
+  status     JoinRequestStatus @default(PENDING)
+  message    String?
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @updatedAt @map("updated_at")
+  reviewedAt DateTime?         @map("reviewed_at")
+
+  @@unique([courseId, studentId])
+  @@map("course_join_requests")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TABLE: task_results — Результаты выполнения заданий
+// ─────────────────────────────────────────────────────────────
+model TaskResult {
+  id            String           @id @default(uuid())
+  taskId        String           @map("task_id")
+  studentId     String           @map("student_id")
+  isCorrect     Boolean          @default(false) @map("is_correct")
+  status        TaskResultStatus @default(PENDING)
+  answer        String?
+  reactionMs    Int?             @map("reaction_ms")
+  attempts      Int              @default(0)
+  liveSessionId String?          @map("live_session_id")
+  completedAt   DateTime         @default(now()) @map("completed_at")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  student       User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  task          Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("task_results")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TABLE: live_sessions — Real-time сессии учитель ↔ студент
+// ─────────────────────────────────────────────────────────────
+model LiveSession {
+  id        String   @id @default(uuid())
+  teacher   User     @relation("HostedSessions", fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId String   @map("teacher_id")
+  student   User     @relation("AttendedSessions", fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String   @map("student_id")
+  roomCode  String   @unique @map("room_code")
+  isActive  Boolean  @default(true) @map("is_active")
+  startedAt DateTime @default(now()) @map("started_at")
+  endedAt   DateTime? @map("ended_at")
+  liveTaskCards LiveTaskCard[]
+
+  @@map("live_sessions")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TABLE: live_task_cards — Карточки заданий в Live-сессии
+// ─────────────────────────────────────────────────────────────
+model LiveTaskCard {
+  id          String           @id @default(uuid())
+  session     LiveSession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId   String           @map("session_id")
+  task        Task?            @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  taskId      String?          @map("task_id")
+  status      TaskResultStatus @default(PENDING)
+  cardData    Json?            @map("card_data")
+  sentAt      DateTime         @default(now()) @map("sent_at")
+  completedAt DateTime?        @map("completed_at")
+
+  @@map("live_task_cards")
+}
