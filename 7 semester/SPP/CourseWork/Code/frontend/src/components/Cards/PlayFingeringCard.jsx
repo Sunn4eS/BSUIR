@@ -1,12 +1,3 @@
-/**
- * components/Cards/PlayFingeringCard.jsx
- * Карточка PLAY_FINGERING: сыграй аккорд по заданной аппликатуре.
- *
- * Ученик видит название аккорда, его аппликатуру на грифе и может
- * прослушать эталон («чёс» реальными сэмплами). Затем поочерёдно
- * щипывает струны — ChordPlayChallenge слушает микрофон.
- */
-
 import { useCallback, useEffect, useState } from 'react';
 import Fretboard from './Fretboard';
 import ChordPlayChallenge from './ChordPlayChallenge';

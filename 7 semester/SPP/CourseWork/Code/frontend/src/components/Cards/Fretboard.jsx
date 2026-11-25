@@ -1,30 +1,14 @@
-/**
- * components/Cards/Fretboard.jsx — интерактивный гитарный гриф (SVG)
- *
- * Ориентация: струны горизонтально, низкая E внизу, высокая e наверху
- * (как будто гитара лежит на коленях ученика). Лады — вертикальные
- * линии, «порожек» (nut) — утолщённая линия слева.
- *
- * Режимы:
- *  - интерактивный: onToggle({string, fret}) — клик по ячейке ставит/
- *    снимает палец (одна позиция на струну; струна без точки = приглушена);
- *  - readOnly: просто показывает позиции (например, заданную аппликатуру).
- *
- * Гриф авто-расширяется под баррэ на 8-м ладу (D#m/A#m: x68876).
- */
-
 import { useCallback, useMemo } from 'react';
 import { GUITAR_STANDARD_TUNING } from '../../audio/noteUtils';
 import { maxFretOfShape, shapeFromPositions } from '../../audio/chordShapes';
 
-const STRING_GAP = 26;   // расстояние между струнами
-const FRET_GAP = 44;     // ширина одного лада
-const OPEN_ZONE = 26;    // зона открытой струны (слева от порожка)
-const PAD_LEFT = 26;     // подписи струн
+const STRING_GAP = 26;
+const FRET_GAP = 44;
+const OPEN_ZONE = 26;
+const PAD_LEFT = 26;
 const PAD_TOP = 18;
-const PAD_BOTTOM = 22;   // номера ладов
+const PAD_BOTTOM = 22;
 
-/** Подпись струны: низкая E заглавной, высокая e строчной */
 function stringLabel(stringNumber) {
   if (stringNumber === 1) return 'e';
   const entry = GUITAR_STANDARD_TUNING.find((item) => item.string === stringNumber);
@@ -36,19 +20,17 @@ export default function Fretboard({
   onToggle = null,
   readOnly = false,
   minFret = 12,
-  overlayPositions = null, // «эталонная» аппликатура — полые зелёные точки
-  status = 'default',     // default | correct | incorrect
+  overlayPositions = null,
+  status = 'default',
 }) {
   const interactive = !readOnly && typeof onToggle === 'function';
 
-  // Сколько ладов рисуем: минимум minFret, но хватает баррэ-формам
   const fretCount = useMemo(() => {
     const needed = maxFretOfShape(shapeFromPositions(positions));
     const overlayNeeded = maxFretOfShape(shapeFromPositions(overlayPositions || []));
     return Math.max(minFret, needed, overlayNeeded);
   }, [positions, overlayPositions, minFret]);
 
-  // Геометрия
   const geometry = useMemo(() => {
     const stringsTop = PAD_TOP;
     const stringsBottom = PAD_TOP + STRING_GAP * 5;
@@ -66,7 +48,6 @@ export default function Fretboard({
 
   const { width, height, nutX, stringY, cellCenterX, fretLineX, stringsTop, stringsBottom } = geometry;
 
-  // Позиция на струне (или null)
   const positionOnString = useCallback(
     (stringNumber) => positions.find((pos) => Number(pos.string) === stringNumber) || null,
     [positions]
@@ -102,7 +83,6 @@ export default function Fretboard({
         role="img"
         aria-label="Гитарный гриф"
       >
-        {/* Зона открытых струн + порожек */}
         <line
           x1={nutX} y1={stringsTop - 4} x2={nutX} y2={stringsBottom + 4}
           stroke="var(--color-text-primary, #1f2937)"
@@ -110,7 +90,6 @@ export default function Fretboard({
           strokeLinecap="round"
         />
 
-        {/* Лады */}
         {Array.from({ length: fretCount }, (_, i) => i + 1).map((fret) => (
           <line
             key={`fret-${fret}`}
@@ -122,7 +101,6 @@ export default function Fretboard({
           />
         ))}
 
-        {/* Маркеры ладов (3, 5, 7, 9 — одинарная точка, 12 — двойная точка) */}
         {[3, 5, 7, 9].filter((fret) => fret <= fretCount).map((fret) => (
           <circle
             key={`marker-${fret}`}
@@ -152,7 +130,6 @@ export default function Fretboard({
           </g>
         ))}
 
-        {/* Струны: от высокой e (1) сверху к низкой E (6) внизу */}
         {stringNumbers.map((stringNumber) => {
           const thickness = 1 + (6 - stringNumber) * 0.45;
           return (
@@ -167,7 +144,6 @@ export default function Fretboard({
           );
         })}
 
-        {/* Подписи струн слева */}
         {stringNumbers.map((stringNumber) => (
           <text
             key={`label-${stringNumber}`}
@@ -180,7 +156,6 @@ export default function Fretboard({
           </text>
         ))}
 
-        {/* Номера ладов */}
         {Array.from({ length: fretCount }, (_, i) => i + 1).map((fret) => (
           <text
             key={`fretnum-${fret}`}
@@ -193,7 +168,6 @@ export default function Fretboard({
           </text>
         ))}
 
-        {/* Приглушённые струны (без позиции) — крестик у порожка */}
         {stringNumbers
           .filter((stringNumber) => !positionOnString(stringNumber))
           .map((stringNumber) => (
@@ -208,7 +182,6 @@ export default function Fretboard({
             </text>
           ))}
 
-        {/* Эталонная аппликатура — полые зелёные точки (пояснение) */}
         {(overlayPositions || []).map((pos, index) => (
           <circle
             key={`overlay-${index}`}
@@ -221,7 +194,6 @@ export default function Fretboard({
           />
         ))}
 
-        {/* Текущие позиции — точки */}
         {positions.map((pos, index) => (
           <circle
             key={`pos-${index}`}
@@ -234,11 +206,9 @@ export default function Fretboard({
           />
         ))}
 
-        {/* Кликабельные зоны (по струне × лад) */}
         {interactive &&
           stringNumbers.map((stringNumber) => (
             <g key={`hit-${stringNumber}`}>
-              {/* Зона открытой струны */}
               <rect
                 x={nutX - OPEN_ZONE}
                 y={stringY(stringNumber) - STRING_GAP / 2}
@@ -248,7 +218,6 @@ export default function Fretboard({
                 className="fretboard-hit"
                 onClick={() => handleClick(stringNumber, 0)}
               />
-              {/* Лады 1..fretCount */}
               {Array.from({ length: fretCount }, (_, i) => i + 1).map((fret) => (
                 <rect
                   key={`hit-${stringNumber}-${fret}`}

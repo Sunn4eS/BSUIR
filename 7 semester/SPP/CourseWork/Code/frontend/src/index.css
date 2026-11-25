@@ -1,10 +1,4 @@
-/* ===================================================================
-   Guitar Trainer — Light Design System
-   Светлая тема, мягкие тени, просторные отступы
-   =================================================================== */
-
 :root {
-  /* Фоны */
   --color-bg-deep: #f4f6fb;
   --color-bg-base: #f8fafc;
   --color-bg-surface: #ffffff;
@@ -12,29 +6,24 @@
   --color-bg-card-hover: #ffffff;
   --color-bg-muted: #eef2f7;
 
-  /* Текст */
   --color-text-primary: #0f172a;
   --color-text-secondary: #475569;
   --color-text-muted: #7b8794;
 
-  /* Границы */
   --color-border: #e2e8f0;
   --color-border-hover: #cbd5e1;
 
-  /* Primary — indigo */
   --color-primary: #4f46e5;
   --color-primary-light: #6366f1;
   --color-primary-dark: #4338ca;
   --color-primary-glow: rgba(79, 70, 229, 0.18);
   --color-primary-soft: #eef2ff;
 
-  /* Accent — teal */
   --color-accent: #0d9488;
   --color-accent-light: #14b8a6;
   --color-accent-glow: rgba(13, 148, 136, 0.18);
   --color-accent-soft: #ecfdf5;
 
-  /* Статусы */
   --color-success: #059669;
   --color-success-bg: #ecfdf5;
   --color-warning: #d97706;
@@ -42,34 +31,28 @@
   --color-error: #dc2626;
   --color-error-bg: #fef2f2;
 
-  /* Типографика */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: 'Outfit', 'Inter', sans-serif;
 
-  /* Радиусы */
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 18px;
   --radius-xl: 24px;
   --radius-full: 999px;
 
-  /* Тени */
   --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
   --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
   --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.07);
   --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.1);
 
-  /* Анимации */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.22s ease;
   --transition-slow: 0.35s ease;
 
-  /* z-index */
   --z-dropdown: 100;
   --z-modal: 1000;
 }
 
-/* ─── Сброс ─────────────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -101,7 +84,6 @@ body {
   flex-direction: column;
 }
 
-/* ─── Типографика ────────────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   font-weight: 700;
@@ -123,7 +105,6 @@ a {
 }
 a:hover { color: var(--color-primary-dark); }
 
-/* ─── Утилиты ───────────────────────────────────────────────────── */
 .gradient-text {
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   -webkit-background-clip: text;
@@ -159,7 +140,6 @@ a:hover { color: var(--color-primary-dark); }
 .section-title { font-size: 1.25rem; margin-bottom: 4px; }
 .section-subtitle { font-size: 0.85rem; color: var(--color-text-muted); }
 
-/* ─── Кнопки ────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -242,7 +222,6 @@ a:hover { color: var(--color-primary-dark); }
 }
 .icon-btn:hover { color: var(--color-text-primary); border-color: var(--color-border-hover); }
 
-/* ─── Инпуты ─────────────────────────────────────────────────────── */
 .input {
   width: 100%;
   padding: 12px 15px;
@@ -305,7 +284,6 @@ textarea.input { resize: vertical; }
 }
 .checkbox-row input { width: 17px; height: 17px; accent-color: var(--color-primary); }
 
-/* ─── Alert ─────────────────────────────────────────────────────── */
 .alert {
   padding: 12px 16px;
   border-radius: var(--radius-md);
@@ -320,7 +298,6 @@ textarea.input { resize: vertical; }
   color: #b91c1c;
 }
 
-/* ─── Карточки заданий ───────────────────────────────────────────── */
 .task-card {
   background: #fff;
   border: 1px solid var(--color-border);
@@ -374,7 +351,6 @@ textarea.input { resize: vertical; }
   margin: 10px 0 4px;
 }
 
-/* ─── Варианты ответов ───────────────────────────────────────────── */
 .answer-options {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -434,7 +410,6 @@ textarea.input { resize: vertical; }
   color: var(--color-error);
 }
 
-/* ─── Практика ───────────────────────────────────────────────────── */
 .practice-target-wrap { text-align: center; margin-bottom: 26px; }
 
 .practice-target {
@@ -494,7 +469,6 @@ textarea.input { resize: vertical; }
 
 .card-actions { display: flex; gap: 12px; }
 
-/* ─── Progress ──────────────────────────────────────────────────── */
 .progress-bar {
   height: 7px;
   background: var(--color-bg-muted);
@@ -510,7 +484,6 @@ textarea.input { resize: vertical; }
 }
 .progress-bar-fill.is-success { background: var(--color-success); }
 
-/* ─── Тюнер ─────────────────────────────────────────────────────── */
 .tuner-display {
   background: #fff;
   border: 1px solid var(--color-border);
@@ -615,7 +588,6 @@ textarea.input { resize: vertical; }
 }
 .tuner-string-freq { font-size: 0.64rem; color: var(--color-text-muted); }
 
-/* ─── Layout дашборда ───────────────────────────────────────────── */
 .dashboard-layout {
   display: grid;
   grid-template-columns: 272px 1fr;
@@ -680,7 +652,6 @@ textarea.input { resize: vertical; }
   width: 100%;
 }
 
-/* ─── Grid ──────────────────────────────────────────────────────── */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -710,7 +681,6 @@ textarea.input { resize: vertical; }
 }
 .stat-label { font-size: 0.85rem; color: var(--color-text-muted); font-weight: 500; }
 
-/* ─── Анимации ──────────────────────────────────────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -735,7 +705,6 @@ textarea.input { resize: vertical; }
 .delay-3 { animation-delay: 0.24s; }
 .delay-4 { animation-delay: 0.32s; }
 
-/* ─── Loader ────────────────────────────────────────────────────── */
 .loader {
   width: 26px;
   height: 26px;
@@ -757,7 +726,6 @@ textarea.input { resize: vertical; }
   font-size: 0.9rem;
 }
 
-/* ─── Модальные окна ────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -802,7 +770,6 @@ textarea.input { resize: vertical; }
   margin-top: 6px;
 }
 
-/* ─── Mic Check ─────────────────────────────────────────────────── */
 .mic-check-modal { text-align: center; }
 .mic-check-icon { font-size: 3rem; margin-bottom: 8px; }
 .mic-check-description {
@@ -861,7 +828,6 @@ textarea.input { resize: vertical; }
   color: var(--color-text-muted);
 }
 
-/* ─── Live: общий layout ────────────────────────────────────────── */
 .live-page {
   min-height: 100vh;
   display: flex;
@@ -954,7 +920,6 @@ textarea.input { resize: vertical; }
   animation: pulse-dot 1.4s ease infinite;
 }
 
-/* ─── Live: ожидание ────────────────────────────────────────────── */
 .waiting-card {
   max-width: 560px;
   margin: 40px auto;
@@ -1039,7 +1004,6 @@ textarea.input { resize: vertical; }
   text-transform: uppercase;
 }
 
-/* ─── Live: ученик ──────────────────────────────────────────────── */
 .student-live { max-width: 640px; margin: 0 auto; }
 
 .student-live-header {
@@ -1062,7 +1026,6 @@ textarea.input { resize: vertical; }
   color: var(--color-success);
 }
 
-/* ─── Live: учитель ─────────────────────────────────────────────── */
 .teacher-live-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 420px;
@@ -1168,7 +1131,6 @@ textarea.input { resize: vertical; }
 }
 .chip-primary { background: var(--color-primary-soft); color: var(--color-primary); }
 
-/* ─── Live: библиотека ──────────────────────────────────────────── */
 .library { display: flex; flex-direction: column; gap: 12px; }
 
 .library-course {
@@ -1225,7 +1187,6 @@ textarea.input { resize: vertical; }
 .task-type-dot.is-ear { background: var(--color-primary-light); }
 .task-type-dot.is-play { background: var(--color-accent-light); }
 
-/* ─── Live: отправленные карточки ───────────────────────────────── */
 .sent-cards { display: flex; flex-direction: column; gap: 12px; }
 
 .sent-card {
@@ -1273,7 +1234,6 @@ textarea.input { resize: vertical; }
 .status-badge.is-incorrect { background: var(--color-error-bg); color: var(--color-error); }
 .status-badge.is-skipped { background: var(--color-bg-muted); color: var(--color-text-muted); }
 
-/* ─── Live: выбор ученика ───────────────────────────────────────── */
 .select-student-card {
   max-width: 620px;
   margin: 20px auto;
@@ -1321,7 +1281,6 @@ textarea.input { resize: vertical; }
   flex-shrink: 0;
 }
 
-/* ─── Редактор курса ────────────────────────────────────────────── */
 .editor-page { min-height: 100vh; background: var(--color-bg-deep); }
 
 .editor-header {
@@ -1416,7 +1375,6 @@ textarea.input { resize: vertical; }
 
 .task-list-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
-/* ─── Empty State ───────────────────────────────────────────────── */
 .empty-state {
   text-align: center;
   padding: 64px 24px;
@@ -1429,7 +1387,6 @@ textarea.input { resize: vertical; }
 .empty-state-icon { font-size: 3.2rem; margin-bottom: 14px; opacity: 0.65; }
 .empty-state-text { font-size: 0.92rem; color: var(--color-text-muted); }
 
-/* ─── Auth ──────────────────────────────────────────────────────── */
 .auth-page {
   min-height: 100vh;
   display: flex;
@@ -1474,16 +1431,13 @@ textarea.input { resize: vertical; }
   color: var(--color-text-muted);
 }
 
-/* ─── Разделитель ───────────────────────────────────────────────── */
 .divider { height: 1px; background: var(--color-border); margin: 22px 0; }
 
-/* ─── Scrollbar ─────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-/* ─── Responsive ────────────────────────────────────────────────── */
 @media (max-width: 1100px) {
   .teacher-live-layout { grid-template-columns: 1fr; }
   .teacher-side { position: static; }
@@ -1537,10 +1491,6 @@ textarea.input { resize: vertical; }
   .combo-steps { flex-wrap: wrap; }
 }
 
-/* ===================================================================
-   Аппликатура: интерактивный гриф
-   =================================================================== */
-
 .fretboard-wrap {
   display: flex;
   flex-direction: column;
@@ -1587,7 +1537,6 @@ textarea.input { resize: vertical; }
   fill: var(--color-primary-glow);
 }
 
-/* Превью в конструкторе учителя — компактнее */
 .fretboard-preview {
   display: flex;
   flex-direction: column;
@@ -1597,7 +1546,6 @@ textarea.input { resize: vertical; }
 
 .fretboard-preview .fretboard-wrap { margin: 0; padding: 12px 10px 8px; }
 
-/* Бейдж карточек аппликатуры */
 .badge-fingering {
   background: var(--color-warning-bg);
   color: var(--color-warning);
@@ -1609,7 +1557,6 @@ textarea.input { resize: vertical; }
   background: linear-gradient(90deg, #f59e0b, #f97316);
 }
 
-/* Степпер фаз в комбо-карточке */
 .combo-steps {
   display: flex;
   align-items: center;
@@ -1640,8 +1587,6 @@ textarea.input { resize: vertical; }
 
 .combo-step-arrow { color: var(--color-text-muted); font-weight: 700; }
 
-/* ─── Челлендж «сыграй аккорд»: чипы ступеней ───────────────────── */
-
 .chord-play-challenge { margin-top: 6px; }
 
 .chord-notes-progress {
@@ -1665,10 +1610,6 @@ textarea.input { resize: vertical; }
   background: var(--color-success-bg);
   color: var(--color-success);
 }
-
-/* ===================================================================
-   Live: список заданий урока (ученик)
-   =================================================================== */
 
 .lesson-tasks {
   background: var(--color-bg-card);
@@ -1765,7 +1706,6 @@ textarea.input { resize: vertical; }
   outline-offset: 2px;
 }
 
-/* Плашка статуса выбранного задания в Live-уроке */
 .live-task-banner {
   margin-bottom: 12px;
   padding: 10px 14px;
@@ -1790,17 +1730,12 @@ textarea.input { resize: vertical; }
   color: var(--color-text-muted);
 }
 
-/* Переключение между заданиями Live-урока */
 .live-task-nav {
   display: flex;
   justify-content: space-between;
   gap: 12px;
   margin-top: 14px;
 }
-
-/* ===================================================================
-   Скелетон проверки авторизации
-   =================================================================== */
 
 .auth-check-skeleton {
   min-height: 100vh;
@@ -1813,8 +1748,6 @@ textarea.input { resize: vertical; }
   font-size: 0.9rem;
 }
 
-/* Сегмент на 3–4 кнопки (конструктор аппликатуры) */
 .segmented-wrap { grid-template-columns: 1fr 1fr; }
 
-/* Чип успеха (правильный вариант в превью) */
 .chip-success { background: var(--color-success-bg); color: var(--color-success); }

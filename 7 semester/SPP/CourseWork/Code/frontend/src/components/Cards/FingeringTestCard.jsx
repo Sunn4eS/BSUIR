@@ -1,14 +1,3 @@
-/**
- * components/Cards/FingeringTestCard.jsx
- * Карточка FINGERING_TEST — аппликатура аккорда.
- *
- * Режим GUESS: на грифе показана аппликатура — выбери название аккорда
- * из 4 вариантов (аппликатуру можно прослушать).
- *
- * Режим BUILD: показано название аккорда — собери аппликатуру на грифе.
- * Ответ: { chord, frets, correct } — сервер доверяет локальной проверке.
- */
-
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Fretboard from './Fretboard';
 import { useAudioSession } from '../../hooks/useAudioSession';
@@ -54,7 +43,6 @@ export default function FingeringTestCard({ card, onAnswer, readOnly = false }) 
     stopAllChords();
   }, []);
 
-  // ── Прослушать показанную аппликатуру ──────────────────────
   const playShape = useCallback(async () => {
     if (isPlaying || !targetChord) return;
     setPlayError(null);
@@ -72,7 +60,6 @@ export default function FingeringTestCard({ card, onAnswer, readOnly = false }) 
     }
   }, [isPlaying, targetChord]);
 
-  // ── GUESS: выбор варианта ──────────────────────────────────
   const handleSelect = useCallback((option) => {
     if (selected || readOnly) return;
 
@@ -93,7 +80,6 @@ export default function FingeringTestCard({ card, onAnswer, readOnly = false }) 
     return 'answer-option';
   };
 
-  // ── BUILD: сборка на грифе ─────────────────────────────────
   const handleToggle = useCallback(({ string, fret, action }) => {
     setBuildPositions((prev) => {
       const without = prev.filter((pos) => Number(pos.string) !== Number(string));
@@ -116,7 +102,6 @@ export default function FingeringTestCard({ card, onAnswer, readOnly = false }) 
     });
   }, [targetShape, readOnly, buildPositions, targetChord, startTime, onAnswer]);
 
-  // ── Рендер ────────────────────────────────────────────────
   if (!targetChord || !targetShape) {
     return (
       <div className="task-card fingering-test animate-fade-in">

@@ -1,7 +1,3 @@
-/**
- * pages/RegisterPage.jsx
- */
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
@@ -41,7 +37,6 @@ export default function RegisterPage() {
         <p className="auth-subtitle">Создайте аккаунт</p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
-          {/* Имя и фамилия в ряд */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div className="form-group">
               <label className="form-label" htmlFor="reg-firstname">Имя</label>
@@ -67,7 +62,6 @@ export default function RegisterPage() {
               placeholder="Минимум 6 символов" value={form.password} onChange={set('password')} required />
           </div>
 
-          {/* Выбор роли */}
           <div className="form-group">
             <label className="form-label">Я являюсь</label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>

@@ -1,11 +1,3 @@
-/**
- * Prisma Seed Script — Guitar Trainer
- * Наполняет БД тестовыми данными для разработки
- *
- * Запуск: npx prisma db seed
- * (или автоматически через `prisma db push --force-reset && prisma db seed`)
- */
-
 const { PrismaClient, Role, TaskType, TaskResultStatus, CourseStatus } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
@@ -14,7 +6,6 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Начинаем заполнение БД тестовыми данными...');
 
-  // ── 1. Очистка (для повторного запуска) ──────────────────
   await prisma.liveTaskCard.deleteMany();
   await prisma.liveSession.deleteMany();
   await prisma.taskResult.deleteMany();
@@ -24,10 +15,8 @@ async function main() {
   await prisma.teacherStudent.deleteMany();
   await prisma.user.deleteMany();
 
-  // ── 2. Хэшируем пароли ───────────────────────────────────
   const passwordHash = await bcrypt.hash('password123', 10);
 
-  // ── 3. Создаём пользователей ─────────────────────────────
   const teacher = await prisma.user.create({
     data: {
       email: 'teacher@guitar.app',
@@ -60,7 +49,6 @@ async function main() {
 
   console.log(`✅ Создано пользователей: teacher, student1, student2`);
 
-  // ── 4. Привязываем студентов к учителю ───────────────────
   await prisma.teacherStudent.createMany({
     data: [
       { teacherId: teacher.id, studentId: student1.id },
@@ -68,7 +56,6 @@ async function main() {
     ],
   });
 
-  // ── 5. Создаём курс ──────────────────────────────────────
   const course = await prisma.course.create({
     data: {
       title: 'Основы гитары для начинающих',
@@ -79,10 +66,8 @@ async function main() {
     },
   });
 
-  // ── 6. Создаём задания (карточки) ────────────────────────
   await prisma.task.createMany({
     data: [
-      // --- EAR TRAINING задания ---
       {
         courseId: course.id,
         type: TaskType.EAR_TRAINING,
@@ -105,7 +90,6 @@ async function main() {
         orderIndex: 2,
         isTemplate: true,
       },
-      // --- PLAY PRACTICE задания ---
       {
         courseId: course.id,
         type: TaskType.PLAY_PRACTICE,
@@ -131,7 +115,6 @@ async function main() {
 
   console.log(`✅ Создан курс "${course.title}" с 4 заданиями`);
 
-  // ── 7. Записываем студентов на курс ──────────────────────
   await prisma.studentCourse.createMany({
     data: [
       { studentId: student1.id, courseId: course.id, progress: 50 },

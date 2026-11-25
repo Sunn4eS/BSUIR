@@ -1,13 +1,3 @@
-/**
- * components/Live/QuickTaskBuilder.jsx
- * Быстрый конструктор карточки для Live-урока (2–3 клика).
- *
- * Три сегмента: 🎸 Сыграть, 🎵 На слух, 🖐 Аппликатура.
- * В сегменте «Аппликатура» — 4 подтипа (угадать / собрать / сыграть /
- * собрать и сыграть), выбор из всех 24 аккордов и превью на грифе
- * с прослушиванием «чёса».
- */
-
 import { useMemo, useState } from 'react';
 import { CHORD_NAMES } from '../../audio/chords';
 import {
@@ -25,7 +15,6 @@ import Fretboard from '../Cards/Fretboard';
 const NOTE_TARGETS = ['E2', 'A2', 'D3', 'G3', 'B3', 'E4', 'A4', 'C4', 'D4', 'G4'];
 const EAR_TARGETS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Am', 'C', 'G', 'Em', 'D', 'E'];
 
-// Подтипы сегмента «Аппликатура»
 const FINGERING_KINDS = [
   { id: 'TEST_GUESS', label: '🧩 Угадать', type: 'FINGERING_TEST', mode: 'GUESS' },
   { id: 'TEST_BUILD', label: '🛠 Собрать', type: 'FINGERING_TEST', mode: 'BUILD' },
@@ -48,7 +37,6 @@ export default function QuickTaskBuilder({ onSend, disabled = false }) {
   const [earTarget, setEarTarget] = useState('Am');
   const [tolerance, setTolerance] = useState(20);
 
-  // Сегмент «Аппликатура»
   const [fingeringKindId, setFingeringKindId] = useState('TEST_GUESS');
   const [fingeringTarget, setFingeringTarget] = useState('Am');
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
@@ -83,7 +71,6 @@ export default function QuickTaskBuilder({ onSend, disabled = false }) {
       stopAllChords();
       await playChordStrum(fingeringTarget, { strumMs: 28, velocity: 0.85 });
     } catch {
-      // Превью не критично — тихо игнорируем
     } finally {
       setTimeout(() => setIsPreviewPlaying(false), 900);
     }
@@ -295,7 +282,6 @@ export default function QuickTaskBuilder({ onSend, disabled = false }) {
             </select>
           </div>
 
-          {/* Превью аппликатуры — учитель видит, что отправляет */}
           <div className="form-group">
             <span className="form-label">Превью аппликатуры</span>
             <div className="fretboard-preview">

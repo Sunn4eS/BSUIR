@@ -1,6 +1,3 @@
-/**
- * modules/tasks/tasks.controller.js
- */
 const tasksService = require('./tasks.service');
 
 class TasksController {

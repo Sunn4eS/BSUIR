@@ -1,33 +1,23 @@
-# Git ignore — Guitar Trainer
-
-# Env файлы (содержат секреты)
 .env
 .env.local
 .env.production
 
-# Node modules
 node_modules/
 **/node_modules/
 
-# Build артефакты
 dist/
 build/
 .next/
 
-# Prisma сгенерированный клиент
 backend/node_modules/.prisma/
 
-# Логи
 *.log
 logs/
 
-# OS файлы
 .DS_Store
 Thumbs.db
 
-# IDE
 .vscode/settings.json
 .idea/
 
-# Docker override (для локальных overrides)
 docker-compose.override.yml

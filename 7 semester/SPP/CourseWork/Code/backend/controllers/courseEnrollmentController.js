@@ -1,17 +1,6 @@
-/**
- * backend/controllers/courseEnrollmentController.js
- * 
- * Контроллер управления каталогом курсов, подачей заявок (Enrollment),
- * ручным управлением составом учеников преподавателем и автономным
- * прохождением курсов студентами.
- */
-
 const { prisma } = require('../src/config/database');
 const { AppError } = require('../src/middleware/errorHandler');
 
-/**
- * Вспомогательная функция проверки владения курсом учителем
- */
 async function assertTeacherCourseOwner(courseId, teacherId) {
   const course = await prisma.course.findUnique({
     where: { id: courseId },
@@ -30,20 +19,11 @@ async function assertTeacherCourseOwner(courseId, teacherId) {
 }
 
 class CourseEnrollmentController {
-  // ─────────────────────────────────────────────────────────────
-  // СТУДЕНТ: Каталог, заявки и автономное прохождение
-  // ─────────────────────────────────────────────────────────────
 
-  /**
-   * GET /api/courses/catalog
-   * Просмотр всех опубликованных (isPublished: true или status: 'PUBLISHED')
-   * курсов всех преподавателей со статусом заявки текущего ученика (NONE, PENDING, APPROVED, REJECTED).
-   */
   async getCatalog(req, res, next) {
     try {
       const studentId = req.user?.id;
 
-      // Ищем все опубликованные курсы
       const courses = await prisma.course.findMany({
         where: {
           OR: [
@@ -87,16 +67,14 @@ class CourseEnrollmentController {
         orderBy: { createdAt: 'desc' },
       });
 
-      // Форматируем список курсов со статусом заявки текущего ученика
       const catalog = courses.map((course) => {
         let enrollmentStatus = 'NONE';
         let enrollmentId = null;
 
         if (course.enrollments && course.enrollments.length > 0) {
-          enrollmentStatus = course.enrollments[0].status; // PENDING | APPROVED | REJECTED
+          enrollmentStatus = course.enrollments[0].status;
           enrollmentId = course.enrollments[0].id;
         } else if (course.studentCourses && course.studentCourses.length > 0) {
-          // Обратная совместимость с legacy таблицей
           enrollmentStatus = 'APPROVED';
         }
 
@@ -129,10 +107,6 @@ class CourseEnrollmentController {
     }
   }
 
-  /**
-   * POST /api/courses/:id/enroll
-   * Отправка заявки на вступление в курс (создает запись со статусом PENDING).
-   */
   async enroll(req, res, next) {
     try {
       const courseId = req.params.id;
@@ -151,7 +125,6 @@ class CourseEnrollmentController {
         throw new AppError('Курс еще не опубликован для записи', 400);
       }
 
-      // Проверяем существующую заявку/зачисление
       const existingEnrollment = await prisma.courseEnrollment.findUnique({
         where: {
           courseId_studentId: {
@@ -174,7 +147,6 @@ class CourseEnrollmentController {
             status: 'PENDING',
           });
         }
-        // Если была отклонена — разрешаем повторно отправить (переводим в PENDING)
         const updated = await prisma.courseEnrollment.update({
           where: { id: existingEnrollment.id },
           data: { status: 'PENDING', enrolledAt: new Date() },
@@ -186,7 +158,6 @@ class CourseEnrollmentController {
         });
       }
 
-      // Создаем новую заявку со статусом PENDING
       const enrollment = await prisma.courseEnrollment.create({
         data: {
           courseId,
@@ -195,7 +166,6 @@ class CourseEnrollmentController {
         },
       });
 
-      // Сохраняем также в legacy таблицу CourseJoinRequest для обратной совместимости
       try {
         await prisma.courseJoinRequest.upsert({
           where: { courseId_studentId: { courseId, studentId } },
@@ -203,7 +173,6 @@ class CourseEnrollmentController {
           update: { status: 'PENDING' },
         });
       } catch {
-        // не прерываем основной флоу
       }
 
       res.status(201).json({
@@ -215,15 +184,10 @@ class CourseEnrollmentController {
     }
   }
 
-  /**
-   * GET /api/courses/my-courses
-   * Получение списка курсов, где заявка одобрена (APPROVED), для самостоятельного прохождения.
-   */
   async getMyCourses(req, res, next) {
     try {
       const studentId = req.user.id;
 
-      // Находим все курсы с одобренным статусом
       const enrollments = await prisma.courseEnrollment.findMany({
         where: {
           studentId,
@@ -253,7 +217,6 @@ class CourseEnrollmentController {
         orderBy: { enrolledAt: 'desc' },
       });
 
-      // Если в новых enrollments записей нет, проверим legacy таблицу studentCourses
       let courses = enrollments.map((enr) => {
         const c = enr.course;
         const teacherDisplayName =
@@ -317,10 +280,6 @@ class CourseEnrollmentController {
     }
   }
 
-  /**
-   * GET /api/courses/:id/tasks
-   * Доступ к карточкам курса (только если курс одобрен для студента или принадлежит учителю).
-   */
   async getCourseTasks(req, res, next) {
     try {
       const courseId = req.params.id;
@@ -343,13 +302,11 @@ class CourseEnrollmentController {
         throw new AppError('Курс не найден', 404);
       }
 
-      // Проверка прав:
       if (role === 'TEACHER') {
         if (course.teacherId !== user.id) {
           throw new AppError('Доступ запрещен: вы не являетесь преподавателем этого курса', 403);
         }
       } else {
-        // Для студента проверяем статус APPROVED
         const approvedEnrollment = await prisma.courseEnrollment.findFirst({
           where: {
             courseId,
@@ -383,10 +340,6 @@ class CourseEnrollmentController {
     }
   }
 
-  /**
-   * POST /api/tasks/:id/submit
-   * Отправка результата выполнения задания (сохранение в TaskResult).
-   */
   async submitTaskResult(req, res, next) {
     try {
       const taskId = req.params.id;
@@ -417,7 +370,6 @@ class CourseEnrollmentController {
         },
       });
 
-      // Пересчитываем прогресс по курсу
       try {
         const totalTasks = await prisma.task.count({ where: { courseId: task.courseId } });
         if (totalTasks > 0) {
@@ -440,7 +392,6 @@ class CourseEnrollmentController {
           });
         }
       } catch {
-        // тихо продолжаем
       }
 
       res.status(201).json({
@@ -452,14 +403,6 @@ class CourseEnrollmentController {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // УЧИТЕЛЬ: Создание курсов, управление заявками и составом
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * POST /api/courses
-   * Создание курса (поддержка флага isPublished).
-   */
   async createCourse(req, res, next) {
     try {
       const teacherId = req.user.id;
@@ -491,10 +434,6 @@ class CourseEnrollmentController {
     }
   }
 
-  /**
-   * GET /api/courses/:id/enrollments
-   * Список всех заявок на данный курс со статусами (PENDING, APPROVED, REJECTED).
-   */
   async getCourseEnrollments(req, res, next) {
     try {
       const courseId = req.params.id;
@@ -517,7 +456,7 @@ class CourseEnrollmentController {
           },
         },
         orderBy: [
-          { status: 'asc' }, // PENDING сначала
+          { status: 'asc' },
           { enrolledAt: 'desc' },
         ],
       });
@@ -547,10 +486,6 @@ class CourseEnrollmentController {
     }
   }
 
-  /**
-   * PATCH /api/courses/:id/enrollments/:enrollmentId
-   * Одобрение или отклонение заявки (APPROVED / REJECTED).
-   */
   async updateEnrollmentStatus(req, res, next) {
     try {
       const { id: courseId, enrollmentId } = req.params;
@@ -559,7 +494,6 @@ class CourseEnrollmentController {
 
       await assertTeacherCourseOwner(courseId, teacherId);
 
-      // Принимаем либо status ('APPROVED'/'REJECTED'), либо decision ('approve'/'reject')
       let targetStatus = null;
       if (status) {
         const upper = String(status).trim().toUpperCase();
@@ -584,7 +518,6 @@ class CourseEnrollmentController {
         throw new AppError('Заявка на курс не найдена', 404);
       }
 
-      // Выполняем обновление в транзакции
       const updatedEnrollment = await prisma.$transaction(async (tx) => {
         const updated = await tx.courseEnrollment.update({
           where: { id: enrollmentId },
@@ -597,7 +530,6 @@ class CourseEnrollmentController {
         });
 
         if (targetStatus === 'APPROVED') {
-          // Привязываем ученика к учителю (TeacherStudent)
           const rel = await tx.teacherStudent.findFirst({
             where: { teacherId, studentId: enrollment.studentId },
           });
@@ -607,7 +539,6 @@ class CourseEnrollmentController {
             });
           }
 
-          // Добавляем в studentCourses для обратной совместимости
           const sc = await tx.studentCourse.findFirst({
             where: { courseId, studentId: enrollment.studentId },
           });
@@ -617,7 +548,6 @@ class CourseEnrollmentController {
             });
           }
         } else if (targetStatus === 'REJECTED') {
-          // Удаляем из studentCourses, если был
           await tx.studentCourse.deleteMany({
             where: { courseId, studentId: enrollment.studentId },
           });
@@ -635,10 +565,6 @@ class CourseEnrollmentController {
     }
   }
 
-  /**
-   * POST /api/courses/:id/students
-   * Прямое добавление студента учителем по email.
-   */
   async addStudent(req, res, next) {
     try {
       const courseId = req.params.id;
@@ -668,9 +594,7 @@ class CourseEnrollmentController {
         throw new AppError('Указанный пользователь не имеет роли студента', 400);
       }
 
-      // Создаем или обновляем запись со статусом APPROVED
       const enrollment = await prisma.$transaction(async (tx) => {
-        // Связываем учителя и ученика
         const relation = await tx.teacherStudent.findFirst({
           where: { teacherId, studentId: targetStudent.id },
         });
@@ -680,7 +604,6 @@ class CourseEnrollmentController {
           });
         }
 
-        // Обновляем/создаем CourseEnrollment
         const enr = await tx.courseEnrollment.upsert({
           where: {
             courseId_studentId: {
@@ -703,7 +626,6 @@ class CourseEnrollmentController {
           },
         });
 
-        // Синхронизируем StudentCourse
         const sc = await tx.studentCourse.findFirst({
           where: { courseId, studentId: targetStudent.id },
         });
@@ -731,10 +653,6 @@ class CourseEnrollmentController {
     }
   }
 
-  /**
-   * DELETE /api/courses/:id/students/:studentId
-   * Удаление студента из курса.
-   */
   async removeStudent(req, res, next) {
     try {
       const { id: courseId, studentId } = req.params;

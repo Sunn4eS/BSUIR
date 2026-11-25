@@ -1,8 +1,3 @@
-/**
- * components/Live/CourseTaskLibrary.jsx
- * Библиотека опубликованных курсов и заданий для Live-урока.
- */
-
 import { useCallback, useEffect, useState } from 'react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';

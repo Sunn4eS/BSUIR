@@ -1,8 +1,3 @@
-/**
- * scripts/live-e2e.cjs — проверка Live-протокола (учитель ↔ ученик)
- * Запускается внутри контейнера frontend: node scripts/live-e2e.cjs
- */
-
 const { io } = require('socket.io-client');
 
 const HOST = process.env.LIVE_E2E_HOST || 'http://backend:4000';
@@ -107,7 +102,6 @@ function waitConnect(socket) {
   teacher.on('room_error', (p) => console.log('  TEACHER room_error', p));
   studentSocket.on('room_error', (p) => console.log('  STUDENT room_error', p));
 
-  // Собираем все приглашения (может прийти напоминание о старой сессии)
   const invites = [];
   studentSocket.on('session_invited', (payload) => invites.push(payload));
 
@@ -121,28 +115,23 @@ function waitConnect(socket) {
     throw new Error('timeout waiting for condition');
   }
 
-  // События ученика
   const newCard = waitEvent(studentSocket, 'new_task_card');
   const myResult = waitEvent(studentSocket, 'my_task_result');
   const studentEnded = waitEvent(studentSocket, 'session_ended');
 
-  // События учителя
   const created = waitEvent(teacher, 'session_created');
   const taskSent = waitEvent(teacher, 'task_sent');
   const statusUpdated = waitEvent(teacher, 'card_status_updated');
   const taskResult = waitEvent(teacher, 'task_result');
   const teacherEnded = waitEvent(teacher, 'session_ended');
 
-  // Не даём необработанным reject'ам уронить процесс раньше времени
   [newCard, myResult, studentEnded, created, taskSent, statusUpdated, taskResult, teacherEnded]
     .forEach((promise) => promise.catch(() => {}));
 
-  // 1. Учитель создаёт сессию
   teacher.emit('create_session', { studentId: student.id });
   const createdPayload = await created;
   check('teacher create_session', Boolean(createdPayload?.roomCode), createdPayload?.roomCode);
 
-  // 2. Ученик получает приглашение и входит
   const invitedPayload = await waitFor(
     () => invites.find((item) => item.roomCode === createdPayload.roomCode)
   );
@@ -164,7 +153,6 @@ function waitConnect(socket) {
 
   await new Promise((resolve) => setTimeout(resolve, 300));
 
-  // 3. Быстрая карточка на слух
   console.log('  emitting send_task (quick card)');
   teacher.emit('send_task', {
     cardData: {
@@ -182,7 +170,6 @@ function waitConnect(socket) {
 
   const cardId = card.card.id;
 
-  // 4. Ученик отвечает правильно
   studentSocket.emit('task_status', { cardId, status: 'IN_PROGRESS' });
   const statusPayload = await statusUpdated;
   check('teacher sees IN_PROGRESS', statusPayload?.status === 'IN_PROGRESS');
@@ -193,7 +180,6 @@ function waitConnect(socket) {
   check('teacher sees correct result', result?.isCorrect === true);
   check('student sees my_task_result', mine?.isCorrect === true);
 
-  // 5. Карточка из библиотеки курса
   const taskSent2 = waitEvent(teacher, 'task_sent');
   const newCard2 = waitEvent(studentSocket, 'new_task_card');
   teacher.emit('send_task', { taskId: libraryTask.id });
@@ -201,13 +187,11 @@ function waitConnect(socket) {
   const card2 = await newCard2;
   check('library task delivered', sent2?.card?.taskId === libraryTask.id && card2?.card?.taskId === libraryTask.id);
 
-  // Ученик открывает карточку из библиотеки (IN_PROGRESS)
   const libStatusP = waitEvent(teacher, 'card_status_updated');
   studentSocket.emit('task_status', { cardId: card2.card.id, status: 'IN_PROGRESS' });
   const libStatus = await libStatusP;
   check('library card IN_PROGRESS', libStatus?.status === 'IN_PROGRESS');
 
-  // Хелперы для быстрых карточек ────────────────────────────────
   async function sendQuickCard(cardData) {
     const sentP = waitEvent(teacher, 'task_sent');
     const newP = waitEvent(studentSocket, 'new_task_card');
@@ -224,7 +208,6 @@ function waitConnect(socket) {
     return { result, mine };
   }
 
-  // 6a. FINGERING_TEST / GUESS — выбор аккорда по аппликатуре
   const guess = await sendQuickCard({
     type: 'FINGERING_TEST',
     title: 'E2E: угадай аппликатуру Am',
@@ -239,7 +222,6 @@ function waitConnect(socket) {
   check('FINGERING_TEST GUESS: верный ответ зачтён',
     guessResult.result?.isCorrect === true && guessResult.mine?.isCorrect === true);
 
-  // 6b. FINGERING_TEST / BUILD — сборка на грифе (объектный ответ)
   const build = await sendQuickCard({
     type: 'FINGERING_TEST',
     title: 'E2E: собери Am',
@@ -259,7 +241,6 @@ function waitConnect(socket) {
     buildResult.result?.isCorrect === true && typeof buildResult.result?.answer === 'string',
     `answer=${buildResult.result?.answer?.slice(0, 48)}`);
 
-  // 6c. PLAY_FINGERING — сыграть аппликатуру
   const play = await sendQuickCard({
     type: 'PLAY_FINGERING',
     title: 'E2E: сыграй Am',
@@ -272,7 +253,6 @@ function waitConnect(socket) {
   const playResult = await answerCard(play.card.card.id, true);
   check('PLAY_FINGERING: вердикт true зачтён', playResult.result?.isCorrect === true);
 
-  // 6d. COMBO_FINGERING — неверный вердикт не зачтён
   const combo = await sendQuickCard({
     type: 'COMBO_FINGERING',
     title: 'E2E: собери и сыграй C',
@@ -285,13 +265,11 @@ function waitConnect(socket) {
   check('COMBO_FINGERING: неверный вердикт не зачтён',
     comboResult.result?.isCorrect === false && comboResult.mine?.isCorrect === false);
 
-  // 6e. Неизвестный тип отклоняется сервером
   const taskErrorP = waitEvent(teacher, 'task_error');
   teacher.emit('send_task', { cardData: { type: 'FINGERING', title: 'бред', expectedNote: 'Am' } });
   const taskError = await taskErrorP;
   check('неизвестный тип карточки отклонён', Boolean(taskError?.message), taskError?.message);
 
-  // 6f. task_history: ученик перезаходит и получает весь список заданий
   const historyP = waitEvent(studentSocket, 'task_history');
   studentSocket.emit('join_room', { roomCode: createdPayload.roomCode });
   const history = await historyP;
@@ -312,7 +290,6 @@ function waitConnect(socket) {
     JSON.stringify(statuses) === JSON.stringify(['CORRECT', 'IN_PROGRESS', 'CORRECT', 'CORRECT', 'CORRECT', 'INCORRECT']),
     statuses.join(','));
 
-  // 6g. Заявки на курс и управление студентами курса
   const student2Login = await api('/auth/login', {
     method: 'POST',
     body: { email: 'student2@guitar.app', password: 'password123' },
@@ -366,7 +343,6 @@ function waitConnect(socket) {
       );
     }
 
-    // Добавление по email (сценарий из редактора курса)
     const added = await api(`/courses/${targetCourse.id}/students`, {
       method: 'POST',
       token: teacherLogin.token,
@@ -383,7 +359,6 @@ function waitConnect(socket) {
     });
   }
 
-  // 7. Завершение урока
   teacher.emit('end_session');
   const endedTeacher = await teacherEnded;
   const endedStudent = await studentEnded;

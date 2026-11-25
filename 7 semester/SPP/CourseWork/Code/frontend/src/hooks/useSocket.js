@@ -1,10 +1,3 @@
-/**
- * hooks/useSocket.js — общее Socket.io подключение на всё приложение
- *
- * Сокет создаётся один раз (singleton) и переиспользуется всеми компонентами,
- * чтобы не открывать по соединению на каждую страницу.
- */
-
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import useAuthStore from '../store/authStore';
@@ -39,7 +32,6 @@ function getSharedSocket(token) {
   return sharedSocket;
 }
 
-/** Принудительно закрыть соединение (например, при logout) */
 export function disconnectSocket() {
   if (sharedSocket) sharedSocket.disconnect();
   sharedSocket = null;

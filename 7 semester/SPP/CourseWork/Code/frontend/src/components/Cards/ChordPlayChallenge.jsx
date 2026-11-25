@@ -1,16 +1,3 @@
-/**
- * components/Cards/ChordPlayChallenge.jsx
- * Фаза «сыграй аппликатуру»: слушаем микрофон и собираем ноты аккорда.
- *
- * Ученик может играть аккорд двумя способами:
- *  - поочерёдно щипать струны (монофонический YIN, useGuitarPitch);
- *  - взять аккорд одним боем (полифоническая проверка по хромаграмме).
- *
- * Задание выполнено, когда прозвучали все ступени аккорда.
- *
- * Используется в PLAY_FINGERING и во второй фазе COMBO_FINGERING.
- */
-
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useGuitarPitch } from '../../hooks/useGuitarPitch';
 import { useAudioSession } from '../../hooks/useAudioSession';
@@ -62,8 +49,6 @@ export default function ChordPlayChallenge({ chord, onDone, readOnly = false }) 
     stopListening,
   } = useGuitarPitch({ onNote: handleNote });
 
-  // Полифоническая проверка: один бой по всем струнам.
-  // Каждые 150 мс строим хромаграмму и добавляем услышанные ступени.
   useEffect(() => {
     if (!isListening || isComplete || readOnly) return undefined;
 
@@ -98,7 +83,6 @@ export default function ChordPlayChallenge({ chord, onDone, readOnly = false }) 
     return () => clearInterval(timer);
   }, [isListening, isComplete, readOnly, expectedPcs]);
 
-  // Успех: все ступени аккорда прозвучали
   useEffect(() => {
     if (isComplete || readOnly || expectedPcs.length === 0) return;
     const allPlayed = expectedPcs.every((pc) => playedPcs.has(pc));

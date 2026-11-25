@@ -1,8 +1,3 @@
-/**
- * pages/CourseEditorPage.jsx
- * Полноценный конструктор курса: задания, сохранение, публикация.
- */
-
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
@@ -58,7 +53,7 @@ export default function CourseEditorPage() {
       const { data } = await api.get(`/courses/${id}/students`);
       setCourseStudents(data.students || []);
       setAvailableStudents(data.availableStudents || []);
-    } catch { /* обработано interceptor'ом */ }
+    } catch {  }
   }, [id]);
 
   useEffect(() => {
@@ -326,7 +321,6 @@ export default function CourseEditorPage() {
           )}
         </section>
 
-        {/* ── Студенты курса ── */}
         <section className="editor-card">
           <div className="section-header">
             <div>

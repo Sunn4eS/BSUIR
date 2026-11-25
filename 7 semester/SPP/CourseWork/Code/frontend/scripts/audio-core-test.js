@@ -1,9 +1,3 @@
-/**
- * scripts/audio-core-test.js — проверка YIN и распознавания аккордов
- * на синтетических сигналах (без микрофона).
- * Бандлится esbuild'ом и запускается в Node.
- */
-
 import { detectPitch, getRms } from '../src/audio/pitchDetector';
 import { computeChromagram, detectChord, matchChord, chromaPitchClasses } from '../src/audio/chordDetector';
 import {
@@ -33,7 +27,6 @@ function check(name, ok, detail = '') {
   console.log(`${ok ? 'PASS' : 'FAIL'} — ${name}${detail ? ` (${detail})` : ''}`);
 }
 
-// ── YIN ──────────────────────────────────────────────────────
 for (const [note, frequency] of [['E2', 82.41], ['A2', 110.0], ['D3', 146.83], ['G3', 196.0], ['B3', 246.94], ['E4', 329.63]]) {
   const pitch = detectPitch(sine(frequency), SAMPLE_RATE);
   const error = pitch.frequency ? Math.abs(pitch.frequency - frequency) : Infinity;
@@ -46,7 +39,6 @@ check('detectPitch silence -> null', silence.frequency === null && getRms(new Fl
 const a4 = detectPitch(sine(440), SAMPLE_RATE);
 check('detectPitch A4', a4.frequency && Math.abs(a4.frequency - 440) < 2, `f=${a4.frequency?.toFixed(2)}`);
 
-// ── Теория ───────────────────────────────────────────────────
 const e2 = parseNote('E2');
 check('parseNote E2', e2?.midi === 40 && Math.abs(e2.frequency - 82.41) < 0.1);
 check('parseNote Bb3 -> A#3', parseNote('Bb3')?.name === 'A#');
@@ -59,7 +51,6 @@ check('parseChordName C', parseChordName('C')?.root === 'C' && parseChordName('C
 const closest = getClosestGuitarString(84);
 check('closest string to 84Hz is E2', closest?.label === 'E2', `cents=${closest?.centsOff.toFixed(1)}`);
 
-// ── Хромаграмма / аккорды ────────────────────────────────────
 function spectrumFor(frequencies, db = -25) {
   const data = new Float32Array(FFT_SIZE / 2);
   data.fill(-120);
@@ -89,7 +80,6 @@ check('matchChord C', cMatch.isMatch && cMatch.score > 0.9, `score=${cMatch.scor
 const wrong = matchChord(amChroma, 'G', 0.72);
 check('matchChord rejects G for Am', !wrong.isMatch, `score=${wrong.score.toFixed(3)}`);
 
-// ── Полифоническая детекция: аккорд одним боем ───────────────
 const cTones = chromaPitchClasses(cChroma, 0.3).map((tone) => tone.name).sort();
 check(
   'chromaPitchClasses C -> C,E,G',

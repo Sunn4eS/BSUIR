@@ -1,33 +1,16 @@
-/**
- * middleware/errorHandler.js — глобальный обработчик ошибок
- * Перехватывает все ошибки Express и возвращает унифицированный JSON
- */
-
-/**
- * Кастомный класс ошибки с HTTP статус-кодом
- */
 class AppError extends Error {
-  /**
-   * @param {string} message
-   * @param {number} statusCode
-   */
   constructor(message, statusCode = 500) {
     super(message);
     this.statusCode = statusCode;
-    this.isOperational = true; // Ожидаемая ошибка (не баг)
+    this.isOperational = true;
   }
 }
 
-/**
- * Express error handler middleware (4 аргумента обязательны)
- */
 function errorHandler(err, _req, res, _next) {
-  // Логируем только неожиданные ошибки
   if (!err.isOperational) {
     console.error('💥 Неожиданная ошибка:', err);
   }
 
-  // Prisma ошибки
   if (err.code === 'P2002') {
     return res.status(409).json({
       error: 'Запись с такими данными уже существует',
@@ -39,7 +22,6 @@ function errorHandler(err, _req, res, _next) {
     });
   }
 
-  // JWT ошибки
   if (err.name === 'JsonWebTokenError') {
     return res.status(401).json({ error: 'Недействительный токен' });
   }
@@ -47,7 +29,6 @@ function errorHandler(err, _req, res, _next) {
     return res.status(401).json({ error: 'Срок действия токена истёк' });
   }
 
-  // Ошибки валидации
   if (err.name === 'ValidationError') {
     return res.status(400).json({ error: err.message });
   }

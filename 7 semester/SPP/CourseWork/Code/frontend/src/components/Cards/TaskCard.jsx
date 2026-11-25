@@ -1,8 +1,3 @@
-/**
- * components/Cards/TaskCard.jsx — Универсальная обёртка для карточек
- * Определяет тип задания и рендерит нужный компонент
- */
-
 import EarTrainingCard  from './EarTrainingCard';
 import PlayPracticeCard  from './PlayPracticeCard';
 import FingeringTestCard from './FingeringTestCard';

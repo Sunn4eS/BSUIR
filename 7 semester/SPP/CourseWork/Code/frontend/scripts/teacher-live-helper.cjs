@@ -1,17 +1,3 @@
-/**
- * scripts/teacher-live-helper.cjs — учитель-клиент для браузерных проверок UI.
- * Запуск внутри контейнера frontend (localhost из контейнера не виден, поэтому backend):
- *   docker compose exec -T -e LIVE_E2E_HOST=http://backend:4000 frontend node scripts/teacher-live-helper.cjs <mode> [roomCode]
- *
- * Режимы:
- *   create            — создать Live-сессию для student1, напечатать ROOM:<code>
- *   send <ROOM>       — войти в комнату и отправить быструю карточку EAR_TRAINING
- *   fingering <ROOM> <subtype> [chord] — карточка аппликатуры
- *                        (subtype: build | guess | play | combo)
- *   end <ROOM>        — завершить сессию
- *   watch <ROOM> <sec> — наблюдать события комнаты (user_left и т.д.)
- */
-
 const { io } = require('socket.io-client');
 
 const HOST = process.env.LIVE_E2E_HOST || 'http://backend:4000';

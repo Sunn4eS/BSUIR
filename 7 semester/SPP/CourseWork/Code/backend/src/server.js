@@ -1,8 +1,3 @@
-/**
- * server.js — точка входа приложения
- * Создаёт HTTP-сервер, инициализирует Socket.io
- */
-
 require('dotenv').config();
 const http = require('http');
 const app = require('./app');
@@ -11,16 +6,12 @@ const { prisma } = require('./config/database');
 
 const PORT = process.env.PORT || 4000;
 
-// Создаём HTTP-сервер поверх Express
 const server = http.createServer(app);
 
-// Инициализируем Socket.io на том же сервере
 initSocketServer(server);
 
-// Запуск сервера
 async function bootstrap() {
   try {
-    // Проверяем подключение к БД
     await prisma.$connect();
     console.log('✅ Подключение к PostgreSQL установлено');
 
@@ -35,7 +26,6 @@ async function bootstrap() {
   }
 }
 
-// Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('🛑 SIGTERM получен, завершаем работу...');
   await prisma.$disconnect();

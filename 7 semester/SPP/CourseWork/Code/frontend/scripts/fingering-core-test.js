@@ -1,9 +1,3 @@
-/**
- * scripts/fingering-core-test.js — проверка аппликатур 24 аккордов
- * и гейта щипка на синтетических данных (без микрофона).
- * Бандлится esbuild'ом и запускается в Node.
- */
-
 import {
   ALL_CHORD_NAMES,
   MAJOR_CHORD_NAMES,
@@ -28,7 +22,6 @@ function check(name, ok, detail = '') {
   console.log(`${ok ? 'PASS' : 'FAIL'} — ${name}${detail ? ` (${detail})` : ''}`);
 }
 
-// ── Каталог аппликатур ─────────────────────────────────────────
 check('24 аккорда в CHORD_SHAPES', Object.keys(CHORD_SHAPES).length === 24);
 check('ALL_CHORD_NAMES = 12 мажорных + 12 минорных',
   ALL_CHORD_NAMES.length === 24
@@ -36,7 +29,6 @@ check('ALL_CHORD_NAMES = 12 мажорных + 12 минорных',
   && MAJOR_CHORD_NAMES.length === 12
   && CHORD_NAMES === ALL_CHORD_NAMES);
 
-// Каждая нота каждой аппликатуры принадлежит аккорду, корень — внизу
 for (const chordName of ALL_CHORD_NAMES) {
   const shape = CHORD_SHAPES[chordName];
   const notes = fretsToNotes(shape);
@@ -61,7 +53,6 @@ for (const chordName of ALL_CHORD_NAMES) {
   );
 }
 
-// ── Позиции ↔ аппликатура (roundtrip) ─────────────────────────
 for (const chordName of ALL_CHORD_NAMES) {
   const shape = CHORD_SHAPES[chordName];
   const positions = positionsFromShape(shape);
@@ -71,13 +62,11 @@ for (const chordName of ALL_CHORD_NAMES) {
     `positions=${positions.length}`);
 }
 
-// Строки без позиций приглушены; мусор игнорируется
 check('shapeFromPositions пустой -> все приглушены',
   shapeFromPositions([]).every((f) => f === -1));
 check('shapeFromPositions фильтрует мусор',
   shapesEqual(shapeFromPositions([{ string: 6, fret: 3 }, { string: 0, fret: 1 }, { string: 'x', fret: 1 }, { string: 5, fret: 99 }]), [3, -1, -1, -1, -1, -1]));
 
-// ── normalizeChordName ─────────────────────────────────────────
 check('normalizeChordName Am', normalizeChordName('Am') === 'Am');
 check('normalizeChordName am -> Am', normalizeChordName('am') === 'Am');
 check('normalizeChordName Bb -> A#', normalizeChordName('Bb') === 'A#');
@@ -88,7 +77,6 @@ check('normalizeChordName H -> null', normalizeChordName('H') === null);
 check('normalizeChordName пусто -> null', normalizeChordName('') === null);
 check('getChordShape Bbm', shapesEqual(getChordShape('Bbm'), CHORD_SHAPES['A#m']));
 
-// ── Варианты ответа ────────────────────────────────────────────
 for (const chordName of ['C', 'F#m', 'A#', 'D#m']) {
   const options = buildAnswerOptions(chordName);
   const valid = options.length === 4
@@ -98,7 +86,6 @@ for (const chordName of ['C', 'F#m', 'A#', 'D#m']) {
   check(`buildAnswerOptions ${chordName}`, valid, `[${options.join(', ')}]`);
 }
 
-// ── Voicing'и (сэмплер) ────────────────────────────────────────
 check('CHORD_VOICINGS покрывает 24 аккорда',
   Object.keys(CHORD_VOICINGS).length === 24
   && ALL_CHORD_NAMES.every((name) => CHORD_VOICINGS[name].length >= 4));
@@ -106,7 +93,6 @@ check('getChordVoicing Bbm = A#m',
   JSON.stringify(getChordVoicing('Bbm')) === JSON.stringify(CHORD_VOICINGS['A#m']));
 check('getChordVoicing Am7 -> null', getChordVoicing('Am7') === null);
 
-// ── Таблица нот гитары ─────────────────────────────────────────
 check('GUITAR_NOTE_TABLE 32 ноты E2..B4',
   GUITAR_NOTE_TABLE.length === 32
   && GUITAR_NOTE_TABLE[0].label === 'E2'
@@ -124,11 +110,8 @@ check('isFrequencyInTolerance 111.5/A2 (23 цента)', isFrequencyInTolerance(
 check('isFrequencyInTolerance 115/A2 -> false', !isFrequencyInTolerance(115, 'A2'));
 check('isFrequencyInTolerance 329.63/E4', isFrequencyInTolerance(329.63, 'E4'));
 
-// ─── Гейт щипка ─────────────────────────────────────────────────
-
 const FRAME_MS = 20;
 
-/** Прогоняет гейт через серию кадров; возвращает лог событий */
 function simulate(gate, frames, rmsFn, startMs) {
   let now = startMs;
   let openFrames = 0;
@@ -142,65 +125,57 @@ function simulate(gate, frames, rmsFn, startMs) {
   return { now, openFrames, closedFrames, state: gate.getState() };
 }
 
-// 1. Тишина и тихий фон не открывают гейт
 {
   const gate = createPluckGate();
-  const { state } = simulate(gate, 100, () => 0.0005, 0);          // 2 с тишины
-  const hum = simulate(gate, 200, () => 0.003, 2000);              // 4 с гула 0.003
+  const { state } = simulate(gate, 100, () => 0.0005, 0);
+  const hum = simulate(gate, 200, () => 0.003, 2000);
   check('гейт закрыт на тишине и тихом гуле',
     !state.isOpen && state.onsetCount === 0 && !hum.state.isOpen && hum.state.onsetCount === 0);
 }
 
-// 2. Щипок: резкая атака -> ровно один onset, гейт открыт
 {
   const gate = createPluckGate();
-  const attack = simulate(gate, 3, () => 0.2, 0);                  // 60 мс громкого сигнала
+  const attack = simulate(gate, 3, () => 0.2, 0);
   check('щипок открывает гейт ровно один раз',
     attack.state.onsetCount === 1 && attack.state.isOpen);
 }
 
-// 3. Затухающая струна: без повторных onset'ов, гейт держится открытым
 {
   const gate = createPluckGate();
   let pluckAt = 0;
-  const decayRms = (i, now) => 0.2 * Math.exp(-(now - pluckAt) / 400); // затухание 0.4 с
-  const decay = simulate(gate, 150, decayRms, 0);                 // 3 с затухания
-  const mid = 0.2 * Math.exp(-1500 / 400);                         // rms на 1.5 с ≈ 0.0047
+  const decayRms = (i, now) => 0.2 * Math.exp(-(now - pluckAt) / 400);
+  const decay = simulate(gate, 150, decayRms, 0);
+  const mid = 0.2 * Math.exp(-1500 / 400);
   check('затухающая струна не даёт повторных onset',
     decay.state.onsetCount === 1,
     `midRms=${mid.toFixed(4)} onsets=${decay.state.onsetCount}`);
 }
 
-// 4. После полного затухания гейт закрывается (holdMs прошёл)
 {
   const gate = createPluckGate();
   simulate(gate, 3, () => 0.2, 0);
   const after = simulate(gate, 100, (i, now) => 0.2 * Math.exp(-(now - 0) / 400), 60);
-  // к концу 2 с rms ≈ 0.2*e^-5 ≈ 0.0013 < шума -> закрыт
   check('гейт закрывается после затухания струны', !after.state.isOpen);
 }
 
-// 5. Кратковременный провал (60 мс) не закрывает гейт
 {
   const gate = createPluckGate();
-  simulate(gate, 10, () => 0.15, 0);                              // 200 мс громко
-  const dip = simulate(gate, 3, () => 0.001, 200);                 // 60 мс провал (< holdMs)
-  const back = simulate(gate, 10, () => 0.15, 260);                // снова громко
+  simulate(gate, 10, () => 0.15, 0);
+  const dip = simulate(gate, 3, () => 0.001, 200);
+  const back = simulate(gate, 10, () => 0.15, 260);
   check('краткий провал не закрывает гейт (гистерезис)',
     dip.state.isOpen && back.state.isOpen && back.state.onsetCount === 1);
 }
 
-// 6. Долгая тишина закрывает; следующий щипок -> второй onset
 {
   const gate = createPluckGate();
   simulate(gate, 3, () => 0.2, 0);
-  const silence = simulate(gate, 30, () => 0.0005, 60);            // 600 мс тишины
+  const silence = simulate(gate, 30, () => 0.0005, 60);
   const second = simulate(gate, 3, () => 0.2, 660);
   check('повторный щипок после тишины -> второй onset',
     !silence.state.isOpen && second.state.onsetCount === 2);
 }
 
-// 7. reset() принудительно закрывает гейт
 {
   const gate = createPluckGate();
   simulate(gate, 10, () => 0.15, 0);

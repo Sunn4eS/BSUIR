@@ -1,34 +1,13 @@
-/**
- * audio/chordDetector.js — распознавание аккордов по хромаграмме
- *
- * Полноценная полифоническая транскрипция — сложная задача,
- * поэтому используется практичный для курсовой подход:
- * FFT → хромаграмма (12 классов высоты) → сравнение с шаблонами аккордов.
- *
- * Хорошо работает для чистых открытых аккордов, взятых одним боем.
- */
-
 import { CHORD_INTERVALS } from './chords';
 import { NOTE_NAMES, parseChordName } from './noteUtils';
 
 const MIN_FREQ = 70;
 const MAX_FREQ = 1000;
 
-/**
- * Строит нормализованную хромаграмму из частотного спектра AnalyserNode.
- *
- * @param {Float32Array} frequencyData — результат getFloatFrequencyData (dB)
- * @param {number} sampleRate
- * @param {number} fftSize
- * @returns {number[]} 12 значений 0..1
- */
 export function computeChromagram(frequencyData, sampleRate, fftSize) {
   const chroma = new Array(12).fill(0);
   const binWidth = sampleRate / fftSize;
 
-  // Берём только локальные пики спектра: соседние бины одного и того же
-  // тона (спектральное «размазывание») иначе попадают в чужие ноты
-  // и занижают сходство с шаблоном аккорда.
   for (let i = 2; i < frequencyData.length - 1; i++) {
     const frequency = i * binWidth;
     if (frequency < MIN_FREQ || frequency > MAX_FREQ) continue;
@@ -37,8 +16,6 @@ export function computeChromagram(frequencyData, sampleRate, fftSize) {
     if (!Number.isFinite(db) || db < -85) continue;
     if (db < frequencyData[i - 1] || db < frequencyData[i + 1]) continue;
 
-    // Параболическая интерполяция вершины пика — уточняет частоту
-    // между бинами и снижает ошибку округления до полутона.
     const left = frequencyData[i - 1];
     const right = frequencyData[i + 1];
     const denominator = left - 2 * db + right;
@@ -57,15 +34,6 @@ export function computeChromagram(frequencyData, sampleRate, fftSize) {
   return max > 0 ? chroma.map((value) => value / max) : chroma;
 }
 
-/**
- * Достаёт из хромаграммы sounding pitch classes (полифоническая детекция).
- * Используется, когда ученик берёт весь аккорд одним боем: в спектре
- * одновременно видны несколько ступеней.
- *
- * @param {number[]} chroma — нормализованная хромаграмма 0..1
- * @param {number} threshold — минимальная сила тона (0..1)
- * @returns {Array<{ name: string, strength: number }>}
- */
 export function chromaPitchClasses(chroma, threshold = 0.3) {
   if (!chroma?.length) return [];
 
@@ -107,13 +75,6 @@ function cosineSimilarity(a, b) {
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
-/**
- * Ищет наиболее похожий аккорд.
- *
- * @param {number[]} chroma
- * @param {string[]} allowedChords — список допустимых аккордов
- * @returns {{ chord: string, score: number, rootScore: number } | null}
- */
 export function detectChord(chroma, allowedChords) {
   if (!chroma?.length) return null;
 
@@ -134,14 +95,6 @@ export function detectChord(chroma, allowedChords) {
   return best;
 }
 
-/**
- * Проверяет, соответствует ли хромаграмма ожидаемому аккорду.
- *
- * @param {number[]} chroma
- * @param {string} expectedChord
- * @param {number} threshold — минимальное сходство (0..1)
- * @returns {{ isMatch: boolean, score: number, detectedChord: string|null }}
- */
 export function matchChord(chroma, expectedChord, threshold = 0.72) {
   const built = buildTemplate(expectedChord);
   if (!built || !chroma?.length) {
@@ -151,7 +104,6 @@ export function matchChord(chroma, expectedChord, threshold = 0.72) {
   const score = cosineSimilarity(chroma, built.template);
   const rootScore = chroma[built.rootPitchClass];
 
-  // Корень должен реально звучать, иначе аккорд не взят
   const isMatch = score >= threshold && rootScore >= 0.2;
 
   return {

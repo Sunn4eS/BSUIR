@@ -1,23 +1,14 @@
-/**
- * test-e2e-all.cjs — комплексная верификация всех блоков:
- * 1. DSP YIN детекция одиночных струн гитары (E2, A2, D3, G3, B3, E4)
- * 2. REST API эндпоинты курсов и заявок (каталог, подача заявок, одобрение, прохождение)
- */
-
 const assert = require('assert');
 const http = require('http');
 
-// ── 1. DSP ТЕСТЫ YIN АЛГОРИТМА ────────────────────────────────
 console.log('=== ТЕСТИРОВАНИЕ БЛОКА 2: DSP YIN ALGORITHM ===');
 
-// Синтез чистого затухающего щипка струны (гармоники + экспоненциальный спад)
 function synthesizeGuitarPluck(freq, sampleRate = 48000, length = 2048) {
   const buffer = new Float32Array(length);
   const decay = 0.998;
   let amp = 0.6;
 
   for (let i = 0; i < length; i++) {
-    // Основной тон + 2-я и 3-я гармоники струны
     const t = i / sampleRate;
     const fundamental = Math.sin(2 * Math.PI * freq * t);
     const h2 = 0.45 * Math.sin(2 * Math.PI * freq * 2 * t);
@@ -28,7 +19,6 @@ function synthesizeGuitarPluck(freq, sampleRate = 48000, length = 2048) {
   return buffer;
 }
 
-// Реализация YIN алгоритма из useGuitarPitch.js
 function testYIN(buffer, sampleRate, minFreq = 70, maxFreq = 1000) {
   const windowSize = Math.floor(buffer.length / 2);
   const minTau = Math.max(2, Math.floor(sampleRate / maxFreq));
@@ -108,7 +98,6 @@ for (const string of GUITAR_STRINGS) {
   console.log(`✅ [DSP PASS] Струна ${string.name}: ожидалось ${string.freq} Hz, определено ${detectedFreq.toFixed(2)} Hz (отклонение ${cents} cents)`);
 }
 
-// ── 2. REST API ТЕСТЫ КУРСОВ И ЗАЯВОК ──────────────────────────
 console.log('\n=== ТЕСТИРОВАНИЕ БЛОКА 3: REST API КУРСОВ И ЗАЯВОК ===');
 
 function request(options, body = null) {
@@ -143,7 +132,6 @@ function request(options, body = null) {
 
 async function runApiTests() {
   try {
-    // 1. Авторизация учителя и студента
     const teacherLogin = await request(
       { path: '/api/auth/login', method: 'POST' },
       { email: 'teacher@guitar.app', password: 'password123' }
@@ -160,7 +148,6 @@ async function runApiTests() {
     const studentToken = studentLogin.data.token;
     console.log('✅ Вход студента успешен');
 
-    // 2. Создание опубликованного курса учителем (POST /api/courses)
     const newCourseRes = await request(
       {
         path: '/api/courses',
@@ -177,7 +164,6 @@ async function runApiTests() {
     const courseId = newCourseRes.data.course.id;
     console.log(`✅ [POST /api/courses] Курс создан: id=${courseId}, isPublished=${newCourseRes.data.course.isPublished}`);
 
-    // Добавляем задание в курс (POST /api/tasks/course/:courseId)
     const taskRes = await request(
       {
         path: `/api/tasks/course/${courseId}`,
@@ -195,7 +181,6 @@ async function runApiTests() {
     const taskId = taskRes.data.task.id;
     console.log(`✅ Задание добавлено: id=${taskId}`);
 
-    // 3. Просмотр каталога учеником (GET /api/courses/catalog)
     const catalogRes = await request(
       {
         path: '/api/courses/catalog',
@@ -209,7 +194,6 @@ async function runApiTests() {
     assert.strictEqual(catalogCourse.enrollmentStatus, 'NONE', 'Статус заявки должен быть NONE');
     console.log('✅ [GET /api/courses/catalog] Каталог получен, статус заявки: NONE');
 
-    // 4. Подача заявки учеником (POST /api/courses/:id/enroll)
     const enrollRes = await request(
       {
         path: `/api/courses/${courseId}/enroll`,
@@ -222,7 +206,6 @@ async function runApiTests() {
     const enrollmentId = enrollRes.data.enrollment.id;
     console.log(`✅ [POST /api/courses/:id/enroll] Заявка создана: status=PENDING, enrollmentId=${enrollmentId}`);
 
-    // Проверяем, что в каталоге статус сменился на PENDING
     const catalogAfterEnroll = await request(
       {
         path: '/api/courses/catalog',
@@ -234,7 +217,6 @@ async function runApiTests() {
     assert.strictEqual(updatedCourseInCatalog.enrollmentStatus, 'PENDING', 'Статус в каталоге должен стать PENDING');
     console.log('✅ [GET /api/courses/catalog] Статус в каталоге успешно обновился на PENDING');
 
-    // 5. Просмотр списка заявок учителем (GET /api/courses/:id/enrollments)
     const enrollmentsListRes = await request(
       {
         path: `/api/courses/${courseId}/enrollments`,
@@ -247,7 +229,6 @@ async function runApiTests() {
     assert(pendingEnr, 'Заявка не найдена в списке учителя');
     console.log('✅ [GET /api/courses/:id/enrollments] Учитель видит поступившую заявку');
 
-    // 6. Одобрение заявки учителем (PATCH /api/courses/:id/enrollments/:enrollmentId)
     const approveRes = await request(
       {
         path: `/api/courses/${courseId}/enrollments/${enrollmentId}`,
@@ -260,7 +241,6 @@ async function runApiTests() {
     assert.strictEqual(approveRes.data.enrollment.status, 'APPROVED');
     console.log('✅ [PATCH /api/courses/:id/enrollments/:enrollmentId] Заявка успешно одобрена (status=APPROVED)');
 
-    // 7. Студент получает одобренные курсы (GET /api/courses/my-courses)
     const myCoursesRes = await request(
       {
         path: '/api/courses/my-courses',
@@ -273,7 +253,6 @@ async function runApiTests() {
     assert(myApprovedCourse, 'Одобренный курс не появился в my-courses');
     console.log('✅ [GET /api/courses/my-courses] Курс отображается в «Мое обучение»');
 
-    // 8. Студент получает карточки одобренного курса (GET /api/courses/:id/tasks)
     const tasksRes = await request(
       {
         path: `/api/courses/${courseId}/tasks`,
@@ -285,7 +264,6 @@ async function runApiTests() {
     assert(tasksRes.data.tasks.length > 0, 'Задания курса не получены');
     console.log('✅ [GET /api/courses/:id/tasks] Задания курса успешно получены учеником');
 
-    // 9. Сдача результата выполнения задания (POST /api/tasks/:id/submit)
     const submitRes = await request(
       {
         path: `/api/tasks/${taskId}/submit`,
@@ -302,7 +280,6 @@ async function runApiTests() {
     assert.strictEqual(submitRes.data.taskResult.isCorrect, true);
     console.log('✅ [POST /api/tasks/:id/submit] Результат сохранен в TaskResult со статусом CORRECT');
 
-    // 10. Прямое добавление студента учителем по email (POST /api/courses/:id/students)
     const addByEmailRes = await request(
       {
         path: `/api/courses/${courseId}/students`,
@@ -314,7 +291,6 @@ async function runApiTests() {
     assert.strictEqual(addByEmailRes.status, 201, 'Ошибка добавления студента по email');
     console.log('✅ [POST /api/courses/:id/students] Студент 2 успешно добавлен напрямую по email');
 
-    // 11. Удаление студента из курса (DELETE /api/courses/:id/students/:studentId)
     const student1Id = studentLogin.data.user.id;
     const deleteStudentRes = await request(
       {
@@ -326,7 +302,6 @@ async function runApiTests() {
     assert.strictEqual(deleteStudentRes.status, 200, 'Ошибка исключения студента');
     console.log('✅ [DELETE /api/courses/:id/students/:studentId] Студент успешно исключен из курса');
 
-    // 12. Проверка, что после исключения доступ к заданиям блокируется (403)
     const tasksAfterDeleteRes = await request(
       {
         path: `/api/courses/${courseId}/tasks`,

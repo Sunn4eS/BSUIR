@@ -1,7 +1,3 @@
-/**
- * scripts/teacher-agent.cjs — имитация учителя для проверки UI ученика
- */
-
 const { io } = require('socket.io-client');
 
 const HOST = process.env.LIVE_E2E_HOST || 'http://backend:4000';

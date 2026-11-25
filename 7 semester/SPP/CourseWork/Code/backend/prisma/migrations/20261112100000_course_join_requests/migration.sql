@@ -1,5 +1,3 @@
--- Заявки студента на вступление в курс (PENDING / APPROVED / REJECTED)
-
 CREATE TYPE "JoinRequestStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
 CREATE TABLE "course_join_requests" (

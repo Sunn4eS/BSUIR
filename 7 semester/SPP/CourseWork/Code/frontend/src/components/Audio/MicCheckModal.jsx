@@ -1,10 +1,3 @@
-/**
- * components/Audio/MicCheckModal.jsx — обязательная проверка микрофона
- *
- * Показывает уровень сигнала и не даёт продолжить, пока пользователь
- * реально не сыграет ноту/не скажет что-то в микрофон.
- */
-
 import { useCallback, useEffect, useState } from 'react';
 import { getLevel } from '../../audio/audioEngine';
 import { useAudioSession } from '../../hooks/useAudioSession';
@@ -22,12 +15,10 @@ export default function MicCheckModal({
   const [hasSignal, setHasSignal] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
 
-  // Сбрасываем индикатор при каждом открытии
   useEffect(() => {
     if (open) setHasSignal(false);
   }, [open]);
 
-  // Слушаем уровень, пока микрофон готов
   useEffect(() => {
     if (!open || !micReady) return undefined;
 

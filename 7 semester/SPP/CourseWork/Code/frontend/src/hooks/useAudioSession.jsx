@@ -1,10 +1,3 @@
-/**
- * hooks/useAudioSession.jsx — общее состояние аудио/микрофона
- *
- * Провайдер монтируется один раз в main.jsx.
- * Благодаря ему Mic Check, тюнер и карточки используют один и тот же поток.
- */
-
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { ensureAudio, enableMic, isMicActive, releaseMic } from '../audio/audioEngine';
 

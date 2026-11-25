@@ -1,21 +1,3 @@
-/**
- * hooks/useAudioAnalyzer.js — проверка сыгранной ноты или аккорда
- *
- * Нота: YIN + допуск в центах.
- * Аккорд: хромаграмма + сравнение с шаблоном.
- *
- * Детекция настроена под ГИТАРУ, а не под голос:
- *  - полосовой фильтр 71–1271 Гц стоит в audioEngine до анализатора;
- *  - гейт щипка (pluckGate) пускает в детектор только сигнал,
- *    который на +6 дБ громче адаптивного шумового пола;
- *  - диапазон поиска высоты ограничен E2…B4 (82.41…493.88 Гц);
- *  - сброс прогресса — только после 3 подряд несовпавших кадров
- *    (~100 мс), чтобы биения гармоник не рвали hold.
- *
- * Хук не создаёт AudioContext и не запрашивает микрофон самостоятельно —
- * это делает useAudioSession (единый поток на приложение).
- */
-
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   getAnalyser,
@@ -40,20 +22,13 @@ const ANALYSIS_INTERVAL_MS = 33;
 const MIN_PITCH_CONFIDENCE = 0.45;
 const CHORD_MATCH_THRESHOLD = 0.72;
 
-// Гитарный диапазон детекции: E2 (82.41 Гц) … B4 (493.88 Гц)
 const GUITAR_MIN_FREQUENCY = 75;
 const GUITAR_MAX_FREQUENCY = 520;
 
-// После щипка аккорд звенит ещё ~1.5 с — окно валидности хромаграммы
 const CHORD_RING_WINDOW_MS = 1500;
 
-// Сколько подряд «промахов» (≈33 мс каждый) держим hold до сброса
 const MISS_FRAMES_TO_RESET = 3;
 
-/**
- * Понимает "E4" как ноту, а "Am"/"C"/"G" — как аккорд.
- * Если октава не указана, приоритет у аккорда (для заданий PRACTICE).
- */
 export function parseExpectedTarget(expectedNote) {
   if (!expectedNote || typeof expectedNote !== 'string') return null;
 
@@ -123,7 +98,6 @@ export function useAudioAnalyzer({
     }
     lastAnalysisRef.current = now;
 
-    // ─── Гейт щипка: адаптивный порог вместо фиксированного ────
     analyser.getFloatTimeDomainData(timeBuffer);
     if (!gateRef.current) gateRef.current = createPluckGate();
     const gate = gateRef.current.push(getRms(timeBuffer));
@@ -135,7 +109,6 @@ export function useAudioAnalyzer({
     let heardSignal = gateActive;
 
     if (expected.kind === 'note') {
-      // Пока гейт закрыт, YIN не запускаем: порог тишины = порог гейта
       const pitch = detectPitch(timeBuffer, getSampleRate(), {
         minFrequency: GUITAR_MIN_FREQUENCY,
         maxFrequency: GUITAR_MAX_FREQUENCY,
@@ -218,7 +191,6 @@ export function useAudioAnalyzer({
         });
       }
     } else {
-      // Debounce: сбрасываем hold только после нескольких подряд промахов
       missFramesRef.current += 1;
       if (missFramesRef.current >= MISS_FRAMES_TO_RESET) {
         holdStartRef.current = null;

@@ -1,10 +1,6 @@
-/**
- * modules/users/users.controller.js
- */
 const usersService = require('./users.service');
 
 class UsersController {
-  /** GET /api/users/students — учитель получает своих студентов */
   async getMyStudents(req, res, next) {
     try {
       const students = await usersService.getMyStudents(req.user.id);
@@ -12,7 +8,6 @@ class UsersController {
     } catch (e) { next(e); }
   }
 
-  /** POST /api/users/students — привязать студента { email } */
   async addStudent(req, res, next) {
     try {
       const { email } = req.body;
@@ -22,7 +17,6 @@ class UsersController {
     } catch (e) { next(e); }
   }
 
-  /** DELETE /api/users/students/:studentId */
   async removeStudent(req, res, next) {
     try {
       const result = await usersService.removeStudent(req.user.id, req.params.studentId);
@@ -30,7 +24,6 @@ class UsersController {
     } catch (e) { next(e); }
   }
 
-  /** GET /api/users/dashboard — студент получает свой дашборд */
   async getStudentDashboard(req, res, next) {
     try {
       const data = await usersService.getStudentDashboard(req.user.id);

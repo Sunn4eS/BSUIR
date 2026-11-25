@@ -1,12 +1,3 @@
-/**
- * components/Cards/ComboFingeringCard.jsx
- * Комбинированная карточка COMBO_FINGERING:
- *   фаза 1 — собери аппликатуру аккорда на грифе;
- *   фаза 2 — сыграй её (микрофон).
- *
- * Ответ отправляется после обеих фаз: собрать верно + сыграть верно.
- */
-
 import { useCallback, useState } from 'react';
 import Fretboard from './Fretboard';
 import ChordPlayChallenge from './ChordPlayChallenge';
@@ -24,7 +15,6 @@ export default function ComboFingeringCard({ card, onAnswer, readOnly = false })
   const shape = chord ? CHORD_SHAPES[chord] : null;
   const targetPositions = shape ? positionsFromShape(shape) : [];
 
-  // build | play | done
   const [phase, setPhase] = useState('build');
   const [buildPositions, setBuildPositions] = useState([]);
   const [buildCorrect, setBuildCorrect] = useState(false);
@@ -44,8 +34,6 @@ export default function ComboFingeringCard({ card, onAnswer, readOnly = false })
     const isCorrect = builtCorrect;
     setBuildCorrect(isCorrect);
     setPhase(isCorrect ? 'play' : 'play');
-    // Неправильная сборка не блокирует вторую фазу — пусть попробует
-    // сыграть так, как собрал, и узнает результат в конце.
   }, [builtCorrect, readOnly]);
 
   const handlePlayed = useCallback(
@@ -83,7 +71,6 @@ export default function ComboFingeringCard({ card, onAnswer, readOnly = false })
           'Сначала собери аппликатуру аккорда, затем сыграй её по струне за струной'}
       </p>
 
-      {/* Степпер фаз */}
       <div className="combo-steps">
         <span className={`combo-step ${phase !== 'build' ? 'is-done' : 'is-active'}`}>
           1 · Собрать

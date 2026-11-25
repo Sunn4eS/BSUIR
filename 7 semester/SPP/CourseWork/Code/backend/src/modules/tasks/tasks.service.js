@@ -1,7 +1,3 @@
-/**
- * modules/tasks/tasks.service.js — CRUD заданий + результаты
- */
-
 const { prisma } = require('../../config/database');
 const { AppError } = require('../../middleware/errorHandler');
 
@@ -34,7 +30,6 @@ function pickEditable(data = {}) {
   }, {});
 }
 
-/** Нормализует варианты ответа в массив строк */
 function normalizeOptions(value) {
   if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
   if (typeof value === 'string') {
@@ -46,7 +41,6 @@ function normalizeOptions(value) {
   return [];
 }
 
-/** Проверяет обязательные поля задания */
 function validateTask(type, payload) {
   if (!type || !VALID_TASK_TYPES.includes(type)) {
     throw new AppError('Некорректный тип задания', 400);
@@ -96,7 +90,6 @@ function validateTask(type, payload) {
 }
 
 class TasksService {
-  /** Создать задание в курсе */
   async createTask(courseId, teacherId, data = {}) {
     const course = await prisma.course.findUnique({ where: { id: courseId } });
     if (!course) throw new AppError('Курс не найден', 404);
@@ -109,7 +102,6 @@ class TasksService {
       ? Number(data.toleranceCents)
       : 20;
 
-    // Режим аппликатуры актуален только для FINGERING_TEST
     payload.fingeringMode =
       data.type === 'FINGERING_TEST' && VALID_FINGERING_MODES.includes(data.fingeringMode)
         ? data.fingeringMode
@@ -138,7 +130,6 @@ class TasksService {
     });
   }
 
-  /** Обновить задание */
   async updateTask(taskId, teacherId, data = {}) {
     const task = await prisma.task.findUnique({
       where: { id: taskId },
@@ -166,7 +157,6 @@ class TasksService {
     return prisma.task.update({ where: { id: taskId }, data: payload });
   }
 
-  /** Удалить задание */
   async deleteTask(taskId, teacherId) {
     const task = await prisma.task.findUnique({
       where: { id: taskId },
@@ -179,7 +169,6 @@ class TasksService {
     return { message: 'Задание удалено' };
   }
 
-  /** Получить все шаблонные задания учителя */
   async getTemplates(teacherId) {
     return prisma.task.findMany({
       where: {
@@ -191,9 +180,6 @@ class TasksService {
     });
   }
 
-  /**
-   * Сохранить результат выполнения задания студентом
-   */
   async submitTaskResult(studentId, taskId, { status, answer, reactionMs, liveSessionId }) {
     const task = await prisma.task.findUnique({
       where: { id: taskId },
@@ -242,7 +228,6 @@ class TasksService {
     return result;
   }
 
-  /** Пересчитать прогресс ученика по курсу (процент верных заданий) */
   async updateCourseProgress(studentId, courseId) {
     const [total, correct] = await Promise.all([
       prisma.task.count({ where: { courseId } }),
@@ -264,7 +249,6 @@ class TasksService {
     });
   }
 
-  /** Получить результаты студента по курсу */
   async getStudentResults(studentId, courseId) {
     return prisma.taskResult.findMany({
       where: {

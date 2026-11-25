@@ -1,12 +1,6 @@
-/**
- * modules/courses/courses.controller.js
- * Контроллер только принимает/валидирует HTTP-слой,
- * вся бизнес-логика — в courses.service.js
- */
 const coursesService = require('./courses.service');
 const { AppError }    = require('../../middleware/errorHandler');
 
-/** Поля, которые учитель может передать при создании курса */
 const CREATABLE_FIELDS = ['title', 'description', 'status'];
 
 function pickFields(body = {}, fields) {
@@ -34,11 +28,6 @@ class CoursesController {
     } catch (e) { next(e); }
   }
 
-  /**
-   * POST /api/courses — создать курс
-   * Body: { title, description?, status?: 'draft' | 'published' }
-   * Курс всегда привязывается к авторизованному учителю (req.user.id)
-   */
   async createCourse(req, res, next) {
     try {
       if (!req.user?.id) {
@@ -108,8 +97,6 @@ class CoursesController {
     } catch (e) { next(e); }
   }
 
-  // ── Ученик: доступные курсы и заявки ───────────────────────
-
   async getAvailableCourses(req, res, next) {
     try {
       const courses = await coursesService.getAvailableCourses(req.user.id);
@@ -139,8 +126,6 @@ class CoursesController {
       res.json({ requests });
     } catch (e) { next(e); }
   }
-
-  // ── Учитель: заявки и студенты курса ───────────────────────
 
   async getJoinRequests(req, res, next) {
     try {

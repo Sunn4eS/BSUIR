@@ -1,11 +1,3 @@
-/**
- * modules/auth/auth.router.js — маршруты авторизации
- *
- * POST /api/auth/register  — регистрация
- * POST /api/auth/login     — вход
- * GET  /api/auth/me        — текущий пользователь (защищённый)
- */
-
 const { Router } = require('express');
 const authController = require('./auth.controller');
 const { authenticate } = require('../../middleware/authenticate');

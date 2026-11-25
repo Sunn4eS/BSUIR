@@ -1,15 +1,3 @@
-/**
- * components/Live/LessonTaskList.jsx
- * Список заданий Live-урока для ученика: степпер «Задание N из M»,
- * статусы («Ожидание» / «В процессе» / «Выполнено») и прогресс.
- *
- * Любое задание можно выбрать кликом — так ученик возвращается
- * к предыдущим карточкам, не дожидаясь новой от учителя.
- *
- * Данные приходят из task_history (join_room) и обновляются вживую
- * через Socket.io (new_task_card / card_status_updated / my_task_result).
- */
-
 const STATUS_LABELS = {
   PENDING: 'Ожидание',
   IN_PROGRESS: 'В процессе',
@@ -51,8 +39,6 @@ export default function LessonTaskList({
     (task) => task.status === 'PENDING' || task.status === 'IN_PROGRESS'
   );
 
-  // «Задание N из M»: активная карточка, иначе первая незавершённая,
-  // иначе (всё сделано) — последняя
   const displayIndex =
     currentIdx >= 0
       ? currentIdx + 1

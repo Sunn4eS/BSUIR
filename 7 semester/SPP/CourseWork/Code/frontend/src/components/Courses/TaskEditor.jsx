@@ -1,9 +1,3 @@
-/**
- * components/Courses/TaskEditor.jsx
- * Модальное окно создания/редактирования задания.
- * Поддерживает все 5 типов карточек, включая аппликатуру.
- */
-
 import { useEffect, useMemo, useState } from 'react';
 import {
   MAJOR_CHORD_NAMES,
@@ -75,7 +69,6 @@ export default function TaskEditor({ open, task, onClose, onSave, isSaving }) {
 
   const fingeringChord = normalizeChordName(form.expectedNote) || '';
 
-  // Варианты для FINGERING_TEST генерируются автоматически: 4 аккорда
   const fingeringOptions = useMemo(
     () => (fingeringChord ? buildAnswerOptions(fingeringChord, 4) : []),
     [fingeringChord]
@@ -164,7 +157,6 @@ export default function TaskEditor({ open, task, onClose, onSave, isSaving }) {
       return;
     }
 
-    // PLAY_FINGERING / COMBO_FINGERING
     onSave({
       ...base,
       audioContent: null,

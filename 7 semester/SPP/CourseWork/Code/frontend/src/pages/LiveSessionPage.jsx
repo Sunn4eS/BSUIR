@@ -1,17 +1,3 @@
-/**
- * pages/LiveSessionPage.jsx — Live-урок учитель ↔ ученик
- *
- * Учитель:
- *   - создаёт сессию для выбранного ученика;
- *   - отправляет карточки из быстрого конструктора или библиотеки;
- *   - видит статусы выполнения в реальном времени.
- *
- * Ученик:
- *   - автоматически попадает в комнату по приглашению;
- *   - видит «Ожидание задания от учителя…»;
- *   - получает карточку и отвечает на неё.
- */
-
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
@@ -73,24 +59,19 @@ export default function LiveSessionPage() {
   const [students, setStudents] = useState([]);
   const [studentOnline, setStudentOnline] = useState(false);
 
-  // Ученик
   const [currentCard, setCurrentCard] = useState(null);
   const [selectedCardId, setSelectedCardId] = useState(null);
   const [myResults, setMyResults] = useState({});
   const [studentCards, setStudentCards] = useState([]);
 
-  // Учитель
   const [sentCards, setSentCards] = useState([]);
   const [cardStatuses, setCardStatuses] = useState({});
 
   const createdSessionRef = useRef(false);
   const joinedRoomRef = useRef(null);
 
-  // ── Вспомогательные действия ──────────────────────────────
   const joinRoom = useCallback((code) => {
     if (!code || joinedRoomRef.current === code) return;
-    // Перед входом в новую комнату выходим из предыдущей,
-    // чтобы сокет не оставался в двух session-комнатах сразу
     if (joinedRoomRef.current) {
       emit('leave_room', { roomCode: joinedRoomRef.current });
     }
@@ -120,7 +101,6 @@ export default function LiveSessionPage() {
     });
   }, [emit]);
 
-  // ── Загрузка списка учеников (если учитель открыл /live без studentId) ──
   useEffect(() => {
     if (role !== 'TEACHER' || studentIdParam) return;
 
@@ -129,7 +109,6 @@ export default function LiveSessionPage() {
       .catch(() => {});
   }, [role, studentIdParam]);
 
-  // ── Socket listeners ──────────────────────────────────────
   useEffect(() => {
     if (!isConnected) return undefined;
 
@@ -169,9 +148,6 @@ export default function LiveSessionPage() {
       toast.success('Задание отправлено ученику');
     };
 
-    // История карточек приходит при входе в комнату (join_room):
-    // учитель восстанавливает список отправленных заданий,
-    // ученик — прогресс урока после перезагрузки страницы
     const onTaskHistory = ({ cards = [] }) => {
       if (role === 'TEACHER') {
         setSentCards([...cards].reverse());
@@ -194,8 +170,6 @@ export default function LiveSessionPage() {
     };
 
     const onTaskResult = ({ cardId, isCorrect }) => {
-      // Этот тост предназначен учителю; ученик получает обратную связь
-      // в самой карточке через my_task_result.
       if (role !== 'TEACHER') return;
 
       setCardStatuses((prev) => ({ ...prev, [cardId]: isCorrect ? 'CORRECT' : 'INCORRECT' }));
@@ -263,25 +237,18 @@ export default function LiveSessionPage() {
     };
   }, [isConnected, role, on, off, emit, joinRoom]);
 
-  // ── Авто-вход в комнату ───────────────────────────────────
   useEffect(() => {
     if (!isConnected) return;
 
     if (roomCodeParam) joinRoom(roomCodeParam);
 
     if (role === 'TEACHER' && studentIdParam) createSession();
-    // Приглашения и активные сессии обрабатывает LiveInvitationWatcher
-    // в App.jsx — он показывает модалку, а не тянет ученика на страницу.
   }, [isConnected, roomCodeParam, studentIdParam, role, joinRoom, createSession]);
 
-  // ── Завершение урока (учитель) ────────────────────────────
   const handleEndSession = () => {
     emit('end_session');
   };
 
-  // ── Список заданий урока для ученика (п.4) ────────────────
-  // Источник: task_history + новые карточки; статусы обновляются
-  // через card_status_updated и my_task_result
   const lessonTasks = useMemo(
     () =>
       studentCards.map((card) => {
@@ -301,7 +268,6 @@ export default function LiveSessionPage() {
     [studentCards, cardStatuses, myResults]
   );
 
-  // ── Выбор задания: ученик может вернуться к предыдущим карточкам ──
   const selectedCard = useMemo(
     () => studentCards.find((card) => card.id === selectedCardId) || null,
     [studentCards, selectedCardId]
@@ -313,7 +279,6 @@ export default function LiveSessionPage() {
     return task?.status || null;
   }, [selectedCard, lessonTasks]);
 
-  // Завершённые задания открываются только для просмотра
   const isSelectedReadOnly =
     selectedTaskStatus === 'CORRECT' || selectedTaskStatus === 'SKIPPED';
 
@@ -322,15 +287,12 @@ export default function LiveSessionPage() {
     setSelectedCardId(cardId);
   }, []);
 
-  // ── Выход из урока (ученик/учитель) ───────────────────────
-  // Покидает комнату на сервере и возвращает на дашборд.
   const handleExit = useCallback(() => {
     if (joinedRoomRef.current) {
       emit('leave_room', { roomCode: joinedRoomRef.current });
       joinedRoomRef.current = null;
     }
 
-    // Ученик, ушедший с урока, не должен быть тут же приглашён обратно
     if (role === 'STUDENT' && session?.id) {
       markDeclined(session.id);
     }
@@ -338,7 +300,6 @@ export default function LiveSessionPage() {
     navigate('/dashboard', { replace: true });
   }, [emit, role, session, navigate]);
 
-  // ── Выбор ученика (учитель без studentId) ─────────────────
   if (role === 'TEACHER' && !studentIdParam && !roomCodeParam) {
     return (
       <div className="live-page">
@@ -513,7 +474,6 @@ export default function LiveSessionPage() {
   );
 }
 
-/** Верхняя панель Live-страницы */
 function LiveHeader({ isConnected, roomCode, role, isInRoom, onExit, onEnd }) {
   const studentInRoom = role === 'STUDENT' && isInRoom;
 
@@ -550,7 +510,6 @@ function LiveHeader({ isConnected, roomCode, role, isInRoom, onExit, onEnd }) {
   );
 }
 
-/** Ручной ввод кода комнаты */
 function JoinRoomForm({ onJoin }) {
   const [code, setCode] = useState('');
 

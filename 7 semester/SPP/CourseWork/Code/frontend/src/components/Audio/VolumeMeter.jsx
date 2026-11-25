@@ -1,7 +1,3 @@
-/**
- * components/Audio/VolumeMeter.jsx — визуальный индикатор уровня микрофона
- */
-
 import { useEffect, useRef, useState } from 'react';
 import { getLevel } from '../../audio/audioEngine';
 
@@ -17,7 +13,6 @@ export default function VolumeMeter({ active = true, bars = 18 }) {
     }
 
     const loop = (timestamp) => {
-      // Обновляем состояние не чаще 20 раз в секунду
       if (timestamp - lastUpdateRef.current > 50) {
         setLevel(getLevel());
         lastUpdateRef.current = timestamp;

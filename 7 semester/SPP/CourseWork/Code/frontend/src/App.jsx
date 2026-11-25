@@ -1,7 +1,3 @@
-/**
- * App.jsx — корневой компонент с маршрутизацией
- */
-
 import { useCallback, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -19,8 +15,6 @@ import CourseEditorPage from './pages/CourseEditorPage';
 function ProtectedRoute({ children }) {
   const { token, user, isCheckingAuth } = useAuthStore();
 
-  // Пока идёт проверка токена на сервере — не редиректим вовсе,
-  // показываем скелетон (раньше отсюда летели ложные /login)
   if (isCheckingAuth) return <AuthSkeleton />;
   if (!token || !user) return <Navigate to="/login" replace />;
   return children;
@@ -35,14 +29,11 @@ function DashboardRoute() {
 
 function PublicRoute({ children }) {
   const { token, user, isCheckingAuth } = useAuthStore();
-  // Не отправляем на /dashboard, пока не убедились, что токен жив:
-  // устаревший токен из persist раньше давал цикл Dashboard ↔ Login
   if (isCheckingAuth) return <AuthSkeleton />;
   if (token && user) return <Navigate to="/dashboard" replace />;
   return children;
 }
 
-/** Скелетон проверки авторизации — вместо «прыжка» между страницами */
 function AuthSkeleton() {
   return (
     <div className="auth-check-skeleton">
@@ -52,17 +43,6 @@ function AuthSkeleton() {
   );
 }
 
-/**
- * Глобальный обработчик приглашений в Live-урок (Socket.io).
- *
- * Раньше ученика автоматически перебрасывало на /live при любом активном
- * уроке — экран «застревал». Теперь:
- *  - приглашение показывается модалкой, навигация только по кнопке;
- *  - «Отклонить» шлёт leave_room, сбрасывает стейт и ведёт на дашборд;
- *  - все слушатели снимаются в cleanup-функции useEffect (socket.off);
- *  - отклонённая сессия не предлагается повторно, пока учитель
- *    не создаст новую.
- */
 function LiveInvitationWatcher() {
   const { user } = useAuthStore();
   const { on, off, emit, isConnected } = useSocket();
@@ -101,31 +81,22 @@ function LiveInvitationWatcher() {
     on('session_invited', onInvited);
     on('active_session', onActiveSession);
 
-    // На случай перезагрузки страницы — спрашиваем активный урок один раз
     emit('get_active_session');
 
-    // Обязательная очистка слушателей при размонтировании/смене зависимостей
     return () => {
       off('session_invited', onInvited);
       off('active_session', onActiveSession);
     };
   }, [isConnected, user?.role, on, off, emit, location.pathname, location.search]);
 
-  /** Принять приглашение: войти в комнату урока */
   const handleAccept = useCallback(() => {
     if (!invite?.roomCode) return;
     const { roomCode, sessionId } = invite;
     setInvite(null);
-    if (sessionId) markDeclined(sessionId); // чтобы «Выйти» позже не зациклил приглашение
+    if (sessionId) markDeclined(sessionId);
     navigate(`/live?room=${roomCode}`);
   }, [invite, navigate]);
 
-  /**
-   * Отклонить приглашение:
-   *  а) покидаем комнату на сервере и закрываем модалку;
-   *  б) сбрасываем стейт приглашения;
-   *  в) уходим на главную страницу ученика через роутер.
-   */
   const handleDecline = useCallback(() => {
     if (!invite) return;
     const { roomCode, sessionId } = invite;
@@ -180,8 +151,6 @@ function LiveInvitationWatcher() {
 }
 
 export default function App() {
-  // Проверяем сохранённый токен один раз при старте приложения.
-  // До ответа сервера маршруты стоят на скелетоне — без редиректов.
   const checkAuth = useAuthStore((state) => state.checkAuth);
 
   useEffect(() => {

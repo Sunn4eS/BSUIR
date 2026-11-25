@@ -1,11 +1,3 @@
-/**
- * components/Live/StudentLivePanel.jsx
- * Экран ученика в Live-комнате: список заданий урока, ожидание и карточка.
- *
- * Ученик может выбрать любое задание из списка (в том числе предыдущее).
- * Завершённые карточки открываются в режиме просмотра (readOnly).
- */
-
 import TaskCard from '../Cards/TaskCard';
 import LessonTaskList from './LessonTaskList';
 
@@ -56,7 +48,6 @@ export default function StudentLivePanel({
         </div>
       </div>
 
-      {/* Прогресс урока: «Задание N из M» + статусы, задания кликабельны */}
       <LessonTaskList
         tasks={lessonTasks}
         currentCardId={currentCardId}

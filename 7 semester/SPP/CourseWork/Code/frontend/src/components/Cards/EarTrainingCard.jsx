@@ -1,8 +1,3 @@
-/**
- * components/Cards/EarTrainingCard.jsx
- * Карточка EAR_TRAINING: играем реальный гитарный семпл, ученик выбирает ответ.
- */
-
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { playNote, playExpected, stopAllSounds } from '../../audio/guitarSampler';
 import { useAudioSession } from '../../hooks/useAudioSession';
@@ -28,8 +23,6 @@ export default function EarTrainingCard({ card, onAnswer, readOnly = false }) {
 
   const target = data.correctAnswer || data.expectedNote || 'A';
 
-  // Если все варианты — одиночные ноты (A, B, C…), играем ноту,
-  // а не аккорд с таким же названием.
   const isNoteMode = options.length > 0
     && options.every((option) => /^[A-G][#b]?$/.test(String(option).trim()));
 
@@ -45,7 +38,6 @@ export default function EarTrainingCard({ card, onAnswer, readOnly = false }) {
     setIsPlaying(true);
 
     try {
-      // AudioContext возобновляется строго внутри клика
       const audioOk = await ensureAudioReady();
       if (!audioOk) throw new Error('Аудио недоступно');
 
@@ -60,7 +52,6 @@ export default function EarTrainingCard({ card, onAnswer, readOnly = false }) {
     } catch (err) {
       setPlayError(`Не удалось воспроизвести звук: ${err.message}`);
     } finally {
-      // Даём семплу отзвучать, но не блокируем кнопку навсегда
       if (playTimerRef.current) clearTimeout(playTimerRef.current);
       playTimerRef.current = setTimeout(() => setIsPlaying(false), 900);
     }

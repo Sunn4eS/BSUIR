@@ -1,14 +1,6 @@
 version: "3.9"
 
-# =============================================================
-# Guitar Trainer — Docker Compose
-# Сервисы: postgres, backend (Express), frontend (React/Vite)
-# =============================================================
-
 services:
-  # ─────────────────────────────────────────────────────────
-  # PostgreSQL — основная база данных
-  # ─────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     container_name: guitar_trainer_db
@@ -19,7 +11,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-guitar_trainer}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Инициализационные SQL-скрипты (если нужны seed данные)
       - ./database/init:/docker-entrypoint-initdb.d
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -31,14 +22,11 @@ services:
     networks:
       - guitar_net
 
-  # ─────────────────────────────────────────────────────────
-  # Backend — Node.js + Express + Prisma + Socket.io
-  # ─────────────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      target: development        # production — для прод-сборки
+      target: development
     container_name: guitar_trainer_backend
     restart: unless-stopped
     environment:
@@ -49,20 +37,16 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
     volumes:
-      # Hot-reload в dev-режиме: монтируем исходники
       - ./backend:/app
-      - /app/node_modules         # анонимный том — изолируем node_modules
+      - /app/node_modules
     ports:
       - "${BACKEND_PORT:-4000}:4000"
     depends_on:
       postgres:
-        condition: service_healthy  # ждём готовности БД
+        condition: service_healthy
     networks:
       - guitar_net
 
-  # ─────────────────────────────────────────────────────────
-  # Frontend — React + Vite (dev server)
-  # ─────────────────────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
@@ -83,9 +67,6 @@ services:
     networks:
       - guitar_net
 
-# ─────────────────────────────────────────────────────────
-# Volumes & Networks
-# ─────────────────────────────────────────────────────────
 volumes:
   postgres_data:
     driver: local

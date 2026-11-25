@@ -1,8 +1,3 @@
-/**
- * components/Live/TeacherLivePanel.jsx
- * Панель учителя: быстрый конструктор + библиотека курса.
- */
-
 import { useState } from 'react';
 import QuickTaskBuilder from './QuickTaskBuilder';
 import CourseTaskLibrary from './CourseTaskLibrary';

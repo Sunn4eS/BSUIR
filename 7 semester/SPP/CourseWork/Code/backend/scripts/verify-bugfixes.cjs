@@ -1,11 +1,3 @@
-/**
- * scripts/verify-bugfixes.cjs — локальная проверка исправлений багов
- * 1) roles middleware: регистронезависимая проверка роли
- * 2) jwt.generateToken: role всегда в payload и в верхнем регистре
- * 3) createCourse: приём status 'draft'/'published' (мокну Prisma)
- * Запуск: node scripts/verify-bugfixes.cjs (из папки backend)
- */
-
 const assert = require('assert');
 const { generateToken } = require('../src/config/jwt');
 const { requireTeacher, requireStudent } = require('../src/middleware/roles');
@@ -22,7 +14,6 @@ function check(name, fn) {
   }
 }
 
-// ── 1. Роли без учёта регистра ─────────────────────────────────
 function makeReqResNext(role) {
   const req = { user: role === undefined ? null : { id: 'u1', role } };
   const calls = { next: null, status: null };
@@ -70,7 +61,6 @@ check('requireStudent пропускает "student"', () => {
   assert.strictEqual(calls.next, 'ok');
 });
 
-// ── 2. JWT: role в payload ────────────────────────────────────
 const jwt = require('jsonwebtoken');
 const SECRET = process.env.JWT_SECRET || 'dev_secret_change_in_prod';
 
@@ -90,8 +80,6 @@ check('generateToken бросает ошибку с мусорной ролью'
   assert.throws(() => generateToken({ id: 'u1', email: 't@x.com', role: 'admin' }), /роль/);
 });
 
-// ── 3. createCourse: приём status ─────────────────────────────
-// Подменяем prisma-клиент моком до загрузки сервиса
 const created = [];
 const prismaStub = {
   course: {

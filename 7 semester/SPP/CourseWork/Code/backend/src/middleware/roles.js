@@ -1,23 +1,10 @@
-/**
- * middleware/roles.js — ролевые guard-ы
- * Используются ПОСЛЕ middleware authenticate
- * Пример использования:
- *   router.post('/course', authenticate, requireTeacher, createCourse)
- */
-
 const { AppError } = require('./errorHandler');
 
-/**
- * Нормализует роль для сравнения (без учёта регистра)
- */
 function normalizeRole(role) {
   if (!role || typeof role !== 'string') return '';
   return role.trim().toUpperCase();
 }
 
-/**
- * Разрешает доступ только пользователям с ролью TEACHER
- */
 function requireTeacher(req, _res, next) {
   const role = normalizeRole(req.user?.role);
   if (role !== 'TEACHER') {
@@ -26,9 +13,6 @@ function requireTeacher(req, _res, next) {
   next();
 }
 
-/**
- * Разрешает доступ только пользователям с ролью STUDENT
- */
 function requireStudent(req, _res, next) {
   const role = normalizeRole(req.user?.role);
   if (role !== 'STUDENT') {
@@ -37,10 +21,6 @@ function requireStudent(req, _res, next) {
   next();
 }
 
-/**
- * Разрешает доступ любому аутентифицированному пользователю
- * (использовать вместе с authenticate, не вместо)
- */
 function requireAnyRole(req, _res, next) {
   if (!req.user) {
     return next(new AppError('Аутентификация обязательна', 401));

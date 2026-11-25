@@ -1,14 +1,3 @@
-/**
- * audio/guitarSampler.js — воспроизведение реальных гитарных семплов
- *
- * Используется Tone.Sampler с сэмплами акустической гитары.
- * Сэмплы лежат в public/samples/guitar (E2, A2, D3, G3, B3, E4),
- * остальные ноты Sampler получает питч-шифтом от ближайшего сэмпла.
- *
- * Аккорды играются «чёсом»: струны щиплются одна за другой
- * со смещением 25 мс — как на настоящей гитаре.
- */
-
 import * as Tone from 'tone';
 import { ensureAudio } from './audioEngine';
 import { CHORD_VOICINGS } from './chords';
@@ -22,10 +11,6 @@ let sampler = null;
 let loadPromise = null;
 let loadError = null;
 
-/**
- * Ленивая загрузка сэмплера.
- * Вызывать после ensureAudio() внутри пользовательского жеста.
- */
 export async function initGuitarSampler() {
   await ensureAudio();
 
@@ -59,7 +44,6 @@ export async function initGuitarSampler() {
   return loadPromise;
 }
 
-/** Синхронный доступ к загруженному сэмплеру (или null) */
 export function getGuitarSampler() {
   return sampler;
 }
@@ -75,7 +59,6 @@ export function getSamplerError() {
 function getVoicing(chordName) {
   if (CHORD_VOICINGS[chordName]) return CHORD_VOICINGS[chordName];
 
-  // Фолбэк: строим трезвучие от корня в 3-й октаве
   const parsed = parseChordName(chordName);
   if (!parsed) return null;
 
@@ -101,10 +84,6 @@ function getVoicing(chordName) {
   });
 }
 
-/**
- * «Чёс»: щипки струн одна за другой со смещением strumMs.
- * Ноты передаются от низкой струны к высокой.
- */
 export function strumSamplerNotes(
   samplerInstance,
   notes,
@@ -125,13 +104,11 @@ export function strumSamplerNotes(
   });
 }
 
-/** Проиграть одну ноту: "E4", "A2" */
 export async function playNote(note, duration = '2n', velocity = 0.8) {
   const s = await initGuitarSampler();
   s.triggerAttackRelease(note, duration, Tone.now(), velocity);
 }
 
-/** Проиграть аккорд «чёсом»: "Am", "C", "G", "F#m" */
 export async function playChord(chordName, duration = '2n', velocity = 0.8) {
   const s = await initGuitarSampler();
 
@@ -145,7 +122,6 @@ export async function playChord(chordName, duration = '2n', velocity = 0.8) {
   strumSamplerNotes(s, notes, { strumMs: 25, duration, velocity, direction: 'down' });
 }
 
-/** Проиграть ноту или аккорд по строке */
 export async function playExpected(value, duration = '2n', velocity = 0.8) {
   if (!value) return;
 
@@ -156,7 +132,6 @@ export async function playExpected(value, duration = '2n', velocity = 0.8) {
   return playNote(value, duration, velocity);
 }
 
-/** Остановить все звучащие ноты */
 export function stopAllSounds() {
   sampler?.releaseAll();
 }

@@ -1,21 +1,3 @@
-/**
- * frontend/src/components/LiveLesson/LiveLessonStudent.jsx
- *
- * Интерактивный Live-урок для ученика:
- * 1. Двусторонняя синхронизация по Socket.io:
- *    - `lesson:init_state` — восстановление состояния урока (список заданий, индексы, статусы)
- *    - `lesson:set_task` — учитель переключает активное задание для класса
- *    - `lesson:student_navigate` — ученик локально переключается между доступными заданиями
- *    - `lesson:task_completed` — отправка результата (детекция микрофона/слух/гриф) в реальном времени
- * 2. Верхняя панель и степпер:
- *    - Прогресс: «Задание N из M» + индикатор статусов
- *    - Кнопки навигации `[< Назад]` и `[Вперед >]`
- *    - Кнопка мгновенного возврата «К текущему заданию учителя»
- * 3. Карточка задания:
- *    - Интерактивный тренажер в зависимости от типа задания
- *    - Возможность повторного просмотра пройденных карточек
- */
-
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import TaskCard from '../Cards/TaskCard';
 import { useSocket } from '../../hooks/useSocket';
@@ -45,36 +27,28 @@ export default function LiveLessonStudent({
 }) {
   const { on, off, emit, isConnected } = useSocket();
 
-  // Список всех карточек/заданий урока
   const [tasks, setTasks] = useState(initialTasks);
 
-  // Индекс задания, транслируемого преподавателем
   const [teacherTaskIndex, setTeacherTaskIndex] = useState(
     initialTasks.length > 0 ? initialTasks.length - 1 : 0
   );
 
-  // Локальный индекс задания, открытого учеником на экране (0 .. maxOpenedIndex)
   const [studentTaskIndex, setStudentTaskIndex] = useState(
     initialTasks.length > 0 ? initialTasks.length - 1 : 0
   );
 
-  // Максимальный индекс задания, открытого учителем (доступная глубина навигации вперед)
   const [maxOpenedIndex, setMaxOpenedIndex] = useState(
     initialTasks.length > 0 ? initialTasks.length - 1 : 0
   );
 
-  // Статусы карточек: { [cardId]: 'PENDING' | 'IN_PROGRESS' | 'CORRECT' | 'INCORRECT' }
   const [taskStatuses, setTaskStatuses] = useState({});
 
-  // Текущее отображаемое задание
   const currentTask = tasks[studentTaskIndex] || null;
   const isViewingTeacherTask = studentTaskIndex === teacherTaskIndex;
 
-  // ─── WebSocket слушатели ──────────────────────────────────────
   useEffect(() => {
     if (!isConnected) return;
 
-    // 1. Инициализация состояния урока
     const handleInitState = (payload) => {
       if (!payload) return;
       const loadedTasks = payload.tasks || [];
@@ -100,7 +74,6 @@ export default function LiveLessonStudent({
       }
     };
 
-    // 2. Учитель отправляет новое задание или переключает активное
     const handleSetTask = (payload) => {
       if (!payload) return;
 
@@ -112,7 +85,6 @@ export default function LiveLessonStudent({
           const newIdx = next.length - 1;
           setTeacherTaskIndex(newIdx);
           setMaxOpenedIndex((m) => Math.max(m, newIdx));
-          // Если ученик находился на предыдущем текущем задании — переключаем его на новое
           setStudentTaskIndex((currentIdx) =>
             currentIdx >= prev.length - 1 ? newIdx : currentIdx
           );
@@ -123,12 +95,10 @@ export default function LiveLessonStudent({
         const idx = Number(payload.currentTaskIndex);
         setTeacherTaskIndex(idx);
         setMaxOpenedIndex((m) => Math.max(m, idx));
-        // Автоматически следуем за учителем, если смотрим активное
         setStudentTaskIndex((cur) => (cur === teacherTaskIndex ? idx : cur));
       }
     };
 
-    // Также слушаем legacy new_task_card
     const handleNewTaskCard = ({ card }) => {
       if (!card) return;
       setTasks((prev) => {
@@ -144,7 +114,6 @@ export default function LiveLessonStudent({
       toast.success('Учитель отправил новое задание!');
     };
 
-    // 3. Обновление статуса задания в реальном времени
     const handleTaskCompleted = (result) => {
       if (!result?.cardId) return;
       setTaskStatuses((prev) => ({
@@ -179,12 +148,6 @@ export default function LiveLessonStudent({
     };
   }, [isConnected, on, off, teacherTaskIndex]);
 
-  // ─── Синхронизация с историей карточек из LiveSessionPage ─────
-  // lesson:init_state может прийти раньше, чем смонтируется этот
-  // компонент (сразу после room_joined), поэтому историю заданий
-  // подмешиваем из initialTasks. Без этого ученик, вошедший в
-  // комнату посреди урока, не видел предыдущих заданий и не мог
-  // вернуться к ним.
   useEffect(() => {
     if (!initialTasks?.length) return;
 
@@ -217,7 +180,6 @@ export default function LiveLessonStudent({
 
     setMaxOpenedIndex((m) => Math.max(m, initialTasks.length - 1));
 
-    // Если до этого заданий не было — открываем первое незавершённое
     setStudentTaskIndex((idx) => {
       if (idx > 0) return idx;
       const firstUnfinished = initialTasks.findIndex(
@@ -227,7 +189,6 @@ export default function LiveLessonStudent({
     });
   }, [initialTasks]);
 
-  // ─── Навигация по степперу ────────────────────────────────────
   const canGoBack = studentTaskIndex > 0;
   const canGoForward = studentTaskIndex < Math.min(tasks.length - 1, maxOpenedIndex);
 
@@ -262,21 +223,18 @@ export default function LiveLessonStudent({
     [maxOpenedIndex, tasks.length, emit]
   );
 
-  // ─── Обработка ответа ученика ─────────────────────────────────
   const handleAnswerSubmit = useCallback(
     (result) => {
       if (!currentTask) return;
       const isCorrect = Boolean(result?.isCorrect || result?.correct);
       const cardId = currentTask.id;
 
-      // Оптимистично фиксируем результат
       const newStatus = isCorrect ? 'CORRECT' : 'INCORRECT';
       setTaskStatuses((prev) => ({
         ...prev,
         [cardId]: newStatus,
       }));
 
-      // Отправляем на сервер по WebSocket
       emit('lesson:task_completed', {
         cardId,
         taskId: currentTask.taskId || currentTask.task?.id,
@@ -285,7 +243,6 @@ export default function LiveLessonStudent({
         reactionMs: result?.reactionMs,
       });
 
-      // Также отправляем legacy событие task_answer
       emit('task_answer', {
         cardId,
         answer: result?.answer ?? (isCorrect ? 'correct' : 'incorrect'),
@@ -301,14 +258,12 @@ export default function LiveLessonStudent({
     [currentTask, emit]
   );
 
-  // Текущий статус карточки
   const currentCardStatus = currentTask
     ? taskStatuses[currentTask.id] || currentTask.status || 'PENDING'
     : 'PENDING';
 
   return (
     <div className="live-lesson-student" style={{ maxWidth: '860px', margin: '0 auto', padding: '16px' }}>
-      {/* ── Верхняя плашка комнаты ── */}
       <header
         style={{
           display: 'flex',
@@ -371,7 +326,6 @@ export default function LiveLessonStudent({
         </div>
       </header>
 
-      {/* ── Степпер и навигация по карточкам ── */}
       <section
         style={{
           backgroundColor: '#FFFFFF',
@@ -382,7 +336,6 @@ export default function LiveLessonStudent({
           marginBottom: '24px',
         }}
       >
-        {/* Индикатор прогресса и кнопки управления */}
         <div
           style={{
             display: 'flex',
@@ -440,7 +393,6 @@ export default function LiveLessonStudent({
             )}
           </div>
 
-          {/* Кнопки переключения вперед/назад и возврат к учителю */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               onClick={handlePrevTask}
@@ -497,7 +449,6 @@ export default function LiveLessonStudent({
           </div>
         </div>
 
-        {/* Интерактивный таймлайн/степпер заданий */}
         {tasks.length > 0 && (
           <div
             style={{
@@ -551,7 +502,6 @@ export default function LiveLessonStudent({
         )}
       </section>
 
-      {/* ── Область активного тренажера ── */}
       <main
         style={{
           backgroundColor: '#FFFFFF',
@@ -609,7 +559,6 @@ export default function LiveLessonStudent({
               </div>
             )}
 
-            {/* Рендер интерактивной карточки задания */}
             <TaskCard
               card={currentTask}
               onAnswer={handleAnswerSubmit}

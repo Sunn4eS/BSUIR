@@ -1,18 +1,10 @@
-/**
- * components/Cards/PlayPracticeCard.jsx
- * Карточка PLAY_PRACTICE: слушаем микрофон и проверяем ноту или аккорд.
- *
- * Перед началом — обязательный Mic Check.
- * onAnswer вызывается ровно один раз (защита в useAudioAnalyzer).
- */
-
 import { useCallback, useEffect, useState } from 'react';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
 import { useAudioSession } from '../../hooks/useAudioSession';
 import MicCheckModal from '../Audio/MicCheckModal';
 
 export default function PlayPracticeCard({ card, onAnswer, readOnly = false }) {
-  const [phase, setPhase] = useState('idle'); // idle | listening | success
+  const [phase, setPhase] = useState('idle');
   const [startTime] = useState(() => Date.now());
   const [showMicCheck, setShowMicCheck] = useState(false);
 
@@ -31,7 +23,7 @@ export default function PlayPracticeCard({ card, onAnswer, readOnly = false }) {
       reactionMs: Date.now() - startTime,
       ...payload,
     });
-  }, [startTime, onAnswer]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [startTime, onAnswer]);
 
   const {
     isListening,
@@ -52,7 +44,6 @@ export default function PlayPracticeCard({ card, onAnswer, readOnly = false }) {
     holdMs: 700,
   });
 
-  // Останавливаем анализ при размонтировании карточки
   useEffect(() => () => stopListening(), [stopListening]);
 
   const beginListening = useCallback(() => {

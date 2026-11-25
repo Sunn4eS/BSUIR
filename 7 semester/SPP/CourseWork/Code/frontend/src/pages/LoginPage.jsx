@@ -1,7 +1,3 @@
-/**
- * pages/LoginPage.jsx
- */
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
@@ -25,7 +21,6 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
-      {/* Фоновые декоративные элементы */}
       <div style={{
         position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0,
       }}>
@@ -45,7 +40,6 @@ export default function LoginPage() {
       </div>
 
       <div className="auth-card" style={{ position: 'relative', zIndex: 1 }}>
-        {/* Логотип */}
         <div className="auth-logo">
           <span className="gradient-text">🎸 Guitar</span>
           <span style={{ color: 'var(--color-text-primary)' }}> Trainer</span>
@@ -99,7 +93,6 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Демо-данные */}
         <div style={{
           marginTop: '24px',
           padding: '14px',

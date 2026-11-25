@@ -1,8 +1,3 @@
-/**
- * pages/TeacherDashboard.jsx — Дашборд учителя
- * Список студентов, курсы с публикацией, быстрые действия
- */
-
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
@@ -29,7 +24,6 @@ export default function TeacherDashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
 
-  // Модальные состояния
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [showAddCourse,  setShowAddCourse]  = useState(false);
   const [studentEmail,   setStudentEmail]   = useState('');
@@ -39,21 +33,21 @@ export default function TeacherDashboard() {
     try {
       const { data } = await api.get('/users/students');
       setStudents(data.students || []);
-    } catch { /* обработано interceptor'ом */ }
+    } catch {  }
   }, []);
 
   const loadCourses = useCallback(async () => {
     try {
       const { data } = await api.get('/courses');
       setCourses(data.courses || []);
-    } catch { /* обработано interceptor'ом */ }
+    } catch {  }
   }, []);
 
   const loadRequests = useCallback(async () => {
     try {
       const { data } = await api.get('/courses/join-requests');
       setRequests(data.requests || []);
-    } catch { /* обработано interceptor'ом */ }
+    } catch {  }
   }, []);
 
   useEffect(() => {
@@ -126,7 +120,6 @@ export default function TeacherDashboard() {
 
   return (
     <div className="dashboard-layout">
-      {/* Сайдбар */}
       <aside className="sidebar">
         <div className="sidebar-logo">
           <span className="gradient-text">🎸 Guitar</span>
@@ -194,9 +187,7 @@ export default function TeacherDashboard() {
         </button>
       </aside>
 
-      {/* Основной контент */}
       <main className="main-content">
-        {/* ── Студенты ── */}
         {activeTab === 'students' && (
           <div className="animate-fade-in">
             <div className="section-header">
@@ -230,7 +221,6 @@ export default function TeacherDashboard() {
                       </div>
                     </div>
 
-                    {/* Курсы студента */}
                     {s.enrollments?.length > 0 && (
                       <div style={{ marginBottom: '16px' }}>
                         {s.enrollments.slice(0, 2).map(e => (
@@ -262,7 +252,6 @@ export default function TeacherDashboard() {
           </div>
         )}
 
-        {/* ── Курсы ── */}
         {activeTab === 'courses' && (
           <div className="animate-fade-in">
             <div className="section-header">
@@ -342,7 +331,6 @@ export default function TeacherDashboard() {
           </div>
         )}
 
-        {/* ── Заявки на курсы ── */}
         {activeTab === 'requests' && (
           <div className="animate-fade-in">
             <div className="section-header">
@@ -436,7 +424,6 @@ export default function TeacherDashboard() {
           </div>
         )}
 
-        {/* ── Тюнер ── */}
         {activeTab === 'tuner' && (
           <div className="animate-fade-in" style={{ maxWidth: '500px' }}>
             <h2 style={{ marginBottom: '24px' }}>Гитарный тюнер</h2>
@@ -445,7 +432,6 @@ export default function TeacherDashboard() {
         )}
       </main>
 
-      {/* Модал: Добавить студента */}
       {showAddStudent && (
         <div className="modal-overlay" onClick={() => setShowAddStudent(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -470,7 +456,6 @@ export default function TeacherDashboard() {
         </div>
       )}
 
-      {/* Модал: Создать курс */}
       {showAddCourse && (
         <div className="modal-overlay" onClick={() => setShowAddCourse(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>

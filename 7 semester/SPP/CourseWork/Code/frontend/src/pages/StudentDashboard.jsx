@@ -1,8 +1,3 @@
-/**
- * pages/StudentDashboard.jsx — Дашборд студента
- * Каталог курсов, мое обучение (APPROVED), Guitar Trainer, тюнер, статистика
- */
-
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
@@ -35,13 +30,11 @@ export default function StudentDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [actionBusyId, setActionBusyId] = useState(null);
 
-  // ─── Загрузка каталога опубликованных курсов ──────────────────
   const loadCatalog = useCallback(async () => {
     try {
       const { data } = await api.get('/courses/catalog');
       setCatalogCourses(data.courses || []);
     } catch {
-      // Фолбэк на available если сервер не обновил роут
       try {
         const { data } = await api.get('/courses/available');
         setCatalogCourses(
@@ -51,17 +44,15 @@ export default function StudentDashboard() {
             taskCount: c._count?.tasks ?? 0,
           }))
         );
-      } catch { /* тихо */ }
+      } catch {  }
     }
   }, []);
 
-  // ─── Загрузка курсов студента (APPROVED) ──────────────────────
   const loadMyCourses = useCallback(async () => {
     try {
       const { data } = await api.get('/courses/my-courses');
       setMyCourses(data.courses || []);
     } catch {
-      // Фолбэк на dashboard
       try {
         const { data } = await api.get('/users/dashboard');
         setStatsData(data);
@@ -73,16 +64,15 @@ export default function StudentDashboard() {
           tasks: e.course?.tasks || [],
         }));
         setMyCourses(mapped);
-      } catch { /* тихо */ }
+      } catch {  }
     }
   }, []);
 
-  // ─── Загрузка статистики ──────────────────────────────────────
   const loadStats = useCallback(async () => {
     try {
       const { data } = await api.get('/users/dashboard');
       setStatsData(data);
-    } catch { /* тихо */ }
+    } catch {  }
   }, []);
 
   useEffect(() => {
@@ -92,7 +82,6 @@ export default function StudentDashboard() {
     });
   }, [loadCatalog, loadMyCourses, loadStats]);
 
-  // ─── Отправка заявки на курс (POST /api/courses/:id/enroll) ───
   const handleEnroll = async (course) => {
     setActionBusyId(course.id);
     try {
@@ -106,14 +95,12 @@ export default function StudentDashboard() {
     }
   };
 
-  // ─── Открытие курса для автономного прохождения ───────────────
   const handleStartCourse = async (course) => {
     setActiveCourse(course);
     setActiveTaskIdx(0);
     setActiveTab('practice');
 
     try {
-      // Запрашиваем задания через защищенный эндпоинт
       const { data } = await api.get(`/courses/${course.id}/tasks`);
       setCourseTasks(data.tasks || course.tasks || []);
     } catch {
@@ -121,30 +108,26 @@ export default function StudentDashboard() {
     }
   };
 
-  // ─── Сдача результата выполнения задания ──────────────────────
   const handleTaskAnswer = async (task, { answer, isCorrect, reactionMs }) => {
     try {
-      // Отправляем через новый эндпоинт POST /api/tasks/:id/submit
       await api.post(`/tasks/${task.id}/submit`, {
         isCorrect: Boolean(isCorrect),
         answer: String(answer ?? ''),
         reactionMs,
       });
     } catch {
-      // Фолбэк на legacy /result
       try {
         await api.post(`/tasks/${task.id}/result`, {
           status: isCorrect ? 'CORRECT' : 'INCORRECT',
           answer: String(answer ?? ''),
           reactionMs,
         });
-      } catch { /* тихо */ }
+      } catch {  }
     }
     loadMyCourses();
     loadStats();
   };
 
-  // Статистика
   const stats = statsData?.taskResults || [];
   const totalCorrect = stats.find((s) => s.status === 'CORRECT')?._count || 0;
   const totalIncorrect = stats.find((s) => s.status === 'INCORRECT')?._count || 0;
@@ -153,7 +136,6 @@ export default function StudentDashboard() {
 
   return (
     <div className="dashboard-layout" style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
-      {/* ── Сайдбар ── */}
       <aside className="sidebar">
         <div className="sidebar-logo">
           <span className="gradient-text">🎸 Guitar</span>
@@ -210,7 +192,6 @@ export default function StudentDashboard() {
         </button>
       </aside>
 
-      {/* ── Основной контент ── */}
       <main className="main-content" style={{ padding: '32px 40px' }}>
         {isLoading ? (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
@@ -218,9 +199,6 @@ export default function StudentDashboard() {
           </div>
         ) : (
           <>
-            {/* ────────────────────────────────────────────────────────
-                ВКЛАДКА 1: МОЕ ОБУЧЕНИЕ (APPROVED)
-            ──────────────────────────────────────────────────────── */}
             {activeTab === 'learning' && (
               <div className="animate-fade-in">
                 <div style={{ marginBottom: '24px' }}>
@@ -344,9 +322,6 @@ export default function StudentDashboard() {
               </div>
             )}
 
-            {/* ────────────────────────────────────────────────────────
-                ВКЛАДКА 2: КАТАЛОГ КУРСОВ (CATALOG)
-            ──────────────────────────────────────────────────────── */}
             {activeTab === 'catalog' && (
               <div className="animate-fade-in">
                 <div style={{ marginBottom: '24px' }}>
@@ -411,7 +386,6 @@ export default function StudentDashboard() {
                             </div>
                           </div>
 
-                          {/* Динамическая кнопка / бейдж статуса */}
                           <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
                             {isApproved && (
                               <button
@@ -458,9 +432,6 @@ export default function StudentDashboard() {
               </div>
             )}
 
-            {/* ────────────────────────────────────────────────────────
-                ВКЛАДКА 3: GUITAR TRAINER (ИНТЕРАКТИВНЫЙ ТРЕНАЖЕР)
-            ──────────────────────────────────────────────────────── */}
             {activeTab === 'practice' && (
               <div className="animate-fade-in">
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '24px' }}>
@@ -535,7 +506,6 @@ export default function StudentDashboard() {
                           }}
                         />
 
-                        {/* Навигация по степперу */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
                           <button
                             className="btn btn-ghost btn-sm"
@@ -561,9 +531,6 @@ export default function StudentDashboard() {
               </div>
             )}
 
-            {/* ────────────────────────────────────────────────────────
-                ВКЛАДКА 4: ТЮНЕР
-            ──────────────────────────────────────────────────────── */}
             {activeTab === 'tuner' && (
               <div className="animate-fade-in" style={{ maxWidth: '520px' }}>
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0F172A', marginBottom: '24px' }}>
@@ -573,9 +540,6 @@ export default function StudentDashboard() {
               </div>
             )}
 
-            {/* ────────────────────────────────────────────────────────
-                ВКЛАДКА 5: СТАТИСТИКА
-            ──────────────────────────────────────────────────────── */}
             {activeTab === 'stats' && (
               <div className="animate-fade-in">
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0F172A', marginBottom: '24px' }}>

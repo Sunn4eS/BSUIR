@@ -1,10 +1,3 @@
-/**
- * components/Tuner/GuitarTuner.jsx — гитарный тюнер
- *
- * Использует общий AudioContext и микрофонный поток (useAudioSession).
- * Перед первым запуском обязательно показывает Mic Check.
- */
-
 import { useCallback, useState } from 'react';
 import { useGuitarTuner } from '../../hooks/useGuitarTuner';
 import { useAudioSession } from '../../hooks/useAudioSession';

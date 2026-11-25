@@ -1,11 +1,6 @@
-/**
- * modules/courses/courses.service.js — CRUD курсов и публикация
- */
-
 const { prisma } = require('../../config/database');
 const { AppError } = require('../../middleware/errorHandler');
 
-/** Поля курса, которые учитель может менять */
 const EDITABLE_FIELDS = ['title', 'description'];
 
 function pickEditable(data = {}) {
@@ -16,7 +11,6 @@ function pickEditable(data = {}) {
 }
 
 class CoursesService {
-  /** Получить все курсы учителя (включая черновики) */
   async getTeacherCourses(teacherId) {
     return prisma.course.findMany({
       where: { teacherId },
@@ -28,7 +22,6 @@ class CoursesService {
     });
   }
 
-  /** Библиотека опубликованных курсов и заданий для Live-урока */
   async getTeacherLibrary(teacherId) {
     return prisma.course.findMany({
       where: { teacherId, status: 'PUBLISHED' },
@@ -39,7 +32,6 @@ class CoursesService {
     });
   }
 
-  /** Получить курс по ID (проверяем ownership) */
   async getCourseById(courseId, userId, role) {
     const course = await prisma.course.findUnique({
       where: { id: courseId },
@@ -74,12 +66,6 @@ class CoursesService {
     return course;
   }
 
-  /**
-   * Создать новый курс.
-   *
-   * @param {string} teacherId — ID авторизованного учителя (req.user.id)
-   * @param {{ title, description?, status?: 'draft'|'published' }} data
-   */
   async createCourse(teacherId, data = {}) {
     const { title, description, status } = data;
 
@@ -91,7 +77,6 @@ class CoursesService {
       throw new AppError('Название курса обязательно', 400);
     }
 
-    // Статус публикации: 'draft' | 'published' (без учёта регистра), по умолчанию draft
     let courseStatus = 'DRAFT';
     if (status !== undefined) {
       const normalized = String(status).trim().toUpperCase();
@@ -112,7 +97,6 @@ class CoursesService {
     });
   }
 
-  /** Обновить курс (только разрешённые поля) */
   async updateCourse(courseId, teacherId, data) {
     await this.assertOwnership(courseId, teacherId);
 
@@ -127,7 +111,6 @@ class CoursesService {
     });
   }
 
-  /** Опубликовать курс: draft → published */
   async publishCourse(courseId, teacherId) {
     await this.assertOwnership(courseId, teacherId);
 
@@ -150,7 +133,6 @@ class CoursesService {
     });
   }
 
-  /** Снять курс с публикации */
   async unpublishCourse(courseId, teacherId) {
     await this.assertOwnership(courseId, teacherId);
 
@@ -160,7 +142,6 @@ class CoursesService {
     });
   }
 
-  /** Удалить курс */
   async deleteCourse(courseId, teacherId) {
     await this.assertOwnership(courseId, teacherId);
 
@@ -168,7 +149,6 @@ class CoursesService {
     return { message: 'Курс удалён' };
   }
 
-  /** Записать студента на курс */
   async enrollStudent(courseId, studentId, teacherId) {
     const course = await this.assertOwnership(courseId, teacherId);
 
@@ -191,7 +171,6 @@ class CoursesService {
     });
   }
 
-  /** Отписать студента от курса */
   async unenrollStudent(courseId, studentId, teacherId) {
     await this.assertOwnership(courseId, teacherId);
 
@@ -204,15 +183,6 @@ class CoursesService {
     return { message: 'Студент отписан от курса' };
   }
 
-  // ───────────────────────────────────────────────────────────
-  // Ученик: доступные курсы и заявки на вступление
-  // ───────────────────────────────────────────────────────────
-
-  /**
-   * Опубликованные курсы для ученика.
-   * Для каждого курса отдаём статус записи и статус заявки,
-   * но НЕ раскрываем задания до зачисления.
-   */
   async getAvailableCourses(studentId) {
     const courses = await prisma.course.findMany({
       where: { status: 'PUBLISHED' },
@@ -239,7 +209,6 @@ class CoursesService {
     }));
   }
 
-  /** Ученик отправляет заявку на вступление в курс */
   async requestJoin(courseId, studentId, message) {
     const course = await prisma.course.findUnique({ where: { id: courseId } });
     if (!course) throw new AppError('Курс не найден', 404);
@@ -264,7 +233,6 @@ class CoursesService {
       if (existing.status === 'PENDING') {
         throw new AppError('Заявка уже отправлена и ожидает рассмотрения', 400);
       }
-      // Повторная заявка после отказа
       return prisma.courseJoinRequest.update({
         where: { id: existing.id },
         data: { status: 'PENDING', message: text, reviewedAt: null },
@@ -276,7 +244,6 @@ class CoursesService {
     });
   }
 
-  /** Ученик отменяет свою ожидающую заявку */
   async cancelJoin(courseId, studentId) {
     const request = await prisma.courseJoinRequest.findUnique({
       where: { courseId_studentId: { courseId, studentId } },
@@ -290,7 +257,6 @@ class CoursesService {
     return { message: 'Заявка отменена' };
   }
 
-  /** Ученик: все мои заявки */
   async getMyJoinRequests(studentId) {
     return prisma.courseJoinRequest.findMany({
       where: { studentId },
@@ -308,11 +274,6 @@ class CoursesService {
     });
   }
 
-  // ───────────────────────────────────────────────────────────
-  // Учитель: заявки и студенты курса
-  // ───────────────────────────────────────────────────────────
-
-  /** Учитель: заявки на его курсы (по умолчанию все) */
   async getTeacherJoinRequests(teacherId, status) {
     const where = { course: { teacherId } };
 
@@ -336,10 +297,6 @@ class CoursesService {
     });
   }
 
-  /**
-   * Учитель одобряет или отклоняет заявку.
-   * Одобрение = запись на курс + привязка студента к учителю.
-   */
   async reviewJoinRequest(requestId, teacherId, decision) {
     const request = await prisma.courseJoinRequest.findUnique({
       where: { id: requestId },
@@ -397,7 +354,6 @@ class CoursesService {
     return { request: updated };
   }
 
-  /** Учитель: студенты курса + кандидаты на добавление */
   async getCourseStudents(courseId, teacherId) {
     await this.assertOwnership(courseId, teacherId);
 
@@ -432,10 +388,6 @@ class CoursesService {
     };
   }
 
-  /**
-   * Учитель добавляет студента в свой курс.
-   * Если студент ещё не привязан к учителю — привязка создаётся.
-   */
   async addStudentToCourse(courseId, teacherId, { studentId, email } = {}) {
     await this.assertOwnership(courseId, teacherId);
 
@@ -479,7 +431,6 @@ class CoursesService {
     };
   }
 
-  /** Проверка владельца курса */
   async assertOwnership(courseId, teacherId) {
     const course = await prisma.course.findUnique({ where: { id: courseId } });
     if (!course) throw new AppError('Курс не найден', 404);
@@ -487,7 +438,6 @@ class CoursesService {
     return course;
   }
 
-  /** Задания, которые нельзя публиковать (не заполнены обязательные поля) */
   async findInvalidTasks(courseId) {
     const tasks = await prisma.task.findMany({ where: { courseId } });
 

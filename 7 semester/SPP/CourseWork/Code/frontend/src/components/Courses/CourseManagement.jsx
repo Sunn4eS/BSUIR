@@ -1,29 +1,16 @@
-/**
- * frontend/src/components/Courses/CourseManagement.jsx
- *
- * Панель управления студентами курса для преподавателя:
- * - Вкладка «Заявки на вступление» (PENDING) с кнопками «Принять» (APPROVED) / «Отклонить» (REJECTED)
- * - Вкладка «Зачисленные студенты» (APPROVED) со списком и кнопкой «Исключить из курса»
- * - Форма «Добавить ученика по Email» (прямой ввод и зачисление)
- *
- * Дизайн: строго Light Theme (фон #F8FAFC / #FFFFFF, текст #334155, мягкие тени, просторные отступы)
- */
-
 import { useCallback, useEffect, useState } from 'react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
 export default function CourseManagement({ courseId, courseTitle = '', onUpdate = null }) {
-  const [activeTab, setActiveTab] = useState('requests'); // 'requests' | 'enrolled' | 'add'
+  const [activeTab, setActiveTab] = useState('requests');
   const [enrollments, setEnrollments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
-  // Форма добавления по Email
   const [emailInput, setEmailInput] = useState('');
   const [isAdding, setIsAdding] = useState(false);
 
-  // Загрузка заявок курса
   const loadEnrollments = useCallback(async () => {
     if (!courseId) return;
     setIsLoading(true);
@@ -41,12 +28,10 @@ export default function CourseManagement({ courseId, courseTitle = '', onUpdate 
     loadEnrollments();
   }, [loadEnrollments]);
 
-  // Фильтрация заявок и зачисленных студентов
   const pendingRequests = enrollments.filter((e) => e.status === 'PENDING');
   const enrolledStudents = enrollments.filter((e) => e.status === 'APPROVED');
   const rejectedRequests = enrollments.filter((e) => e.status === 'REJECTED');
 
-  // Одобрение или отклонение заявки
   const handleReview = async (enrollmentId, status) => {
     setActionLoadingId(enrollmentId);
     try {
@@ -61,7 +46,6 @@ export default function CourseManagement({ courseId, courseTitle = '', onUpdate 
     }
   };
 
-  // Исключение студента из курса
   const handleRemove = async (studentId, studentName) => {
     if (!window.confirm(`Вы уверены, что хотите исключить студента ${studentName || ''} из курса?`)) {
       return;
@@ -80,7 +64,6 @@ export default function CourseManagement({ courseId, courseTitle = '', onUpdate 
     }
   };
 
-  // Добавление студента по Email
   const handleAddByEmail = async (e) => {
     e.preventDefault();
     if (!emailInput.trim()) {
@@ -117,7 +100,6 @@ export default function CourseManagement({ courseId, courseTitle = '', onUpdate 
         marginTop: '24px',
       }}
     >
-      {/* Заголовок секции */}
       <div style={{ marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
@@ -140,7 +122,6 @@ export default function CourseManagement({ courseId, courseTitle = '', onUpdate 
           </button>
         </div>
 
-        {/* Навигационные вкладки блока */}
         <div
           style={{
             display: 'flex',
@@ -232,7 +213,6 @@ export default function CourseManagement({ courseId, courseTitle = '', onUpdate 
         </div>
       </div>
 
-      {/* ── Содержимое вкладок ── */}
       {isLoading ? (
         <div style={{ padding: '40px', textAlign: 'center', color: '#64748B' }}>
           <div className="loader" style={{ margin: '0 auto 12px' }} />
@@ -240,7 +220,6 @@ export default function CourseManagement({ courseId, courseTitle = '', onUpdate 
         </div>
       ) : (
         <div>
-          {/* ВКЛАДКА 1: Заявки на вступление */}
           {activeTab === 'requests' && (
             <div>
               {pendingRequests.length === 0 ? (
@@ -329,7 +308,6 @@ export default function CourseManagement({ courseId, courseTitle = '', onUpdate 
             </div>
           )}
 
-          {/* ВКЛАДКА 2: Зачисленные студенты */}
           {activeTab === 'enrolled' && (
             <div>
               {enrolledStudents.length === 0 ? (
@@ -413,7 +391,6 @@ export default function CourseManagement({ courseId, courseTitle = '', onUpdate 
             </div>
           )}
 
-          {/* ВКЛАДКА 3: Добавить ученика по Email */}
           {activeTab === 'add' && (
             <form onSubmit={handleAddByEmail} style={{ maxWidth: '480px', marginTop: '8px' }}>
               <div style={{ marginBottom: '16px' }}>

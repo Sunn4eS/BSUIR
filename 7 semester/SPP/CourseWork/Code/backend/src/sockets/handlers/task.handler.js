@@ -1,36 +1,16 @@
-/**
- * sockets/handlers/task.handler.js
- * Управление заданиями в Live-сессии
- *
- * CLIENT → SERVER:
- *   send_task    { taskId?, cardData? }  — учитель отправляет карточку
- *   task_status  { cardId, status }      — ученик обновляет статус
- *   task_answer  { cardId, answer, reactionMs } — ученик отвечает
- *   end_session                          — учитель завершает урок
- *
- * SERVER → CLIENT:
- *   new_task_card       { card }                         — ученику
- *   task_sent           { card }                         — учителю
- *   card_status_updated { cardId, status, studentId }    — учителю
- *   task_result         { cardId, isCorrect, answer }    — учителю
- *   my_task_result      { cardId, isCorrect }            — ученику
- *   session_ended       { sessionId }                    — всем
- */
-
 const { prisma } = require('../../config/database');
 
 const VALID_STATUSES = ['PENDING', 'IN_PROGRESS', 'CORRECT', 'INCORRECT', 'SKIPPED'];
 const VALID_TYPES = [
-  'EAR_TRAINING',    // угадать ноту/аккорд на слух
-  'PLAY_PRACTICE',   // сыграть ноту/аккорд
-  'FINGERING_TEST',  // угадать/собрать аппликатуру аккорда
-  'PLAY_FINGERING',  // сыграть аппликатуру аккорда по грифу
-  'COMBO_FINGERING', // собрать аппликатуру, затем сыграть её
+  'EAR_TRAINING',
+  'PLAY_PRACTICE',
+  'FINGERING_TEST',
+  'PLAY_FINGERING',
+  'COMBO_FINGERING',
 ];
 const FINGERING_TYPES = ['FINGERING_TEST', 'PLAY_FINGERING', 'COMBO_FINGERING'];
 const VALID_FINGERING_MODES = ['BUILD', 'GUESS'];
 
-/** Разбор списка вариантов ответа: массив или строка через запятую */
 function parseOptions(value) {
   if (Array.isArray(value)) {
     return value.map((item) => String(item).trim()).filter(Boolean);
@@ -41,7 +21,6 @@ function parseOptions(value) {
     .filter(Boolean);
 }
 
-/** Нормализует «карточку на лету», пришедшую от учителя */
 function normalizeCardData(cardData) {
   if (!cardData || typeof cardData !== 'object') return null;
 
@@ -64,7 +43,6 @@ function normalizeCardData(cardData) {
   }
 
   if (type === 'FINGERING_TEST') {
-    // Аппликатура: GUESS — выбор из вариантов, BUILD — сборка на грифе
     const options = parseOptions(cardData.answerOptions);
     const correctAnswer = cardData.correctAnswer || cardData.expectedNote;
     if (!correctAnswer || options.length < 2) return null;
@@ -84,7 +62,6 @@ function normalizeCardData(cardData) {
   }
 
   if (type === 'PLAY_FINGERING' || type === 'COMBO_FINGERING') {
-    // Сыграть (и, возможно, сначала собрать) аппликатуру аккорда
     if (!cardData.expectedNote) return null;
 
     return {
@@ -95,7 +72,6 @@ function normalizeCardData(cardData) {
     };
   }
 
-  // PLAY_PRACTICE
   if (!cardData.expectedNote) return null;
 
   return {
@@ -109,7 +85,6 @@ function normalizeCardData(cardData) {
 module.exports = function taskHandler(io, socket) {
   const user = socket.data.user;
 
-  // ── send_task ────────────────────────────────────────────
   socket.on('send_task', async ({ taskId, cardData } = {}) => {
     try {
       if (user.role !== 'TEACHER') {
@@ -167,13 +142,10 @@ module.exports = function taskHandler(io, socket) {
         include: { task: true },
       });
 
-      // Доставляем ученику в личную комнату (даже если он ещё не в session-room)
       io.to(`user:${session.studentId}`).emit('new_task_card', { card });
 
-      // Подтверждение учителю
       socket.emit('task_sent', { card });
 
-      // Оповещаем комнату о новом активном задании урока
       const roomName = `session:${session.roomCode}`;
       const cardsInSession = await prisma.liveTaskCard.count({ where: { sessionId } });
       io.to(roomName).emit('lesson:set_task', {
@@ -189,7 +161,6 @@ module.exports = function taskHandler(io, socket) {
     }
   });
 
-  // ── task_status ──────────────────────────────────────────
   socket.on('task_status', async ({ cardId, status } = {}) => {
     try {
       if (!cardId || !VALID_STATUSES.includes(status)) return;
@@ -205,10 +176,6 @@ module.exports = function taskHandler(io, socket) {
         return;
       }
 
-      // Обновляем атомарно (условие в WHERE): финальный статус
-      // (CORRECT/INCORRECT/SKIPPED) не перетирается опоздавшим
-      // IN_PROGRESS/PENDING — например, от вкладки ученика, открытой
-      // на другой странице
       const updated = await prisma.liveTaskCard.updateMany({
         where: {
           id: cardId,
@@ -238,7 +205,6 @@ module.exports = function taskHandler(io, socket) {
     }
   });
 
-  // ── task_answer ──────────────────────────────────────────
   socket.on('task_answer', async ({ cardId, answer, reactionMs } = {}) => {
     try {
       if (!cardId || answer === undefined) return;
@@ -266,8 +232,6 @@ module.exports = function taskHandler(io, socket) {
           String(payload.correctAnswer).toLowerCase() === String(answer).toLowerCase();
       } else if (payload.type === 'FINGERING_TEST') {
         if ((payload.fingeringMode || 'GUESS') === 'BUILD') {
-          // Клиент сам проверил собранную аппликатуру на грифе:
-          // { chord, frets, correct } — доверяем, как PLAY_PRACTICE
           isCorrect = Boolean(
             answer && typeof answer === 'object' && answer.correct === true
           );
@@ -282,8 +246,6 @@ module.exports = function taskHandler(io, socket) {
         payload.type === 'COMBO_FINGERING' ||
         payload.type === 'PLAY_PRACTICE'
       ) {
-        // Микрофонная проверка выполняется на клиенте — серверу
-        // приходит только вердикт
         isCorrect = answer === true || answer === 'correct';
       }
 
@@ -320,7 +282,6 @@ module.exports = function taskHandler(io, socket) {
         reactionMs,
       });
 
-      // Также транслируем по протоколу урока
       io.to(`session:${card.session.roomCode}`).emit('lesson:task_completed', {
         cardId,
         taskId: card.taskId,
@@ -340,7 +301,6 @@ module.exports = function taskHandler(io, socket) {
     }
   });
 
-  // ── lesson:set_task (Учитель переключает задание для сессии) ─────────
   socket.on('lesson:set_task', async ({ taskIndex, cardId } = {}) => {
     try {
       if (user.role !== 'TEACHER') return;
@@ -356,14 +316,12 @@ module.exports = function taskHandler(io, socket) {
     }
   });
 
-  // ── lesson:student_navigate (Ученик запрашивает переключение) ────────
   socket.on('lesson:student_navigate', ({ targetIndex } = {}) => {
     socket.emit('lesson:student_navigate_ack', {
       currentTaskIndex: targetIndex,
     });
   });
 
-  // ── lesson:task_completed (Прямой триггер от ученика) ───────────────
   socket.on('lesson:task_completed', async (data = {}) => {
     const { cardId, answer, reactionMs } = data;
     if (cardId) {
@@ -371,7 +329,6 @@ module.exports = function taskHandler(io, socket) {
     }
   });
 
-  // ── end_session ──────────────────────────────────────────
   socket.on('end_session', async () => {
     try {
       if (user.role !== 'TEACHER') return;
@@ -390,7 +347,6 @@ module.exports = function taskHandler(io, socket) {
       const room = `session:${session.roomCode}`;
       io.to(room).emit('session_ended', { sessionId });
 
-      // Выводим всех из комнаты
       io.in(room).socketsLeave(room);
 
       console.log(`🏁 [Task] Сессия ${sessionId} завершена учителем`);

@@ -1,8 +1,3 @@
-/**
- * scripts/student-agent.cjs — имитация ученика для проверки UI учителя
- * Входит в комнату по приглашению и отвечает на карточки.
- */
-
 const { io } = require('socket.io-client');
 
 const HOST = process.env.LIVE_E2E_HOST || 'http://backend:4000';

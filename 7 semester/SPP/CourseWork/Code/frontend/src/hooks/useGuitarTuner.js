@@ -1,13 +1,3 @@
-/**
- * hooks/useGuitarTuner.js — гитарный тюнер на общем аудио-ядре
- *
- * Отличия от старой версии:
- *  - не создаёт новый AudioContext;
- *  - вызывает resume()/Tone.start() через useAudioSession;
- *  - использует YIN с confidence и медианным сглаживанием;
- *  - определяет ближайшую струну и направление подстройки.
- */
-
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   getAnalyser,
@@ -24,7 +14,7 @@ import {
 } from '../audio/noteUtils';
 import { useAudioSession } from './useAudioSession';
 
-const ANALYSIS_INTERVAL_MS = 33; // ~30 FPS
+const ANALYSIS_INTERVAL_MS = 33;
 const MIN_CONFIDENCE = 0.5;
 const IN_TUNE_CENTS = 5;
 
@@ -34,7 +24,7 @@ export function useGuitarTuner() {
   const [isActive, setIsActive] = useState(false);
   const [note, setNote] = useState(null);
   const [centsOff, setCentsOff] = useState(0);
-  const [status, setStatus] = useState('no-signal'); // in-tune | too-low | too-high | no-signal
+  const [status, setStatus] = useState('no-signal');
   const [string, setString] = useState(null);
   const [confidence, setConfidence] = useState(0);
   const [error, setError] = useState(null);
@@ -74,7 +64,6 @@ export function useGuitarTuner() {
       return;
     }
 
-    // Медианное сглаживание: отбрасываем одиночные выбросы
     const history = smoothedFrequenciesRef.current;
     history.push(result.frequency);
     if (history.length > 5) history.shift();
@@ -82,7 +71,6 @@ export function useGuitarTuner() {
     const sorted = [...history].sort((a, b) => a - b);
     const median = sorted[Math.floor(sorted.length / 2)];
 
-    // Если нота «прыгнула» больше чем на 8%, начинаем накопление заново
     if (Math.abs(result.frequency - median) / median > 0.08) {
       smoothedFrequenciesRef.current = [result.frequency];
     }
